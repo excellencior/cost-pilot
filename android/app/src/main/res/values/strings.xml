@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ZenSpend</string>
+    <string name="title_activity_main">ZenSpend</string>
+    <string name="package_name">com.zenspend.app</string>
+    <string name="custom_url_scheme">com.zenspend.app</string>
+</resources>
