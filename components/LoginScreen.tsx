@@ -35,7 +35,7 @@ const LoginScreen: React.FC = () => {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-4xl font-bold text-white mb-2">ZenSpend</h1>
+                <h1 className="text-4xl font-bold text-white mb-2">CostPilot</h1>
                 <p className="text-slate-400 mb-12">Track your expenses with peace of mind</p>
 
                 {/* Sign In Button */}

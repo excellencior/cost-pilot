@@ -1,4 +1,4 @@
--- ZenSpend Database Schema for Supabase
+-- CostPilot Database Schema for Supabase
 -- Run this in Supabase SQL Editor
 
 -- Categories table

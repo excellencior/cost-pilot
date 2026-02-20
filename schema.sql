@@ -1,4 +1,4 @@
--- ZenSpend Supabase DB Schema
+-- CostPilot Supabase DB Schema
 -- Created on: 2026-02-20
 -- Description: Core schema for transactions, categories, and user profiles.
 

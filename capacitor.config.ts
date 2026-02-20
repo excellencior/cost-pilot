@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.zenspend.app',
-  appName: 'ZenSpend',
+  appId: 'com.costpilot.app',
+  appName: 'CostPilot',
   webDir: 'dist'
 };
 

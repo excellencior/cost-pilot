@@ -61,7 +61,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 		const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
 
 		doc.setFontSize(20);
-		doc.text('ZenSpend Financial Report', 20, 20);
+		doc.text('CostPilot Financial Report', 20, 20);
 		doc.setFontSize(14);
 
 		let filteredTransactions = transactions;
@@ -96,7 +96,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 			doc.text(`${t.date} | ${t.title} | ${t.type === 'expense' ? '-' : '+'}${currencySymbol}${t.amount}`, 20, 90 + (i * 7));
 		});
 
-		doc.save(`ZenSpend_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+		doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
 	};
 
 	return (

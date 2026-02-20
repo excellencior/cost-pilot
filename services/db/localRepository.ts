@@ -1,8 +1,8 @@
 import { Transaction, Category } from '../../types';
 
-const STORAGE_KEY = 'zenspend_local_db';
-const CATEGORY_KEY = 'zenspend_local_categories';
-const SYNC_META_KEY = 'zenspend_sync_meta';
+const STORAGE_KEY = 'costpilot_local_db';
+const CATEGORY_KEY = 'costpilot_local_categories';
+const SYNC_META_KEY = 'costpilot_sync_meta';
 
 export interface LocalExpense extends Transaction {
     user_id: string | null;

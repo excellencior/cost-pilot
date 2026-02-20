@@ -1,6 +1,6 @@
 # Gemini Reference: Commands & Pipelines
 
-This document outlines the standard commands and development pipelines for ZenSpend.
+This document outlines the standard commands and development pipelines for CostPilot.
 
 ## Development Commands
 

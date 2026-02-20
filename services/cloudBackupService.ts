@@ -5,8 +5,8 @@ export type BackupStatus = 'idle' | 'syncing' | 'success' | 'error';
 
 type StatusCallback = (status: BackupStatus, message?: string) => void;
 
-const CLOUD_BACKUP_KEY = 'zenspend_cloud_backup_enabled';
-const LAST_BACKUP_KEY = 'zenspend_last_backup_time';
+const CLOUD_BACKUP_KEY = 'costpilot_cloud_backup_enabled';
+const LAST_BACKUP_KEY = 'costpilot_last_backup_time';
 
 let statusListeners: StatusCallback[] = [];
 let isSyncing = false;

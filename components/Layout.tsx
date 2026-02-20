@@ -46,10 +46,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6">
                 <div className="flex items-center justify-between mb-10 px-2">
                     <div className="flex items-center gap-3">
-                        <div className="size-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
-                            <span className="material-symbols-outlined text-2xl font-bold">payments</span>
-                        </div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ZenSpend</h1>
+                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-xl shadow-lg shadow-primary-500/20 object-cover" />
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CostPilot</h1>
                     </div>
                     {isCloudEnabled && <CloudIndicator />}
                 </div>
@@ -92,10 +90,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             <main className="flex-1 flex flex-col min-w-0 relative pb-20 md:pb-0">
                 <header className="md:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
                     <div className="flex items-center gap-2">
-                        <div className="size-8 bg-primary-600 rounded-lg flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-xl">payments</span>
-                        </div>
-                        <span className="font-bold text-slate-900 dark:text-white">ZenSpend</span>
+                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-lg object-cover" />
+                        <span className="font-bold text-slate-900 dark:text-white">CostPilot</span>
                     </div>
                     <div className="flex items-center gap-2">
                         {isCloudEnabled && <CloudIndicator />}
