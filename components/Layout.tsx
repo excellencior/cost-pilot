@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 }`}
                         >
                             {currentView === item.view && (
-                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10"></div>
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10 animate-fade-in"></div>
                             )}
                             <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
                             <span className="relative z-10">{item.label}</span>
@@ -102,7 +102,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 }`}
                         >
                             {currentView === item.view && (
-                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/10 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10"></div>
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/10 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10 animate-scale-in"></div>
                             )}
                             <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
                             <span className="text-[10px] font-bold relative z-10">{item.label}</span>

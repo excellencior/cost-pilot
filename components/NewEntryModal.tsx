@@ -88,11 +88,11 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+          className="absolute inset-0 bg-slate-900/60 transition-opacity animate-backdrop"
           onClick={onClose}
         />
 
-        <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+        <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-scale-in">
           <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
@@ -126,8 +126,8 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
                   onClick={() => setType(t)}
                   disabled={!!editingTransaction}
                   className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize ${type === t
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                      : 'text-slate-500 opacity-50'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-500 opacity-50'
                     }`}
                 >
                   {t}

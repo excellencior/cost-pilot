@@ -231,9 +231,11 @@ const App: React.FC = () => {
         setEditingTransaction(null);
         setIsEntryModalOpen(true);
       }}
-      userEmail={user?.email}
+      userEmail={user?.email || undefined}
     >
-      {renderView()}
+      <div key={currentView} className="animate-slide-up">
+        {renderView()}
+      </div>
 
       <NewEntryModal
         isOpen={isEntryModalOpen}
