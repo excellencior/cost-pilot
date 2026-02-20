@@ -6,6 +6,7 @@ interface OverviewProps {
   transactions: Transaction[];
   onBack: () => void;
   onAddClick: () => void;
+  onTransactionClick: (t: Transaction) => void;
   currency: string;
 }
 
@@ -14,7 +15,7 @@ const getCurrencySymbol = (code: string) => {
   return symbols[code] || '$';
 };
 
-const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddClick, currency }) => {
+const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddClick, onTransactionClick, currency }) => {
   const currencySymbol = getCurrencySymbol(currency);
 
   return (
@@ -76,11 +77,12 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddC
 
         <div className="space-y-3">
           {transactions.map(t => (
-            <div
+            <button
               key={t.id}
-              className="card p-4 flex items-center gap-4 group hover:border-primary-200 dark:hover:border-primary-900"
+              onClick={() => onTransactionClick(t)}
+              className="w-full card p-4 flex items-center gap-4 group hover:border-primary-200 dark:hover:border-primary-900 text-left transition-all"
             >
-              <div className={`size-12 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-800 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
+              <div className={`size-12 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
                 <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
               </div>
               <div className="flex-1 min-w-0">
@@ -98,7 +100,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddC
                   {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toLocaleString()}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
 
           {transactions.length === 0 && (

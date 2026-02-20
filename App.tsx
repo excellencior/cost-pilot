@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
   const [selectedMonth, setSelectedMonth] = useState<MonthlyData | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [currency, setCurrency] = useState('USD');
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
 
@@ -51,13 +52,20 @@ const App: React.FC = () => {
     }
   }, [user]);
 
-  const handleAddTransaction = async (newT: Omit<Transaction, 'id'>) => {
-    const expenseData: any = {
-      ...newT,
-      id: crypto.randomUUID(),
+  const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
+    const transactionData: any = {
+      ...transaction,
+      id: 'id' in transaction ? transaction.id : crypto.randomUUID(),
       user_id: userId || null,
     };
-    LocalRepository.upsertExpense(expenseData);
+    LocalRepository.upsertExpense(transactionData);
+    setEditingTransaction(null);
+    loadData();
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    LocalRepository.deleteExpense(id);
+    setEditingTransaction(null);
     loadData();
   };
 
@@ -141,11 +149,14 @@ const App: React.FC = () => {
           <Dashboard
             monthlyData={monthlyHistory}
             transactions={transactions}
-            onAddEntry={() => setIsEntryModalOpen(true)}
+            onAddEntry={() => {
+              setEditingTransaction(null);
+              setIsEntryModalOpen(true);
+            }}
             onViewAll={() => setCurrentView('overview')}
             onTransactionClick={(t) => {
-              setSelectedMonth(monthlyHistory.find(m => m.month === new Date(t.date).toLocaleString('default', { month: 'long' }) && m.year === new Date(t.date).getFullYear()) || null);
-              setCurrentView('overview');
+              setEditingTransaction(t);
+              setIsEntryModalOpen(true);
             }}
             currencySymbol={getCurrencySymbol(currency)}
           />
@@ -157,7 +168,14 @@ const App: React.FC = () => {
             month={displayMonth}
             transactions={getMonthTransactions(displayMonth)}
             onBack={() => setCurrentView('dashboard')}
-            onAddClick={() => setIsEntryModalOpen(true)}
+            onAddClick={() => {
+              setEditingTransaction(null);
+              setIsEntryModalOpen(true);
+            }}
+            onTransactionClick={(t) => {
+              setEditingTransaction(t);
+              setIsEntryModalOpen(true);
+            }}
             currency={currency}
           />
         );
@@ -207,8 +225,13 @@ const App: React.FC = () => {
 
       <NewEntryModal
         isOpen={isEntryModalOpen}
-        onClose={() => setIsEntryModalOpen(false)}
-        onSave={handleAddTransaction}
+        onClose={() => {
+          setIsEntryModalOpen(false);
+          setEditingTransaction(null);
+        }}
+        onSave={handleSaveTransaction}
+        onDelete={handleDeleteTransaction}
+        editingTransaction={editingTransaction}
         categories={categories}
       />
 
