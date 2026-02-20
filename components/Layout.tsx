@@ -12,6 +12,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
     const navItems: { view: View; icon: string; label: string }[] = [
         { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
+        { view: 'history', icon: 'history', label: 'History' },
         { view: 'analysis', icon: 'analytics', label: 'Analysis' },
         { view: 'settings', icon: 'settings', label: 'Settings' },
     ];

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import History from './components/History';
 import { View, Transaction, MonthlyData, Category } from './types';
 import { CATEGORIES } from './constants';
 import Dashboard from './components/Dashboard';
@@ -179,6 +180,15 @@ const App: React.FC = () => {
             currency={currency}
           />
         );
+      case 'history':
+        return <History
+          transactions={transactions}
+          onTransactionClick={(t) => {
+            setEditingTransaction(t);
+            setIsEntryModalOpen(true);
+          }}
+          currencySymbol={getCurrencySymbol(currency)}
+        />;
       case 'analysis':
         return <Analysis transactions={transactions} currency={currency} />;
       case 'settings':
@@ -209,7 +219,10 @@ const App: React.FC = () => {
           transactions={transactions}
           onAddEntry={() => setIsEntryModalOpen(true)}
           onViewAll={() => setCurrentView('overview')}
-          onTransactionClick={() => { }}
+          onTransactionClick={(t) => {
+            setEditingTransaction(t);
+            setIsEntryModalOpen(true);
+          }}
           currencySymbol={getCurrencySymbol(currency)}
         />;
     }
