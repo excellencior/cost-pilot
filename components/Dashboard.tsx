@@ -26,44 +26,49 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Hero Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-3 lg:col-span-1 card p-6 bg-primary-600 border-none text-white overflow-hidden relative shadow-lg shadow-primary-600/20">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-          <p className="text-primary-100 text-sm font-medium mb-1 relative z-10">Total Balance</p>
-          <h2 className="text-4xl font-bold mb-6 relative z-10">{currencySymbol}{balance.toLocaleString()}</h2>
-          <div className="flex items-center gap-2 relative z-10">
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded">Current Month</span>
+      <section className="card p-6 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <p className="text-primary-100 text-base font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
+            <h2 className="text-6xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded backdrop-blur-md">
+                {currentMonth.month} {currentMonth.year}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex gap-8 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-primary-100">
+                <span className="material-symbols-outlined text-base">arrow_upward</span>
+                <span className="text-xs font-black uppercase tracking-widest">Income</span>
+              </div>
+              <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.income.toLocaleString()}</p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-primary-100">
+                <span className="material-symbols-outlined text-base">arrow_downward</span>
+                <span className="text-xs font-black uppercase tracking-widest">Expenses</span>
+              </div>
+              <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.expense.toLocaleString()}</p>
+            </div>
           </div>
         </div>
 
-        <div className="card p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
-              <span className="material-symbols-outlined text-sm">arrow_upward</span>
-              <span className="text-xs font-bold uppercase tracking-wider">Income</span>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {currencySymbol}{currentMonth.income.toLocaleString()}
-            </h3>
+        {/* Mini Progress Bar */}
+        <div className="mt-8 relative z-10 space-y-2">
+          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
+            <span>Expense Progress</span>
+            <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
           </div>
-          <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div className="h-full bg-green-500 w-full opacity-20"></div>
-          </div>
-        </div>
-
-        <div className="card p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 mb-1">
-              <span className="material-symbols-outlined text-sm">arrow_downward</span>
-              <span className="text-xs font-bold uppercase tracking-wider">Expenses</span>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {currencySymbol}{currentMonth.expense.toLocaleString()}
-            </h3>
-          </div>
-          <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-rose-500 transition-all duration-1000"
+              className="h-full bg-white transition-all duration-1000"
               style={{ width: `${Math.min(100, (currentMonth.income > 0 ? (currentMonth.expense / currentMonth.income) * 100 : 0))}%` }}
             ></div>
           </div>
@@ -97,10 +102,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white truncate">{t.title}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{t.category.name} • {t.date}</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white truncate">{t.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{t.category.name} • {t.date}</p>
                   </div>
-                  <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
+                  <div className={`font-black text-xl ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
                     {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
                   </div>
                 </button>

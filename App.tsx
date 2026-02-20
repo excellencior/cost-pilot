@@ -169,10 +169,6 @@ const App: React.FC = () => {
             month={displayMonth}
             transactions={getMonthTransactions(displayMonth)}
             onBack={() => setCurrentView('dashboard')}
-            onAddClick={() => {
-              setEditingTransaction(null);
-              setIsEntryModalOpen(true);
-            }}
             onTransactionClick={(t) => {
               setEditingTransaction(t);
               setIsEntryModalOpen(true);

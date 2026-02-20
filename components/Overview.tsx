@@ -5,7 +5,6 @@ interface OverviewProps {
   month: MonthlyData;
   transactions: Transaction[];
   onBack: () => void;
-  onAddClick: () => void;
   onTransactionClick: (t: Transaction) => void;
   currency: string;
 }
@@ -15,7 +14,7 @@ const getCurrencySymbol = (code: string) => {
   return symbols[code] || '$';
 };
 
-const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddClick, onTransactionClick, currency }) => {
+const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTransactionClick, currency }) => {
   const currencySymbol = getCurrencySymbol(currency);
 
   return (
@@ -37,13 +36,6 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddC
           </div>
         </div>
 
-        <button
-          onClick={onAddClick}
-          className="btn-primary flex items-center gap-2"
-        >
-          <span className="material-symbols-outlined text-sm">add</span>
-          Add Entry
-        </button>
       </div>
 
       {/* Mini Stats Grid */}
