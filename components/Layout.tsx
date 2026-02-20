@@ -7,9 +7,11 @@ interface LayoutProps {
     onNavigate: (view: View) => void;
     onAddEntry: () => void;
     userEmail?: string;
+    isCloudEnabled?: boolean;
+    isBackedUp?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail, isCloudEnabled = true, isBackedUp = true }) => {
     const navItems: { view: View; icon: string; label: string }[] = [
         { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
         { view: 'history', icon: 'history', label: 'History' },
@@ -17,15 +19,26 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
         { view: 'settings', icon: 'settings', label: 'Settings' },
     ];
 
+    const CloudIndicator = () => (
+        <div className={`flex items-center justify-center transition-all duration-500 animate-in fade-in zoom-in ${isBackedUp ? 'text-green-500' : 'text-slate-300 dark:text-slate-600'}`}>
+            <span className="material-symbols-outlined text-[20px] select-none">
+                {isBackedUp ? 'cloud_done' : 'cloud_off'}
+            </span>
+        </div>
+    );
+
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6">
-                <div className="flex items-center gap-3 mb-10 px-2">
-                    <div className="size-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
-                        <span className="material-symbols-outlined text-2xl font-bold">payments</span>
+                <div className="flex items-center justify-between mb-10 px-2">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+                            <span className="material-symbols-outlined text-2xl font-bold">payments</span>
+                        </div>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ZenSpend</h1>
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ZenSpend</h1>
+                    {isCloudEnabled && <CloudIndicator />}
                 </div>
 
                 <nav className="flex-1 space-y-2">

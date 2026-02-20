@@ -31,7 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
+          <div className="flex-1">
             <p className="text-primary-100 text-sm font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
             <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
             <div className="flex items-center gap-2">

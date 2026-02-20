@@ -183,6 +183,7 @@ const App: React.FC = () => {
             setIsEntryModalOpen(true);
           }}
           currencySymbol={getCurrencySymbol(currency)}
+          categories={categories}
         />;
       case 'analysis':
         return <Analysis transactions={transactions} currency={currency} />;
@@ -213,7 +214,7 @@ const App: React.FC = () => {
           monthlyData={monthlyHistory}
           transactions={transactions}
           onAddEntry={() => setIsEntryModalOpen(true)}
-          onViewAll={() => setCurrentView('overview')}
+          onViewAll={() => setCurrentView('history')}
           onTransactionClick={(t) => {
             setEditingTransaction(t);
             setIsEntryModalOpen(true);
