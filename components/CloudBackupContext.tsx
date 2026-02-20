@@ -75,13 +75,23 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         CloudBackupService.setEnabled(newValue);
 
         if (newValue && user) {
-            // "System event" — toggling on triggers the backup
-            CloudBackupService.startBackup(user.id);
+            // Check if this is a new device (no local transactions)
+            if (CloudBackupService.isLocalEmpty()) {
+                // Pull remote data first, then refresh UI
+                CloudBackupService.pullFromRemote(user.id).then((success) => {
+                    if (success && onDataPulled) {
+                        onDataPulled();
+                    }
+                });
+            } else {
+                // Existing device — push local data to cloud
+                CloudBackupService.startBackup(user.id);
+            }
         } else if (!newValue) {
             setBackupStatus('idle');
             setStatusMessage('');
         }
-    }, [isCloudEnabled, user]);
+    }, [isCloudEnabled, user, onDataPulled]);
 
     const triggerBackup = useCallback(() => {
         if (!isCloudEnabled || !user) return;

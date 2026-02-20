@@ -279,9 +279,9 @@ export const CloudBackupService = {
     },
 
     // --- Check if local DB needs a pull (new device) ---
+    // Only check expenses — default categories are always seeded locally
     isLocalEmpty: (): boolean => {
         const expenses = LocalRepository.getAllExpenses();
-        const categories = LocalRepository.getAllCategories();
-        return expenses.length === 0 && categories.length === 0;
+        return expenses.length === 0;
     },
 };

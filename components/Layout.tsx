@@ -176,13 +176,15 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     {children}
                 </div>
 
-                {/* Floating Action Button */}
-                <button
-                    onClick={onAddEntry}
-                    className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-2xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
-                >
-                    <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
-                </button>
+                {/* Floating Action Button — only on relevant pages */}
+                {(['dashboard', 'history', 'overview'] as View[]).includes(currentView) && (
+                    <button
+                        onClick={onAddEntry}
+                        className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-2xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
+                    >
+                        <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
+                    </button>
+                )}
 
                 {/* Mobile Bottom Nav */}
                 <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 z-40">
