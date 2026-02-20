@@ -33,13 +33,16 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         <button
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${currentView === item.view
-                                ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
-                                : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all relative group ${currentView === item.view
+                                ? 'text-primary-600 dark:text-primary-400'
+                                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <span className="material-symbols-outlined text-2xl">{item.icon}</span>
-                            {item.label}
+                            {currentView === item.view && (
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10"></div>
+                            )}
+                            <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
+                            <span className="relative z-10">{item.label}</span>
                         </button>
                     ))}
                 </nav>
@@ -88,18 +91,21 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                 </button>
 
                 {/* Mobile Bottom Nav */}
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 z-40">
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 z-40">
                     {navItems.map((item) => (
                         <button
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
-                            className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all ${currentView === item.view
+                            className={`flex flex-col items-center gap-1 p-2 min-w-[72px] transition-all relative rounded-xl ${currentView === item.view
                                 ? 'text-primary-600 dark:text-primary-400'
                                 : 'text-slate-400 dark:text-slate-500'
                                 }`}
                         >
-                            <span className="material-symbols-outlined text-2xl">{item.icon}</span>
-                            <span className="text-[10px] font-bold">{item.label}</span>
+                            {currentView === item.view && (
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/10 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10"></div>
+                            )}
+                            <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
+                            <span className="text-[10px] font-bold relative z-10">{item.label}</span>
                         </button>
                     ))}
                 </nav>
