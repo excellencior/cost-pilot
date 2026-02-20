@@ -5,10 +5,11 @@ interface LayoutProps {
     children: React.ReactNode;
     currentView: View;
     onNavigate: (view: View) => void;
+    onAddEntry: () => void;
     userEmail?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, userEmail }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
     const navItems: { view: View; icon: string; label: string }[] = [
         { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
         { view: 'analysis', icon: 'analytics', label: 'Analysis' },
@@ -32,8 +33,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, user
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${currentView === item.view
-                                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
-                                    : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
+                                : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-2xl">{item.icon}</span>
@@ -77,6 +78,14 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, user
                     {children}
                 </div>
 
+                {/* Floating Action Button */}
+                <button
+                    onClick={onAddEntry}
+                    className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-2xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
+                >
+                    <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
+                </button>
+
                 {/* Mobile Bottom Nav */}
                 <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 z-40">
                     {navItems.map((item) => (
@@ -84,8 +93,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, user
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
                             className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all ${currentView === item.view
-                                    ? 'text-primary-600 dark:text-primary-400'
-                                    : 'text-slate-400 dark:text-slate-500'
+                                ? 'text-primary-600 dark:text-primary-400'
+                                : 'text-slate-400 dark:text-slate-500'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-2xl">{item.icon}</span>

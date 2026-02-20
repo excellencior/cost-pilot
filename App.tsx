@@ -219,6 +219,10 @@ const App: React.FC = () => {
     <Layout
       currentView={currentView}
       onNavigate={setCurrentView}
+      onAddEntry={() => {
+        setEditingTransaction(null);
+        setIsEntryModalOpen(true);
+      }}
       userEmail={user?.email}
     >
       {renderView()}

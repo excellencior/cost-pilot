@@ -70,10 +70,10 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </section>
 
-      {/* Actions & Recent */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Recent & Health */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Transactions */}
-        <section className="space-y-4">
+        <section className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
             <button
@@ -114,30 +114,9 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </section>
 
-        {/* Quick Actions / Summary Card */}
+        {/* Financial Health */}
         <section className="space-y-4">
-          <h3 className="font-bold text-slate-900 dark:text-white px-1">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={onAddEntry}
-              className="card p-6 flex flex-col items-center gap-3 hover:bg-primary-50 dark:hover:bg-primary-900/10 group border-dashed border-2"
-            >
-              <div className="size-12 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-2xl font-bold">add</span>
-              </div>
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Add Entry</span>
-            </button>
-            <button
-              onClick={() => { }} // Could be export or something
-              className="card p-6 flex flex-col items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 group"
-            >
-              <div className="size-12 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-2xl">file_download</span>
-              </div>
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Reports</span>
-            </button>
-          </div>
-
+          <h3 className="font-bold text-slate-900 dark:text-white px-1">Overview</h3>
           <div className="card p-6 bg-slate-900 text-white dark:bg-slate-800/50">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Financial Health</h4>
             <div className="space-y-4">
@@ -150,6 +129,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                   className="h-full bg-primary-500 rounded-full"
                   style={{ width: `${Math.max(0, currentMonth.income > 0 ? ((currentMonth.income - currentMonth.expense) / currentMonth.income) * 100 : 0)}%` }}
                 ></div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Monthly Budget</span>
+                <span className="font-bold text-white">Flexible</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Total Transactions</span>
+                <span className="font-bold text-white">{transactions.length}</span>
               </div>
             </div>
           </div>

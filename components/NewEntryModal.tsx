@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Category, Transaction } from '../types';
+import CategoryPickerModal from './CategoryPickerModal';
 
 interface NewEntryModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<Category>(categories[0]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -32,7 +34,6 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
       setCategory(editingTransaction.category);
       setDate(editingTransaction.date);
     } else {
-      // Default reset for new entry
       setType('expense');
       setAmount('');
       setTitle('');
@@ -42,7 +43,6 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
     }
   }, [editingTransaction, isOpen, categories]);
 
-  // Reset category when type changes ONLY if NOT editing
   useEffect(() => {
     if (!editingTransaction) {
       const firstOfType = categories.find(c => c.type === type);
@@ -85,131 +85,140 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+        />
 
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
-          </h2>
-          <div className="flex items-center gap-2">
-            {editingTransaction && onDelete && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="size-8 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
-                title="Delete Transaction"
-              >
-                <span className="material-symbols-outlined text-xl">delete</span>
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-        </div>
-
-        <form onSubmit={handleSave} className="p-6 space-y-6">
-          <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-            {(['expense', 'income'] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setType(t)}
-                disabled={!!editingTransaction}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize ${type === t
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500 opacity-50'
-                  }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
-              <label className="label-text">Amount</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                autoFocus
-                className="input-field font-mono text-lg"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="label-text">Date</label>
-              <input
-                type="date"
-                required
-                className="input-field"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="label-text">Description</label>
-            <input
-              type="text"
-              className="input-field"
-              placeholder="What was this for?"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="label-text">Category</label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1 custom-scrollbar">
-              {categories.filter(c => c.type === type).map((cat) => (
+        <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+          <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+            </h2>
+            <div className="flex items-center gap-2">
+              {editingTransaction && onDelete && (
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => setCategory(cat)}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all ${category.id === cat.id
-                      ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 text-primary-600 dark:text-primary-400'
-                      : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-500 hover:border-slate-200'
+                  onClick={handleDelete}
+                  className="size-8 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                  title="Delete Transaction"
+                >
+                  <span className="material-symbols-outlined text-xl">delete</span>
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleSave} className="p-6 space-y-6">
+            <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+              {(['expense', 'income'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setType(t)}
+                  disabled={!!editingTransaction}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize ${type === t
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                      : 'text-slate-500 opacity-50'
                     }`}
                 >
-                  <span className="material-symbols-outlined text-xl">{cat.icon}</span>
-                  <span className="text-[10px] font-bold uppercase truncate w-full text-center">{cat.name}</span>
+                  {t}
                 </button>
               ))}
             </div>
-          </div>
 
-          <div className="pt-2 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn-primary flex-1"
-            >
-              {editingTransaction ? 'Update Entry' : 'Save Transaction'}
-            </button>
-          </div>
-        </form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1.5">
+                <label className="label-text">Amount</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  autoFocus
+                  className="input-field font-mono text-lg"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="label-text">Date</label>
+                <input
+                  type="date"
+                  required
+                  className="input-field"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="label-text">Description</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="What was this for?"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="label-text">Category</label>
+              <button
+                type="button"
+                onClick={() => setIsPickerOpen(true)}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
+              >
+                <div className="size-12 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
+                  <span className="material-symbols-outlined text-2xl">{category.icon}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{category.name}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">Tap to change</p>
+                </div>
+                <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+              </button>
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn-primary flex-1"
+              >
+                {editingTransaction ? 'Update Entry' : 'Save Transaction'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      <CategoryPickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={setCategory}
+        categories={categories}
+        selectedCategoryId={category.id}
+        type={type}
+      />
+    </>
   );
 };
 
