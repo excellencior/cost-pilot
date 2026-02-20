@@ -32,10 +32,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <p className="text-primary-100 text-base font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
-            <h2 className="text-6xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
+            <p className="text-primary-100 text-sm font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
+            <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded backdrop-blur-md">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded backdrop-blur-md">
                 {currentMonth.month} {currentMonth.year}
               </span>
             </div>
@@ -45,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary-100">
                 <span className="material-symbols-outlined text-base">arrow_upward</span>
-                <span className="text-xm font-black uppercase tracking-widest">Income</span>
+                <span className="text-xs font-black uppercase tracking-widest">Income</span>
               </div>
               <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.income.toLocaleString()}</p>
             </div>
@@ -53,7 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary-100">
                 <span className="material-symbols-outlined text-base">arrow_downward</span>
-                <span className="text-xm font-black uppercase tracking-widest">Expenses</span>
+                <span className="text-xs font-black uppercase tracking-widest">Expenses</span>
               </div>
               <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.expense.toLocaleString()}</p>
             </div>
@@ -62,7 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Mini Progress Bar */}
         <div className="mt-8 relative z-10 space-y-2">
-          <div className="flex justify-between text-[20px] font-bold uppercase tracking-widest text-primary-100/60">
+          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
             <span>Expense Progress</span>
             <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
           </div>
@@ -102,10 +102,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <p className="text-lg font-bold text-slate-900 dark:text-white truncate">{t.title}</p>
+                    <p className="font-bold text-slate-900 dark:text-white truncate">{t.title}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{t.category.name} • {t.date}</p>
                   </div>
-                  <div className={`font-black text-xl ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
+                  <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
                     {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
                   </div>
                 </button>

@@ -144,8 +144,8 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Primary Currency</p>
 						<div className="flex items-baseline gap-2">
-							<p className="text-3xl font-black text-slate-900 dark:text-white">{currency}</p>
-							<p className="text-sm font-bold text-slate-400">{CURRENCIES.find(c => c.code === currency)?.name}</p>
+							<p className="text-2xl font-bold text-slate-900 dark:text-white">{currency}</p>
+							<p className="text-xs font-bold text-slate-400">{CURRENCIES.find(c => c.code === currency)?.name}</p>
 						</div>
 						<p className="text-xs text-slate-500 mt-2">All financial metrics will use this symbol.</p>
 					</div>
