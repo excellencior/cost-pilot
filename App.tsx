@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import History from './components/History';
 import { View, Transaction, MonthlyData, Category } from './types';
 import { CATEGORIES } from './constants';
@@ -11,11 +11,13 @@ import NewEntryModal from './components/NewEntryModal';
 import CategoryManagement from './components/CategoryManagement';
 import CategoryEditorModal from './components/CategoryEditorModal';
 import { useAuth } from './components/AuthContext';
+import { useCloudBackup, CloudBackupProvider } from './components/CloudBackupContext';
 import { LocalRepository } from './services/db/localRepository';
 import Layout from './components/Layout';
 
-const App: React.FC = () => {
+const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void) | null> }> = ({ onDataPulledRef }) => {
   const { user } = useAuth();
+  const { triggerBackup } = useCloudBackup();
   const userId = user?.id;
 
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -35,22 +37,27 @@ const App: React.FC = () => {
     return symbols[code] || '$';
   };
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const freshTransactions = LocalRepository.getAllExpenses();
     setTransactions(freshTransactions);
     const localCats = LocalRepository.getAllCategories();
     setCategories(localCats.length > 0 ? localCats : CATEGORIES);
-  };
+  }, []);
+
+  // Expose loadData for cross-device pull refresh
+  useEffect(() => {
+    onDataPulledRef.current = loadData;
+  }, [loadData, onDataPulledRef]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   useEffect(() => {
     if (user) {
       loadData();
     }
-  }, [user]);
+  }, [user, loadData]);
 
   const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
     const transactionData: any = {
@@ -61,12 +68,14 @@ const App: React.FC = () => {
     LocalRepository.upsertExpense(transactionData);
     setEditingTransaction(null);
     loadData();
+    triggerBackup();
   };
 
   const handleDeleteTransaction = async (id: string) => {
     LocalRepository.deleteExpense(id);
     setEditingTransaction(null);
     loadData();
+    triggerBackup();
   };
 
   const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
@@ -83,6 +92,7 @@ const App: React.FC = () => {
     }
     setEditingCategory(null);
     loadData();
+    triggerBackup();
   };
 
   const monthlyHistory = useMemo(() => {
@@ -116,7 +126,6 @@ const App: React.FC = () => {
       });
     });
 
-    // Fallback if no history
     if (history.length === 0) {
       const now = new Date();
       history.push({
@@ -265,4 +274,21 @@ const App: React.FC = () => {
   );
 };
 
+const App: React.FC = () => {
+  const onDataPulledRef = React.useRef<(() => void) | null>(null);
+
+  const handleDataPulled = useCallback(() => {
+    if (onDataPulledRef.current) {
+      onDataPulledRef.current();
+    }
+  }, []);
+
+  return (
+    <CloudBackupProvider onDataPulled={handleDataPulled}>
+      <AppContent onDataPulledRef={onDataPulledRef} />
+    </CloudBackupProvider>
+  );
+};
+
 export default App;
+

@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
-import { SyncManager } from '../services/syncManager';
 
 interface AuthContextType {
     user: User | null;
@@ -29,22 +28,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
-
-            // Initial sync if logged in
-            if (session?.user) {
-                SyncManager.syncNow(session.user.id);
-            }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
-
-            // Sync on auth state change (login/logout/token refresh)
-            if (session?.user) {
-                SyncManager.syncNow(session.user.id);
-            }
         });
 
         return () => subscription.unsubscribe();
@@ -52,11 +41,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const signIn = async () => {
         try {
-            // Trigger Sync for anonymous data before redirecting? 
-            // Actually supabase redirect flow might interrupt.
-            // Best to prompt user "Do you want to sync?" AFTER login.
-            // For now, standard OAuth redirect.
-
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {

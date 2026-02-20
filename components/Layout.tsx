@@ -1,5 +1,6 @@
 import React from 'react';
 import { View } from '../types';
+import { useCloudBackup } from './CloudBackupContext';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -7,11 +8,11 @@ interface LayoutProps {
     onNavigate: (view: View) => void;
     onAddEntry: () => void;
     userEmail?: string;
-    isCloudEnabled?: boolean;
-    isBackedUp?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail, isCloudEnabled = true, isBackedUp = true }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
+    const { isCloudEnabled, backupStatus } = useCloudBackup();
+
     const navItems: { view: View; icon: string; label: string }[] = [
         { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
         { view: 'history', icon: 'history', label: 'History' },
@@ -19,10 +20,22 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
         { view: 'settings', icon: 'settings', label: 'Settings' },
     ];
 
+    const getCloudIcon = () => {
+        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-slate-300 dark:text-slate-600' };
+        switch (backupStatus) {
+            case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-500 animate-spin' };
+            case 'success': return { icon: 'cloud_done', color: 'text-green-500' };
+            case 'error': return { icon: 'cloud_off', color: 'text-rose-500' };
+            default: return { icon: 'cloud_done', color: 'text-green-500' };
+        }
+    };
+
+    const cloudIcon = getCloudIcon();
+
     const CloudIndicator = () => (
-        <div className={`flex items-center justify-center transition-all duration-500 animate-in fade-in zoom-in ${isBackedUp ? 'text-green-500' : 'text-slate-300 dark:text-slate-600'}`}>
+        <div className={`flex items-center justify-center transition-all duration-500 animate-in fade-in zoom-in ${cloudIcon.color}`}>
             <span className="material-symbols-outlined text-[20px] select-none">
-                {isBackedUp ? 'cloud_done' : 'cloud_off'}
+                {cloudIcon.icon}
             </span>
         </div>
     );
@@ -84,11 +97,14 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         </div>
                         <span className="font-bold text-slate-900 dark:text-white">ZenSpend</span>
                     </div>
-                    {userEmail && (
-                        <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-lg text-slate-400">person</span>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {isCloudEnabled && <CloudIndicator />}
+                        {userEmail && (
+                            <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg text-slate-400">person</span>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
                 <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto w-full max-w-7xl mx-auto">
