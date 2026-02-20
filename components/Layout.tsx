@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View } from '../types';
 import { useCloudBackup } from './CloudBackupContext';
 
@@ -11,7 +11,9 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
-    const { isCloudEnabled, backupStatus } = useCloudBackup();
+    const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, retryBackup } = useCloudBackup();
+    const [showPopover, setShowPopover] = useState(false);
+    const popoverRef = useRef<HTMLDivElement>(null);
 
     const navItems: { view: View; icon: string; label: string }[] = [
         { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
@@ -20,23 +22,90 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
         { view: 'settings', icon: 'settings', label: 'Settings' },
     ];
 
+    // Close popover on outside click
+    useEffect(() => {
+        if (!showPopover) return;
+        const handleClick = (e: MouseEvent) => {
+            if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+                setShowPopover(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [showPopover]);
+
     const getCloudIcon = () => {
-        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-slate-300 dark:text-slate-600' };
+        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-slate-300 dark:text-slate-600', spin: false };
         switch (backupStatus) {
-            case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-500 animate-spin' };
-            case 'success': return { icon: 'cloud_done', color: 'text-green-500' };
-            case 'error': return { icon: 'cloud_off', color: 'text-rose-500' };
-            default: return { icon: 'cloud_done', color: 'text-green-500' };
+            case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-500', spin: true };
+            case 'success': return { icon: 'cloud_done', color: 'text-green-500', spin: false };
+            case 'error': return { icon: 'cloud_off', color: 'text-rose-500', spin: false };
+            default: return { icon: 'cloud_done', color: 'text-green-500', spin: false };
+        }
+    };
+
+    const formatLastBackup = (iso: string | null) => {
+        if (!iso) return 'Never';
+        const d = new Date(iso);
+        const now = new Date();
+        const diffMs = now.getTime() - d.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin}m ago`;
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return `${diffHr}h ago`;
+        return d.toLocaleDateString();
+    };
+
+    const getPopoverStatusText = () => {
+        if (!isCloudEnabled) return 'Cloud backup is disabled';
+        switch (backupStatus) {
+            case 'syncing': return statusMessage || 'Syncing your data...';
+            case 'success': return statusMessage || 'All data backed up';
+            case 'error': return statusMessage || 'Backup failed';
+            default: return 'Cloud backup is active';
         }
     };
 
     const cloudIcon = getCloudIcon();
 
-    const CloudIndicator = () => (
-        <div className={`flex items-center justify-center transition-all duration-500 animate-in fade-in zoom-in ${cloudIcon.color}`}>
-            <span className="material-symbols-outlined text-[20px] select-none">
-                {cloudIcon.icon}
-            </span>
+    const CloudButton = () => (
+        <div className="relative" ref={popoverRef}>
+            <button
+                onClick={() => setShowPopover(!showPopover)}
+                className={`size-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90 ${cloudIcon.color}`}
+                title="Cloud backup status"
+            >
+                <span className={`material-symbols-outlined text-[20px] ${cloudIcon.spin ? 'animate-spin' : ''}`}>
+                    {cloudIcon.icon}
+                </span>
+            </button>
+
+            {showPopover && (
+                <div className="absolute right-0 top-11 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className={`material-symbols-outlined text-base ${cloudIcon.color} ${cloudIcon.spin ? 'animate-spin' : ''}`}>
+                            {cloudIcon.icon}
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">Cloud Backup</span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-300 mb-2">{getPopoverStatusText()}</p>
+                    {isCloudEnabled && lastBackupTime && (
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                            Last backup: {formatLastBackup(lastBackupTime)}
+                        </p>
+                    )}
+                    {backupStatus === 'error' && (
+                        <button
+                            onClick={() => { retryBackup(); setShowPopover(false); }}
+                            className="mt-3 w-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-900 dark:text-white px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-sm">refresh</span>
+                            Retry Sync
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 
@@ -49,7 +118,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-xl shadow-lg shadow-primary-500/20 object-cover" />
                         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CostPilot</h1>
                     </div>
-                    {isCloudEnabled && <CloudIndicator />}
+                    <CloudButton />
                 </div>
 
                 <nav className="flex-1 space-y-2">
@@ -94,7 +163,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         <span className="font-bold text-slate-900 dark:text-white">CostPilot</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        {isCloudEnabled && <CloudIndicator />}
+                        <CloudButton />
                         {userEmail && (
                             <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-lg text-slate-400">person</span>

@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { MonthlyData, Transaction } from '../types';
-import { useCloudBackup } from './CloudBackupContext';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -19,60 +18,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   onTransactionClick,
   currencySymbol
 }) => {
-  const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, retryBackup } = useCloudBackup();
-  const [showPopover, setShowPopover] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
-
   const currentMonth = monthlyData[0] || { month: 'Unknown', year: new Date().getFullYear(), income: 0, expense: 0 };
   const balance = currentMonth.income - currentMonth.expense;
   const recentTransactions = transactions.slice(0, 4);
-
-  // Close popover on outside click
-  useEffect(() => {
-    if (!showPopover) return;
-    const handleClick = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setShowPopover(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [showPopover]);
-
-  const getIconConfig = () => {
-    if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-white/40', spin: false };
-    switch (backupStatus) {
-      case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-300', spin: true };
-      case 'success': return { icon: 'cloud_done', color: 'text-green-300', spin: false };
-      case 'error': return { icon: 'cloud_off', color: 'text-rose-300', spin: false };
-      default: return { icon: 'cloud_done', color: 'text-white/60', spin: false };
-    }
-  };
-
-  const formatLastBackup = (iso: string | null) => {
-    if (!iso) return 'Never';
-    const d = new Date(iso);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return 'Just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
-    const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return `${diffHr}h ago`;
-    return d.toLocaleDateString();
-  };
-
-  const getPopoverStatusText = () => {
-    if (!isCloudEnabled) return 'Cloud backup is disabled';
-    switch (backupStatus) {
-      case 'syncing': return statusMessage || 'Syncing your data...';
-      case 'success': return statusMessage || 'All data backed up';
-      case 'error': return statusMessage || 'Backup failed';
-      default: return 'Cloud backup is active';
-    }
-  };
-
-  const iconConfig = getIconConfig();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -83,50 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-primary-100 text-sm font-bold uppercase tracking-widest opacity-90">Total Balance</p>
-
-              {/* Cloud Backup Icon */}
-              <div className="relative" ref={popoverRef}>
-                <button
-                  onClick={() => setShowPopover(!showPopover)}
-                  className={`size-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 ${iconConfig.color}`}
-                  title="Cloud backup status"
-                >
-                  <span className={`material-symbols-outlined text-lg ${iconConfig.spin ? 'animate-spin' : ''}`}>
-                    {iconConfig.icon}
-                  </span>
-                </button>
-
-                {/* Status Popover */}
-                {showPopover && (
-                  <div className="absolute right-0 top-10 w-64 bg-slate-900 dark:bg-slate-800 rounded-2xl shadow-2xl border border-white/10 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`material-symbols-outlined text-base ${iconConfig.color} ${iconConfig.spin ? 'animate-spin' : ''}`}>
-                        {iconConfig.icon}
-                      </span>
-                      <span className="text-sm font-bold text-white">Cloud Backup</span>
-                    </div>
-                    <p className="text-xs text-slate-300 mb-2">{getPopoverStatusText()}</p>
-                    {isCloudEnabled && lastBackupTime && (
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
-                        Last backup: {formatLastBackup(lastBackupTime)}
-                      </p>
-                    )}
-                    {backupStatus === 'error' && (
-                      <button
-                        onClick={() => { retryBackup(); setShowPopover(false); }}
-                        className="mt-3 w-full bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <span className="material-symbols-outlined text-sm">refresh</span>
-                        Retry Sync
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
+            <p className="text-primary-100 text-sm font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
             <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded backdrop-blur-md">
