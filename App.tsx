@@ -41,7 +41,13 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const freshTransactions = LocalRepository.getAllExpenses();
     setTransactions(freshTransactions);
     const localCats = LocalRepository.getAllCategories();
-    setCategories(localCats.length > 0 ? localCats : CATEGORIES);
+    if (localCats.length > 0) {
+      setCategories(localCats);
+    } else {
+      // Persist default categories to localStorage so the backup service can find them
+      LocalRepository.bulkUpsert(CATEGORIES as any[], 'category', false);
+      setCategories(CATEGORIES);
+    }
   }, []);
 
   // Expose loadData for cross-device pull refresh

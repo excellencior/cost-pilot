@@ -15,6 +15,65 @@ const emitStatus = (status: BackupStatus, message?: string) => {
     statusListeners.forEach(cb => cb(status, message));
 };
 
+// --- Data Transformers ---
+
+/**
+ * Transform a local category to the shape expected by the Supabase `categories` table.
+ * Only include columns that exist in the schema.
+ */
+const localCatToRemote = (cat: any, userId: string) => {
+    const remote: Record<string, any> = {
+        id: cat.id,
+        user_id: userId,
+        name: cat.name,
+        icon: cat.icon,
+        color: cat.color,
+        type: cat.type,
+        is_default: false,
+    };
+    // Only include timestamps if they exist and are valid
+    if (cat.created_at) remote.created_at = cat.created_at;
+    if (cat.updated_at) remote.updated_at = cat.updated_at;
+    return remote;
+};
+
+/**
+ * Transform a local transaction (which has a nested `category` object)
+ * to the flat shape expected by the Supabase `transactions` table.
+ * Maps `category.id` → `category_id`.
+ */
+const localTxToRemote = (tx: any, userId: string) => {
+    const remote: Record<string, any> = {
+        id: tx.id,
+        user_id: userId,
+        category_id: tx.category?.id || tx.category_id || null,
+        title: tx.title,
+        amount: tx.amount,
+        type: tx.type,
+        date: tx.date,
+    };
+    if (tx.location) remote.location = tx.location;
+    if (tx.notes) remote.notes = tx.notes;
+    if (tx.created_at) remote.created_at = tx.created_at;
+    if (tx.updated_at) remote.updated_at = tx.updated_at;
+    return remote;
+};
+
+/**
+ * Transform a remote transaction (flat, with `category_id`) back to the local shape
+ * (nested `category` object) so the app can render it.
+ */
+const remoteTxToLocal = (tx: any, categories: any[]) => {
+    const cat = categories.find((c: any) => c.id === tx.category_id);
+    return {
+        ...tx,
+        category: cat
+            ? { id: cat.id, name: cat.name, icon: cat.icon, color: cat.color, type: cat.type }
+            : { id: tx.category_id || '', name: 'Unknown', icon: 'help', color: 'bg-slate-100 text-slate-500', type: tx.type },
+        category_id: tx.category_id,
+    };
+};
+
 export const CloudBackupService = {
     // --- Listener Management ---
     onStatusChange: (callback: StatusCallback): (() => void) => {
@@ -48,7 +107,7 @@ export const CloudBackupService = {
         try {
             emitStatus('syncing', 'Downloading your data...');
 
-            // Pull categories
+            // Pull categories first (needed to reconstruct transaction.category)
             const { data: remoteCategories, error: catError } = await supabase
                 .from('categories')
                 .select('*')
@@ -60,7 +119,7 @@ export const CloudBackupService = {
                 LocalRepository.bulkUpsert(remoteCategories as LocalCategory[], 'category', true);
             }
 
-            // Pull transactions
+            // Pull transactions and re-attach category objects
             const { data: remoteTransactions, error: txError } = await supabase
                 .from('transactions')
                 .select('*')
@@ -69,7 +128,9 @@ export const CloudBackupService = {
             if (txError) throw txError;
 
             if (remoteTransactions && remoteTransactions.length > 0) {
-                LocalRepository.bulkUpsert(remoteTransactions as LocalExpense[], 'expense', true);
+                const allCats = remoteCategories || LocalRepository.getAllCategories();
+                const localizedTxs = remoteTransactions.map(tx => remoteTxToLocal(tx, allCats));
+                LocalRepository.bulkUpsert(localizedTxs as LocalExpense[], 'expense', true);
             }
 
             const pulledCount = (remoteCategories?.length || 0) + (remoteTransactions?.length || 0);
@@ -77,9 +138,9 @@ export const CloudBackupService = {
             CloudBackupService.setLastBackupTime(new Date().toISOString());
             return true;
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Pull from remote failed:', error);
-            emitStatus('error', 'Failed to download cloud data');
+            emitStatus('error', `Download failed: ${error?.message || 'Unknown error'}`);
             return false;
         }
     },
@@ -95,7 +156,6 @@ export const CloudBackupService = {
 
         if (!navigator.onLine) {
             emitStatus('error', 'No internet connection');
-            // Register retry on reconnect
             const onlineHandler = () => {
                 window.removeEventListener('online', onlineHandler);
                 CloudBackupService.startBackup(userId);
@@ -108,51 +168,71 @@ export const CloudBackupService = {
             isSyncing = true;
             emitStatus('syncing', 'Backing up your data...');
 
-            // --- 1. Push Categories ---
-            const pendingCategories = LocalRepository.getPendingSyncCategories();
-            if (pendingCategories.length > 0) {
-                const toUpload = pendingCategories.map(c => ({
-                    ...c,
-                    user_id: userId,
-                }));
+            // --- 1. Ensure all referenced categories exist in Supabase ---
+            // Collect ALL categories used by pending transactions, not just "pending sync" categories.
+            // This is critical: default categories may never have been "edited" so they aren't
+            // in getPendingSyncCategories(), but we still need them in Supabase for FK constraints.
+            const pendingExpenses = LocalRepository.getPendingSyncExpenses();
+            const allLocalCategories = LocalRepository.getAllCategories();
 
-                // Remove local-only fields before pushing
-                const cleaned = toUpload.map(({ is_synced, deleted, ...rest }) => rest);
+            // Build a set of category IDs referenced by pending transactions
+            const referencedCatIds = new Set<string>();
+            pendingExpenses.forEach(e => {
+                const catId = e.category?.id || (e as any).category_id;
+                if (catId) referencedCatIds.add(catId);
+            });
+
+            // Find categories we need to ensure exist remotely
+            const categoriesToEnsure = allLocalCategories.filter(c => referencedCatIds.has(c.id));
+
+            // Also add any explicitly pending categories
+            const pendingCategories = LocalRepository.getPendingSyncCategories();
+            pendingCategories.forEach(c => {
+                if (!categoriesToEnsure.find(existing => existing.id === c.id)) {
+                    categoriesToEnsure.push(c);
+                }
+            });
+
+            // --- 2. Push Categories ---
+            if (categoriesToEnsure.length > 0) {
+                const cleaned = categoriesToEnsure.map(c => localCatToRemote(c, userId));
+
+                console.log('[CloudBackup] Pushing categories:', JSON.stringify(cleaned, null, 2));
 
                 const { error } = await supabase
                     .from('categories')
                     .upsert(cleaned, { onConflict: 'id' });
 
                 if (error) {
-                    console.error('Category backup error:', error);
-                    throw error;
+                    console.error('[CloudBackup] Category push error:', JSON.stringify(error));
+                    throw new Error(`Category sync failed: ${error.message} (${error.code})`);
                 }
 
                 // Mark as synced locally
-                LocalRepository.bulkUpsert(toUpload, 'category', true);
+                LocalRepository.bulkUpsert(
+                    categoriesToEnsure.map(c => ({ ...c, user_id: userId })),
+                    'category',
+                    true
+                );
             }
 
-            // --- 2. Push Transactions ---
-            const pendingExpenses = LocalRepository.getPendingSyncExpenses();
+            // --- 3. Push Transactions ---
             if (pendingExpenses.length > 0) {
-                const toUpload = pendingExpenses.map(e => ({
-                    ...e,
-                    user_id: userId,
-                }));
-
-                // Separate soft-deleted items
-                const toDelete = toUpload.filter(e => e.deleted);
-                const toUpsert = toUpload.filter(e => !e.deleted);
+                const toDelete = pendingExpenses.filter(e => e.deleted);
+                const toUpsert = pendingExpenses.filter(e => !e.deleted);
 
                 if (toUpsert.length > 0) {
-                    const cleaned = toUpsert.map(({ is_synced, deleted, ...rest }) => rest);
+                    const cleaned = toUpsert.map(e => localTxToRemote(e, userId));
+
+                    console.log('[CloudBackup] Pushing transactions:', JSON.stringify(cleaned, null, 2));
+
                     const { error } = await supabase
                         .from('transactions')
                         .upsert(cleaned, { onConflict: 'id' });
 
                     if (error) {
-                        console.error('Transaction backup error:', error);
-                        throw error;
+                        console.error('[CloudBackup] Transaction push error:', JSON.stringify(error));
+                        throw new Error(`Transaction sync failed: ${error.message} (${error.code})`);
                     }
                 }
 
@@ -165,16 +245,19 @@ export const CloudBackupService = {
                         .in('id', deleteIds);
 
                     if (error) {
-                        console.error('Transaction delete error:', error);
-                        // Non-fatal — log but don't throw
+                        console.error('[CloudBackup] Transaction delete error:', JSON.stringify(error));
                     }
                 }
 
                 // Mark all as synced locally
-                LocalRepository.bulkUpsert(toUpload, 'expense', true);
+                LocalRepository.bulkUpsert(
+                    pendingExpenses.map(e => ({ ...e, user_id: userId })),
+                    'expense',
+                    true
+                );
             }
 
-            const totalPushed = pendingCategories.length + pendingExpenses.length;
+            const totalPushed = categoriesToEnsure.length + pendingExpenses.length;
             const now = new Date().toISOString();
             CloudBackupService.setLastBackupTime(now);
             LocalRepository.setLastSync(now);
@@ -186,9 +269,9 @@ export const CloudBackupService = {
             }
 
             return true;
-        } catch (error) {
-            console.error('Backup failed:', error);
-            emitStatus('error', 'Backup failed. Tap to retry.');
+        } catch (error: any) {
+            console.error('[CloudBackup] Backup failed:', error);
+            emitStatus('error', error?.message || 'Backup failed. Tap to retry.');
             return false;
         } finally {
             isSyncing = false;
