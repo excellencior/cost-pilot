@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Transaction, MonthlyData, Category } from './types';
 import { CATEGORIES } from './constants';
-import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import Overview from './components/Overview';
@@ -11,14 +10,14 @@ import NewEntryModal from './components/NewEntryModal';
 import CategoryManagement from './components/CategoryManagement';
 import CategoryEditorModal from './components/CategoryEditorModal';
 import { useAuth } from './components/AuthContext';
-import { LocalRepository, LocalExpense, LocalCategory } from './services/db/localRepository';
+import { LocalRepository } from './services/db/localRepository';
+import Layout from './components/Layout';
 
 const App: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const userId = user?.id;
 
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
@@ -29,50 +28,44 @@ const App: React.FC = () => {
   const [currency, setCurrency] = useState('USD');
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
 
-  // Load Data Function
+  const getCurrencySymbol = (code: string) => {
+    const symbols: Record<string, string> = { 'USD': '$', 'BDT': '৳', 'EUR': '€' };
+    return symbols[code] || '$';
+  };
+
   const loadData = () => {
-    setTransactions(LocalRepository.getAllExpenses());
+    const freshTransactions = LocalRepository.getAllExpenses();
+    setTransactions(freshTransactions);
     const localCats = LocalRepository.getAllCategories();
     setCategories(localCats.length > 0 ? localCats : CATEGORIES);
   };
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    // Initial Load
     loadData();
-
-    // Setup listener for sync/updates? 
-    // Ideally use a custom event or store subscription. 
-    // For now, simple polling or refresh on focus could work, but React state needs to know when to update.
-    // We'll update state on successful CRUD operations.
   }, []);
 
-  // Update data when user changes (sync might happen)
   useEffect(() => {
     if (user) {
-      loadData(); // Reload in case sync brought new data
+      loadData();
     }
   }, [user]);
 
-
-  // Handler Wrappers - Interacting with LocalDB ("Single Source of Truth")
   const handleAddTransaction = async (newT: Omit<Transaction, 'id'>) => {
     const expenseData: any = {
       ...newT,
-      id: crypto.randomUUID(), // Generate ID
+      id: crypto.randomUUID(),
       user_id: userId || null,
     };
     LocalRepository.upsertExpense(expenseData);
-    loadData(); // Refresh UI
+    loadData();
   };
 
   const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
     if ('id' in catData) {
-      // Update
       const { id, ...updates } = catData as Category;
       LocalRepository.upsertCategory({ id, ...updates, user_id: userId || null });
     } else {
-      // Create
       const newCat: any = {
         ...catData,
         id: crypto.randomUUID(),
@@ -81,16 +74,15 @@ const App: React.FC = () => {
       LocalRepository.upsertCategory(newCat);
     }
     setEditingCategory(null);
-    loadData(); // Refresh UI
+    loadData();
   };
-
 
   const monthlyHistory = useMemo(() => {
     const history: MonthlyData[] = [];
     const transactionsByMonth: { [key: string]: Transaction[] } = {};
 
     transactions.forEach(t => {
-      const monthKey = `${t.date.substring(0, 7)}`; // YYYY-MM
+      const monthKey = `${t.date.substring(0, 7)}`;
       if (!transactionsByMonth[monthKey]) {
         transactionsByMonth[monthKey] = [];
       }
@@ -112,16 +104,25 @@ const App: React.FC = () => {
         month: dateDate.toLocaleString('default', { month: 'long' }),
         year: dateDate.getFullYear(),
         income: totalIncome,
-        expenses: totalExpenses,
+        expense: totalExpenses,
       });
     });
+
+    // Fallback if no history
+    if (history.length === 0) {
+      const now = new Date();
+      history.push({
+        month: now.toLocaleString('default', { month: 'long' }),
+        year: now.getFullYear(),
+        income: 0,
+        expense: 0
+      });
+    }
 
     return history;
   }, [transactions]);
 
   const getMonthTransactions = (monthData: MonthlyData) => {
-    // Need to match Month Name + Year to date string YYYY-MM
-    // This is a bit loose, better to store YYYY-MM in MonthlyData, but keeping types as is.
     return transactions.filter(t => {
       const d = new Date(t.date);
       return d.toLocaleString('default', { month: 'long' }) === monthData.month && d.getFullYear() === monthData.year;
@@ -133,28 +134,33 @@ const App: React.FC = () => {
     setCurrentView('overview');
   };
 
-
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
         return (
           <Dashboard
             monthlyData={monthlyHistory}
-            onMonthSelect={handleMonthSelect}
+            transactions={transactions}
             onAddEntry={() => setIsEntryModalOpen(true)}
-            currency={currency}
+            onViewAll={() => setCurrentView('overview')}
+            onTransactionClick={(t) => {
+              setSelectedMonth(monthlyHistory.find(m => m.month === new Date(t.date).toLocaleString('default', { month: 'long' }) && m.year === new Date(t.date).getFullYear()) || null);
+              setCurrentView('overview');
+            }}
+            currencySymbol={getCurrencySymbol(currency)}
           />
         );
       case 'overview':
-        return selectedMonth ? (
+        const displayMonth = selectedMonth || monthlyHistory[0];
+        return (
           <Overview
-            month={selectedMonth}
-            transactions={getMonthTransactions(selectedMonth)}
+            month={displayMonth}
+            transactions={getMonthTransactions(displayMonth)}
             onBack={() => setCurrentView('dashboard')}
             onAddClick={() => setIsEntryModalOpen(true)}
             currency={currency}
           />
-        ) : <Dashboard monthlyData={monthlyHistory} onMonthSelect={handleMonthSelect} currency={currency} />;
+        );
       case 'analysis':
         return <Analysis transactions={transactions} currency={currency} />;
       case 'settings':
@@ -180,58 +186,24 @@ const App: React.FC = () => {
           }}
         />;
       default:
-        return (
-          <Dashboard
-            monthlyData={monthlyHistory}
-            onMonthSelect={handleMonthSelect}
-            currency={currency}
-          />
-        );
+        return <Dashboard
+          monthlyData={monthlyHistory}
+          transactions={transactions}
+          onAddEntry={() => setIsEntryModalOpen(true)}
+          onViewAll={() => setCurrentView('overview')}
+          onTransactionClick={() => { }}
+          currencySymbol={getCurrencySymbol(currency)}
+        />;
     }
   };
 
   return (
-    <div className="relative flex flex-col h-screen w-full max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark overflow-hidden font-sans border-x border-white/10">
-      {/* Background Decor */}
-      <div className="fixed top-[-10%] left-[-10%] w-[100%] h-[40%] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none z-0"></div>
-      <div className="fixed bottom-[10%] right-[-5%] w-[100%] h-[40%] rounded-full bg-purple-400/10 blur-[100px] pointer-events-none z-0"></div>
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between p-4 pb-2 bg-white/40 dark:bg-background-dark/40 backdrop-blur-xl border-b border-white/10">
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="size-12 flex items-center justify-center text-slate-900 dark:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
-        >
-          <span className="material-symbols-outlined text-[28px]">menu</span>
-        </button>
-        <h1 className="text-base font-bold tracking-tight text-center flex-1 uppercase tracking-[0.2em] text-slate-400 truncate px-2">
-          {currentView === 'dashboard' ? 'History' :
-            currentView === 'overview' ? 'Details' :
-              currentView === 'category-picker' ? 'Categories' :
-                currentView}
-        </h1>
-        <div className="size-12 flex items-center justify-center">
-          <div className="size-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 border-2 border-white/20 shadow-md flex items-center justify-center text-white text-xs font-bold">
-            {user?.email?.charAt(0).toUpperCase() || 'G'}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 relative z-10 overflow-hidden">
-        {renderView()}
-      </main>
-
-      {/* Modals & Sidebar */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        currentView={currentView}
-        onNavigate={(view) => {
-          setCurrentView(view);
-          if (view !== 'overview') setSelectedMonth(null);
-        }}
-      />
+    <Layout
+      currentView={currentView}
+      onNavigate={setCurrentView}
+      userEmail={user?.email}
+    >
+      {renderView()}
 
       <NewEntryModal
         isOpen={isEntryModalOpen}
@@ -251,7 +223,7 @@ const App: React.FC = () => {
         editingCategory={editingCategory}
         defaultType={defaultCategoryType}
       />
-    </div>
+    </Layout>
   );
 };
 

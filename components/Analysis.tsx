@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, XAxis, YAxis } from 'recharts';
 import { Transaction } from '../types';
 
-const COLORS = ['#137fec', '#ff2d55', '#00f2ff', '#af52de', '#ffcc00', '#10b981'];
+const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981'];
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -24,7 +24,7 @@ interface CategorySummary {
   value: number;
   icon: string;
   color: string;
-  descriptions: string[]; // Recent transaction titles
+  descriptions: string[];
 }
 
 const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
@@ -32,13 +32,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
   const [filterMode, setFilterMode] = useState<'month' | 'custom'>('month');
 
   const currencySymbol = getCurrencySymbol(currency);
-
-  // Month selection
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
-  // Custom date range
   const [startDate, setStartDate] = useState(
     new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0]
   );
@@ -46,7 +43,6 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
     new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0]
   );
 
-  // Filter transactions based on mode
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
       const date = new Date(t.date);
@@ -58,7 +54,6 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
     });
   }, [transactions, filterMode, selectedMonth, selectedYear, startDate, endDate]);
 
-  // Group by category for pie chart
   const categoryData: CategorySummary[] = useMemo(() => {
     return (Object.values(
       filteredTransactions.reduce((acc, t) => {
@@ -74,7 +69,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
             };
           }
           acc[name].value += t.amount;
-          if (t.title && acc[name].descriptions.length < 3) {
+          if (t.title && !acc[name].descriptions.includes(t.title) && acc[name].descriptions.length < 3) {
             acc[name].descriptions.push(t.title);
           }
         }
@@ -85,12 +80,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
 
   const totalExpense = categoryData.reduce((sum, item) => sum + item.value, 0);
 
-  // Weekly data for trend
   const trendData = useMemo(() => {
     const weeks: { name: string; value: number }[] = [];
     const expenses = filteredTransactions.filter(t => t.type === 'expense');
 
-    // Simple 4-week split
     for (let w = 1; w <= 4; w++) {
       const weekStart = (w - 1) * 7 + 1;
       const weekEnd = w * 7;
@@ -104,192 +97,187 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
     return weeks;
   }, [filteredTransactions]);
 
-  // Available years for selection
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);
 
   return (
-    <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto hide-scrollbar pb-32">
-      {/* Filter Mode Tabs */}
-      <div className="p-1 glass-card rounded-2xl flex items-center shadow-sm">
-        <button
-          onClick={() => setFilterMode('month')}
-          className={`flex-1 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${filterMode === 'month' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400'
-            }`}
-        >
-          <span className="material-symbols-outlined text-sm">calendar_month</span>
-          Month
-        </button>
-        <button
-          onClick={() => setFilterMode('custom')}
-          className={`flex-1 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400'
-            }`}
-        >
-          <span className="material-symbols-outlined text-sm">date_range</span>
-          Custom
-        </button>
-      </div>
-
-      {/* Filter Controls */}
-      <div className="glass-card rounded-2xl p-4">
-        {filterMode === 'month' ? (
-          <div className="flex gap-3">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="flex-1 bg-slate-100 dark:bg-white/5 rounded-xl px-4 py-3 text-sm font-bold border-none focus:ring-2 ring-primary/20"
-            >
-              {MONTHS.map((m, i) => (
-                <option key={m} value={i}>{m}</option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="w-28 bg-slate-100 dark:bg-white/5 rounded-xl px-4 py-3 text-sm font-bold border-none focus:ring-2 ring-primary/20"
-            >
-              {years.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-widest">From</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-slate-100 dark:bg-white/5 rounded-xl px-4 py-3 text-sm font-bold border-none focus:ring-2 ring-primary/20"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-widest">To</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-slate-100 dark:bg-white/5 rounded-xl px-4 py-3 text-sm font-bold border-none focus:ring-2 ring-primary/20"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Chart Tabs */}
-      <div className="p-1 glass-card rounded-2xl flex items-center shadow-sm">
-        <button
-          onClick={() => setActiveTab('pie')}
-          className={`flex-1 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400'
-            }`}
-        >
-          <span className="material-symbols-outlined text-sm">pie_chart</span>
-          Distro
-        </button>
-        <button
-          onClick={() => setActiveTab('trend')}
-          className={`flex-1 py-3 rounded-xl font-mono text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400'
-            }`}
-        >
-          <span className="material-symbols-outlined text-sm">show_chart</span>
-          Trend
-        </button>
-      </div>
-
-      {/* Chart Section */}
-      <div className="glass-card rounded-[2.5rem] p-6 shadow-sm min-h-[360px] flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 p-6">
-          <p className="font-mono text-[9px] uppercase text-slate-400 tracking-[0.2em] mb-1">Total Expenses</p>
-          <h2 className="font-mono text-3xl font-bold text-slate-900 dark:text-white">{currencySymbol}{totalExpense.toLocaleString()}</h2>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Controls */}
+      <section className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
+        <div className="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl w-fit">
+          <button
+            onClick={() => setFilterMode('month')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${filterMode === 'month' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
+              }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setFilterMode('custom')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${filterMode === 'custom' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
+              }`}
+          >
+            Custom Range
+          </button>
         </div>
 
-        <div className="w-full h-56 mt-10">
-          <ResponsiveContainer width="100%" height="100%">
-            {activeTab === 'pie' ? (
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={65}
-                  outerRadius={85}
-                  paddingAngle={8}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', fontSize: '10px' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-              </PieChart>
-            ) : (
-              <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#137fec" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#137fec" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area type="monotone" dataKey="value" stroke="#137fec" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-                <Tooltip />
-              </AreaChart>
+        <div className="flex flex-wrap items-center gap-2">
+          {filterMode === 'month' ? (
+            <>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>{m}</option>
+                ))}
+              </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {years.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500" />
+              <span className="text-slate-400 text-xs font-bold">to</span>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Main Analysis Card */}
+      <section className="card p-6 md:p-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-1/3 flex flex-col justify-between py-2">
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Expenses</p>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+                {currencySymbol}{totalExpense.toLocaleString()}
+              </h2>
+            </div>
+
+            <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit mt-8">
+              <button
+                onClick={() => setActiveTab('pie')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
+                  }`}
+              >
+                <span className="material-symbols-outlined text-sm">pie_chart</span>
+                Distribution
+              </button>
+              <button
+                onClick={() => setActiveTab('trend')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'
+                  }`}
+              >
+                <span className="material-symbols-outlined text-sm">show_chart</span>
+                Trend
+              </button>
+            </div>
+          </div>
+
+          <div className="lg:w-2/3 h-64 md:h-80 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              {activeTab === 'pie' ? (
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={8}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                </PieChart>
+              ) : (
+                <AreaChart data={trendData}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" hide />
+                  <YAxis hide />
+                  <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                </AreaChart>
+              )}
+            </ResponsiveContainer>
+
+            {activeTab === 'pie' && totalExpense > 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                  {totalExpense > 999 ? `${(totalExpense / 1000).toFixed(1)}k` : totalExpense}
+                </span>
+              </div>
             )}
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Spending Cards List */}
-      <div className="flex flex-col gap-4">
-        <h3 className="font-mono text-[10px] font-bold uppercase text-slate-400 tracking-[0.2em] pl-1">Spending Cards</h3>
-        {categoryData.length === 0 ? (
-          <div className="glass-card rounded-3xl p-8 text-center">
-            <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">info</span>
-            <p className="text-sm text-slate-400">No expenses in this period</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {categoryData.map((item, i) => (
-              <div key={i} className="glass-card rounded-3xl p-5 flex flex-col gap-4 hover:translate-y-[-2px] transition-all cursor-pointer group">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`size-12 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform ${item.color}`}
-                    >
-                      <span className="material-symbols-outlined text-2xl">{item.icon}</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-base text-slate-900 dark:text-white leading-tight">{item.name}</p>
-                      {item.descriptions.length > 0 && (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[180px]">
-                          {item.descriptions.join(', ')}
-                        </p>
-                      )}
-                      <p className="font-mono text-[10px] text-slate-400 uppercase tracking-widest mt-1">
-                        {totalExpense > 0 ? Math.round((item.value / totalExpense) * 100) : 0}% of budget
-                      </p>
-                    </div>
+        </div>
+      </section>
+
+      {/* Spending Breakdown */}
+      <section className="space-y-4">
+        <h3 className="font-bold text-slate-900 dark:text-white px-1">Category Breakdown</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categoryData.map((item, i) => (
+            <div key={i} className="card p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                    <span className="material-symbols-outlined">{item.icon}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="font-mono font-bold text-lg text-slate-900 dark:text-white">{currencySymbol}{item.value.toLocaleString()}</p>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white leading-none">{item.name}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      {totalExpense > 0 ? Math.round((item.value / totalExpense) * 100) : 0}% of total
+                    </p>
                   </div>
                 </div>
-                <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                <p className="font-bold text-lg text-slate-900 dark:text-white">{currencySymbol}{item.value.toLocaleString()}</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-1000 ease-out"
+                    className="h-full rounded-full transition-all duration-1000"
                     style={{
                       width: `${totalExpense > 0 ? (item.value / totalExpense) * 100 : 0}%`,
                       backgroundColor: COLORS[i % COLORS.length]
                     }}
                   />
                 </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {item.descriptions.slice(0, 2).map((d, index) => (
+                    <span key={index} className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-800 text-slate-500 whitespace-nowrap">
+                      {d}
+                    </span>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

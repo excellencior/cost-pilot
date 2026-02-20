@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Transaction, MonthlyData } from '../types';
-
 
 interface OverviewProps {
   month: MonthlyData;
@@ -18,83 +16,99 @@ const getCurrencySymbol = (code: string) => {
 
 const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onAddClick, currency }) => {
   const currencySymbol = getCurrencySymbol(currency);
+
   return (
-    <div className="flex flex-col gap-6 p-4 pt-2 overflow-y-auto h-full hide-scrollbar pb-32">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header Info */}
-      <div className="flex items-center gap-4 px-2 mt-2">
-        <button
-          onClick={onBack}
-          className="size-10 rounded-full bg-white/50 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-white hover:bg-white transition-colors border border-white/20"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">{month.month} Overview</h2>
-          <p className="text-xs text-slate-500 font-mono">{month.year} Breakdown</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="size-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
+              {month.month} {month.year}
+            </h2>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Monthly Records</p>
+          </div>
         </div>
+
+        <button
+          onClick={onAddClick}
+          className="btn-primary flex items-center gap-2"
+        >
+          <span className="material-symbols-outlined text-sm">add</span>
+          Add Entry
+        </button>
       </div>
 
       {/* Mini Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 px-2">
-        <div className="glass-card rounded-2xl p-4">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-green-500 mb-1 block">Total Income</span>
-          <p className="text-lg font-bold font-mono text-slate-900 dark:text-white">{currencySymbol}{month.income.toLocaleString()}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="card p-6 flex items-center gap-4">
+          <div className="size-12 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400">
+            <span className="material-symbols-outlined">arrow_upward</span>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Income</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{currencySymbol}{(month.income || 0).toLocaleString()}</p>
+          </div>
         </div>
-        <div className="glass-card rounded-2xl p-4">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-red-500 mb-1 block">Total Expense</span>
-          <p className="text-lg font-bold font-mono text-slate-900 dark:text-white">{currencySymbol}{month.expense.toLocaleString()}</p>
+        <div className="card p-6 flex items-center gap-4">
+          <div className="size-12 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+            <span className="material-symbols-outlined">arrow_downward</span>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Expenses</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{currencySymbol}{(month.expense || 0).toLocaleString()}</p>
+          </div>
         </div>
       </div>
 
       {/* Transaction List */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between px-2 pb-1">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transactions</span>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="font-bold text-slate-900 dark:text-white">Transaction Timeline</h3>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{transactions.length} items</span>
         </div>
-        <div className="flex flex-col gap-3">
+
+        <div className="space-y-3">
           {transactions.map(t => (
             <div
               key={t.id}
-              className={`group flex items-center gap-3 p-4 rounded-3xl shadow-sm border backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/5 ${t.type === 'expense'
-                  ? 'bg-red-50/50 dark:bg-red-900/5 border-red-100 dark:border-red-500/20'
-                  : 'bg-green-50/50 dark:bg-green-900/5 border-green-100 dark:border-green-500/20'
-                }`}
+              className="card p-4 flex items-center gap-4 group hover:border-primary-200 dark:hover:border-primary-900"
             >
-              <div className={`flex items-center justify-center rounded-2xl bg-white dark:bg-white/10 shrink-0 size-12 shadow-sm ${t.type === 'expense' ? 'text-red-500' : 'text-green-500'
-                }`}>
+              <div className={`size-12 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-800 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
                 <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
               </div>
-              <div className="flex flex-col flex-1 justify-center min-w-0">
-                <p className="text-slate-900 dark:text-white text-sm font-bold leading-tight truncate">{t.title}</p>
-                <p className="text-slate-400 dark:text-slate-500 text-[10px] font-medium leading-tight truncate mt-1">
-                  {t.location} • {t.date}
-                </p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 dark:text-white truncate">{t.title}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.category.name}</span>
+                  <span className="size-1 rounded-full bg-slate-200 dark:bg-slate-800"></span>
+                  <p className="text-[10px] font-medium text-slate-500">
+                    {t.date}
+                  </p>
+                </div>
               </div>
-              <div className="shrink-0 text-right pl-2">
-                <p className={`text-sm font-bold font-mono leading-normal ${t.type === 'expense' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'
-                  }`}>
-                  {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toFixed(2)}
+              <div className="text-right">
+                <p className={`font-bold text-lg ${t.type === 'expense' ? 'text-slate-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                  {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toLocaleString()}
                 </p>
               </div>
             </div>
           ))}
 
           {transactions.length === 0 && (
-            <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-              <span className="material-symbols-outlined text-5xl mb-2 opacity-20">history</span>
-              <p className="text-xs font-bold uppercase tracking-widest">No transactions found</p>
+            <div className="py-20 card flex flex-col items-center justify-center text-slate-400 border-dashed border-2">
+              <span className="material-symbols-outlined text-4xl mb-4 opacity-20">history_edu</span>
+              <p className="text-sm font-bold uppercase tracking-widest opacity-40">No records for this month</p>
             </div>
           )}
         </div>
-      </div>
-
-      {/* FAB - Moved here as requested */}
-      <button
-        onClick={onAddClick}
-        className="fixed bottom-8 right-8 z-10 flex items-center justify-center size-16 rounded-full bg-primary text-white shadow-xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all"
-      >
-        <span className="material-symbols-outlined text-[32px]">add</span>
-      </button>
+      </section>
     </div>
   );
 };

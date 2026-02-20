@@ -1,0 +1,101 @@
+import React from 'react';
+import { View } from '../types';
+
+interface LayoutProps {
+    children: React.ReactNode;
+    currentView: View;
+    onNavigate: (view: View) => void;
+    userEmail?: string;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, userEmail }) => {
+    const navItems: { view: View; icon: string; label: string }[] = [
+        { view: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
+        { view: 'analysis', icon: 'analytics', label: 'Analysis' },
+        { view: 'settings', icon: 'settings', label: 'Settings' },
+    ];
+
+    return (
+        <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6">
+                <div className="flex items-center gap-3 mb-10 px-2">
+                    <div className="size-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+                        <span className="material-symbols-outlined text-2xl font-bold">payments</span>
+                    </div>
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">ZenSpend</h1>
+                </div>
+
+                <nav className="flex-1 space-y-2">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.view}
+                            onClick={() => onNavigate(item.view)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${currentView === item.view
+                                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
+                                    : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                            {item.label}
+                        </button>
+                    ))}
+                </nav>
+
+                {userEmail && (
+                    <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-3 px-2">
+                            <div className="size-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg text-slate-500">person</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{userEmail.split('@')[0]}</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col min-w-0 relative pb-20 md:pb-0">
+                <header className="md:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+                    <div className="flex items-center gap-2">
+                        <div className="size-8 bg-primary-600 rounded-lg flex items-center justify-center text-white">
+                            <span className="material-symbols-outlined text-xl">payments</span>
+                        </div>
+                        <span className="font-bold text-slate-900 dark:text-white">ZenSpend</span>
+                    </div>
+                    {userEmail && (
+                        <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-lg text-slate-400">person</span>
+                        </div>
+                    )}
+                </header>
+
+                <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto w-full max-w-7xl mx-auto">
+                    {children}
+                </div>
+
+                {/* Mobile Bottom Nav */}
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 z-40">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.view}
+                            onClick={() => onNavigate(item.view)}
+                            className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all ${currentView === item.view
+                                    ? 'text-primary-600 dark:text-primary-400'
+                                    : 'text-slate-400 dark:text-slate-500'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-2xl">{item.icon}</span>
+                            <span className="text-[10px] font-bold">{item.label}</span>
+                        </button>
+                    ))}
+                </nav>
+            </main>
+        </div>
+    );
+};
+
+export default Layout;
