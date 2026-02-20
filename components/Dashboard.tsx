@@ -21,7 +21,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const currentMonth = monthlyData[0] || { month: 'Unknown', year: new Date().getFullYear(), income: 0, expense: 0 };
   const balance = currentMonth.income - currentMonth.expense;
 
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = transactions.slice(0, 4);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -45,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary-100">
                 <span className="material-symbols-outlined text-base">arrow_upward</span>
-                <span className="text-xs font-black uppercase tracking-widest">Income</span>
+                <span className="text-xm font-black uppercase tracking-widest">Income</span>
               </div>
               <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.income.toLocaleString()}</p>
             </div>
@@ -53,7 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary-100">
                 <span className="material-symbols-outlined text-base">arrow_downward</span>
-                <span className="text-xs font-black uppercase tracking-widest">Expenses</span>
+                <span className="text-xm font-black uppercase tracking-widest">Expenses</span>
               </div>
               <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.expense.toLocaleString()}</p>
             </div>
@@ -62,7 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Mini Progress Bar */}
         <div className="mt-8 relative z-10 space-y-2">
-          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
+          <div className="flex justify-between text-[20px] font-bold uppercase tracking-widest text-primary-100/60">
             <span>Expense Progress</span>
             <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
           </div>
