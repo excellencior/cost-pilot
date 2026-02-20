@@ -43,7 +43,6 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
     loadData();
   }, []);
 
