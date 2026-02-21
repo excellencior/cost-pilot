@@ -3,6 +3,7 @@ import { Transaction, View } from '../types';
 import { useAuth } from './AuthContext';
 import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { LocalRepository } from '../services/db/localRepository';
 import { formatDate } from '../utils';
 import Dropdown from './UI/Dropdown';
@@ -64,46 +65,150 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 	const statusConfig = getStatusConfig();
 
 	const handleExportPDF = () => {
-		const doc = new jsPDF();
-		const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
+		try {
+			const doc = new jsPDF();
+			const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
+			const currencyCode = currency;
 
-		doc.setFontSize(20);
-		doc.text('CostPilot Financial Report', 20, 20);
-		doc.setFontSize(14);
+			// Title
+			doc.setFontSize(22);
+			doc.setTextColor(15, 23, 42);
+			doc.text('CostPilot Financial Report', 14, 22);
 
-		let filteredTransactions = transactions;
-		if (startDate || endDate) {
-			filteredTransactions = transactions.filter(t => {
-				const tDate = t.date;
-				const afterStart = !startDate || tDate >= startDate;
-				const beforeEnd = !endDate || tDate <= endDate;
-				return afterStart && beforeEnd;
+			let filteredTransactions = transactions;
+			if (startDate || endDate) {
+				filteredTransactions = transactions.filter(t => {
+					const tDate = t.date;
+					const afterStart = !startDate || tDate >= startDate;
+					const beforeEnd = !endDate || tDate <= endDate;
+					return afterStart && beforeEnd;
+				});
+				doc.setFontSize(10);
+				doc.setTextColor(100, 116, 139);
+				doc.text(`Range: ${startDate || 'All Time'} to ${endDate || 'Present'}`, 14, 30);
+			}
+
+			if (filteredTransactions.length === 0) {
+				alert('No transactions found in the specified range.');
+				return;
+			}
+
+			const income = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+			const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+			const balance = income - expense;
+
+			autoTable(doc, {
+				startY: 40,
+				head: [['Summary', 'Amount']],
+				body: [
+					['Total Income', `${currencyCode} ${income.toLocaleString()}`],
+					['Total Expense', `${currencyCode} ${expense.toLocaleString()}`],
+					['Net Balance', `${currencyCode} ${balance.toLocaleString()}`]
+				],
+				theme: 'striped',
+				headStyles: { fillColor: [79, 70, 229] },
+				columnStyles: {
+					1: { halign: 'right', fontStyle: 'bold' }
+				}
 			});
-			doc.setFontSize(10);
-			doc.text(`Range: ${startDate || 'All Time'} to ${endDate || 'Present'}`, 20, 30);
-			doc.setFontSize(14);
+
+			// Transactions Table
+			const tableData = filteredTransactions.map(t => {
+				const categoryName = t.category && typeof t.category === 'object' ? t.category.name : (t.category || '-');
+				return [
+					formatDate(t.date),
+					t.title || 'Untitled',
+					categoryName,
+					t.type === 'expense' ? `-${t.amount.toLocaleString()}` : `+${t.amount.toLocaleString()}`
+				];
+			});
+
+			autoTable(doc, {
+				startY: (doc as any).lastAutoTable.finalY + 15,
+				head: [['Date', 'Description', 'Category', `Amount (${currencyCode})`]],
+				body: tableData,
+				theme: 'grid',
+				headStyles: { fillColor: [15, 23, 42] },
+				styles: { fontSize: 9 },
+				columnStyles: {
+					0: { cellWidth: 30 },
+					3: { halign: 'right', cellWidth: 35 }
+				},
+				didParseCell: function (data) {
+					if (data.section === 'body' && data.column.index === 3) {
+						const val = data.cell.text[0];
+						if (val.startsWith('-')) {
+							data.cell.styles.textColor = [225, 29, 72];
+						} else if (val.startsWith('+')) {
+							data.cell.styles.textColor = [5, 150, 105];
+						}
+					}
+				}
+			});
+
+			doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+		} catch (error) {
+			console.error('PDF Export Error:', error);
+			alert('Failed to generate PDF. Please check console for details.');
 		}
+	};
 
-		if (filteredTransactions.length === 0) {
-			alert('No transactions found in the specified range.');
-			return;
+	const handleExportCSV = () => {
+		try {
+			let filteredTransactions = transactions;
+			if (startDate || endDate) {
+				filteredTransactions = transactions.filter(t => {
+					const tDate = t.date;
+					const afterStart = !startDate || tDate >= startDate;
+					const beforeEnd = !endDate || tDate <= endDate;
+					return afterStart && beforeEnd;
+				});
+			}
+
+			if (filteredTransactions.length === 0) {
+				alert('No transactions found to export.');
+				return;
+			}
+
+			const headers = ['Date', 'Title', 'Category', 'Type', 'Amount', 'Currency', 'Location'];
+			const rows = filteredTransactions.map(t => {
+				const categoryName = t.category && typeof t.category === 'object' ? t.category.name : (t.category || '');
+				const safeTitle = (t.title || '').replace(/"/g, '""');
+				const safeCategory = (categoryName || '').replace(/"/g, '""');
+				const safeLocation = (t.location || '').replace(/"/g, '""');
+
+				return [
+					t.date,
+					`"${safeTitle}"`,
+					`"${safeCategory}"`,
+					t.type,
+					t.amount,
+					currency,
+					`"${safeLocation}"`
+				];
+			});
+
+			const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `CostPilot_Export_${new Date().toISOString().split('T')[0]}.csv`;
+
+			// Append to body to ensure it works in all browsers
+			document.body.appendChild(link);
+			link.click();
+
+			// Cleanup
+			setTimeout(() => {
+				document.body.removeChild(link);
+				URL.revokeObjectURL(url);
+			}, 100);
+		} catch (error) {
+			console.error('CSV Export Error:', error);
+			alert('Failed to generate CSV. Please check console for details.');
 		}
-
-		const income = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-		const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-
-		doc.text(`Total Income: ${currencySymbol}${income.toLocaleString()}`, 20, 45);
-		doc.text(`Total Expense: ${currencySymbol}${expense.toLocaleString()}`, 20, 55);
-		doc.text(`Net Balance: ${currencySymbol}${(income - expense).toLocaleString()}`, 20, 65);
-
-		doc.setFontSize(10);
-		doc.text('Transactions:', 20, 80);
-		filteredTransactions.slice(0, 50).forEach((t, i) => {
-			if (90 + (i * 7) > 280) return;
-			doc.text(`${formatDate(t.date)} | ${t.title} | ${t.type === 'expense' ? '-' : '+'}${currencySymbol}${t.amount}`, 20, 90 + (i * 7));
-		});
-
-		doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
 	};
 
 	return (
@@ -248,9 +353,9 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 							<span className="material-symbols-outlined text-sm">picture_as_pdf</span>
 							Export PDF
 						</button>
-						<button className="btn-secondary flex-1 text-xs py-2 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+						<button onClick={handleExportCSV} className="btn-secondary flex-1 text-xs py-2 flex items-center justify-center gap-2">
 							<span className="material-symbols-outlined text-sm">description</span>
-							CSV
+							Export CSV
 						</button>
 					</div>
 				</div>
