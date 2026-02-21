@@ -4,4 +4,5 @@
     <string name="title_activity_main">CostPilot</string>
     <string name="package_name">com.costpilot.app</string>
     <string name="custom_url_scheme">com.costpilot.app</string>
+    <string name="server_client_id">173506921838-2kaf5jfpsldmbpl0a1fn9j4ob5it9seq.apps.googleusercontent.com</string>
 </resources>
