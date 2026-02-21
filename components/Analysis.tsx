@@ -11,6 +11,7 @@ const MONTHS = [
 
 interface AnalysisProps {
   transactions: Transaction[];
+  categories: Category[];
   currency: string;
 }
 
@@ -27,7 +28,7 @@ interface CategorySummary {
   descriptions: string[];
 }
 
-const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
+const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency }) => {
   const [activeTab, setActiveTab] = useState<'trend' | 'pie'>('pie');
   const [filterMode, setFilterMode] = useState<'month' | 'custom'>('month');
 
@@ -45,11 +46,16 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-      const date = new Date(t.date);
+      // Timezone-safe date parsing from YYYY-MM-DD
+      const [year, month, day] = t.date.split('-').map(Number);
+
       if (filterMode === 'month') {
-        return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+        return (month - 1) === selectedMonth && year === selectedYear;
       } else {
-        return date >= new Date(startDate) && date <= new Date(endDate);
+        const transDate = new Date(year, month - 1, day);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return transDate >= start && transDate <= end;
       }
     });
   }, [transactions, filterMode, selectedMonth, selectedYear, startDate, endDate]);
@@ -58,13 +64,16 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
     return (Object.values(
       filteredTransactions.reduce((acc, t) => {
         if (t.type === 'expense') {
-          const name = t.category.name;
+          // Use latest category metadata from prop if available, fallback to snapshot
+          const latestCat = categories.find(c => c.id === t.category.id) || t.category;
+          const name = latestCat.name;
+
           if (!acc[name]) {
             acc[name] = {
               name,
               value: 0,
-              icon: t.category.icon,
-              color: t.category.color,
+              icon: latestCat.icon,
+              color: latestCat.color,
               descriptions: []
             };
           }
@@ -76,7 +85,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
         return acc;
       }, {} as Record<string, CategorySummary>)
     ) as CategorySummary[]).sort((a, b) => b.value - a.value);
-  }, [filteredTransactions]);
+  }, [filteredTransactions, categories]);
 
   const totalExpense = categoryData.reduce((sum, item) => sum + item.value, 0);
 
@@ -94,10 +103,14 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(aggregated).map(([date, value]) => ({
-      name: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      value
-    }));
+    return Object.entries(aggregated).map(([dateStr, value]) => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      return {
+        name: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value
+      };
+    });
   }, [filteredTransactions]);
 
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);

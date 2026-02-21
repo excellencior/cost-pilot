@@ -213,7 +213,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
           categories={categories}
         />;
       case 'analysis':
-        return <Analysis transactions={transactions} currency={currency} />;
+        return <Analysis transactions={transactions} categories={categories} currency={currency} />;
       case 'settings':
         return <Settings
           onNavigate={setCurrentView}
