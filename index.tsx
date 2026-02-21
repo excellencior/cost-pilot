@@ -16,7 +16,7 @@ import { AuthProvider } from './components/AuthContext';
 import SplashScreen from './components/SplashScreen';
 
 const Root: React.FC = () => {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(!Capacitor.isNativePlatform());
 
   const handleSplashFinished = useCallback(() => {
     setShowSplash(false);
