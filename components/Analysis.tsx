@@ -13,6 +13,7 @@ interface AnalysisProps {
   transactions: Transaction[];
   categories: Category[];
   currency: string;
+  onBack: () => void;
 }
 
 const getCurrencySymbol = (code: string) => {
@@ -28,7 +29,7 @@ interface CategorySummary {
   descriptions: string[];
 }
 
-const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency }) => {
+const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency, onBack }) => {
   const [activeTab, setActiveTab] = useState<'trend' | 'pie'>('pie');
   const [filterMode, setFilterMode] = useState<'month' | 'custom'>('month');
 
@@ -116,7 +117,20 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4 px-1">
+        <button
+          onClick={onBack}
+          className="size-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">Analysis</h2>
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Financial Insights</p>
+        </div>
+      </div>
       {/* Unified Control Bar */}
       <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full md:w-auto">
@@ -169,12 +183,20 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
                 {currencySymbol}{totalExpense.toLocaleString()}
               </h2>
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-              <button onClick={() => setActiveTab('pie')} className={`p-2 rounded-md transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button
+                onClick={() => setActiveTab('pie')}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
                 <span className="material-symbols-outlined text-lg">pie_chart</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Category</span>
               </button>
-              <button onClick={() => setActiveTab('trend')} className={`p-2 rounded-md transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
+              <button
+                onClick={() => setActiveTab('trend')}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
                 <span className="material-symbols-outlined text-lg">show_chart</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Trend</span>
               </button>
             </div>
           </div>

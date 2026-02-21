@@ -224,14 +224,21 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             setEditingTransaction(t);
             setIsEntryModalOpen(true);
           }}
+          onBack={() => setCurrentView('dashboard')}
           currencySymbol={getCurrencySymbol(currency)}
           categories={categories}
         />;
       case 'analysis':
-        return <Analysis transactions={transactions} categories={categories} currency={currency} />;
+        return <Analysis
+          transactions={transactions}
+          categories={categories}
+          currency={currency}
+          onBack={() => setCurrentView('dashboard')}
+        />;
       case 'settings':
         return <Settings
           onNavigate={setCurrentView}
+          onBack={() => setCurrentView('dashboard')}
           categoryCount={categories.length}
           transactions={transactions}
           currency={currency}

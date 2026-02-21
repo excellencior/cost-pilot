@@ -1,5 +1,6 @@
 import React from 'react';
 import { MonthlyData, Transaction } from '../types';
+import { formatDate } from '../utils';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -102,7 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <p className="font-bold text-slate-900 dark:text-white truncate">{t.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{t.category.name} • {t.date}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{t.category.name} • {formatDate(t.date)}</p>
                   </div>
                   <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
                     {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}

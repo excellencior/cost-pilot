@@ -4,9 +4,11 @@ import { useAuth } from './AuthContext';
 import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
 import { LocalRepository } from '../services/db/localRepository';
+import { formatDate } from '../utils';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
+	onBack: () => void;
 	categoryCount: number;
 	transactions: Transaction[];
 	currency: string;
@@ -19,7 +21,7 @@ const CURRENCIES = [
 	{ code: 'EUR', name: 'Euro', symbol: '€' },
 ];
 
-const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transactions, currency, setCurrency }) => {
+const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, transactions, currency, setCurrency }) => {
 	const { user, signIn, logOut } = useAuth();
 	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup } = useCloudBackup();
 	const [startDate, setStartDate] = useState('');
@@ -95,7 +97,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 		doc.text('Transactions:', 20, 80);
 		filteredTransactions.slice(0, 50).forEach((t, i) => {
 			if (90 + (i * 7) > 280) return;
-			doc.text(`${t.date} | ${t.title} | ${t.type === 'expense' ? '-' : '+'}${currencySymbol}${t.amount}`, 20, 90 + (i * 7));
+			doc.text(`${formatDate(t.date)} | ${t.title} | ${t.type === 'expense' ? '-' : '+'}${currencySymbol}${t.amount}`, 20, 90 + (i * 7));
 		});
 
 		doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -104,9 +106,17 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 	return (
 		<div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div className="flex items-center justify-between px-1">
-				<div>
-					<h2 className="text-3xl font-bold text-slate-900 dark:text-white">Settings</h2>
-					<p className="text-slate-500 text-sm mt-1">Manage your preferences and data.</p>
+				<div className="flex items-center gap-4">
+					<button
+						onClick={onBack}
+						className="size-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+					>
+						<span className="material-symbols-outlined">arrow_back</span>
+					</button>
+					<div>
+						<h2 className="text-3xl font-bold text-slate-900 dark:text-white">Settings</h2>
+						<p className="text-slate-500 text-sm mt-1">Manage your preferences and data.</p>
+					</div>
 				</div>
 				<button
 					onClick={toggleDarkMode}

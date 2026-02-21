@@ -1,5 +1,6 @@
 import React from 'react';
 import { Transaction, MonthlyData } from '../types';
+import { formatDate } from '../utils';
 
 interface OverviewProps {
   month: MonthlyData;
@@ -83,7 +84,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.category.name}</span>
                   <span className="size-1 rounded-full bg-slate-200 dark:bg-slate-800"></span>
                   <p className="text-[10px] font-medium text-slate-500">
-                    {t.date}
+                    {formatDate(t.date)}
                   </p>
                 </div>
               </div>

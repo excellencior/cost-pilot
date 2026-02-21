@@ -181,7 +181,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                 </div>
 
                 {/* Floating Action Button — only on relevant pages */}
-                {(['dashboard', 'history', 'overview'] as View[]).includes(currentView) && (
+                {(['dashboard'] as View[]).includes(currentView) && (
                     <button
                         onClick={onAddEntry}
                         className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
