@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 interface AuthContextType {
     user: User | null;
@@ -41,16 +43,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const signIn = async () => {
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
+            if (Capacitor.isNativePlatform()) {
+                // Native Capacitor Flow for Android/iOS
+                const result = await FirebaseAuthentication.signInWithGoogle();
+                const idToken = result.credential?.idToken;
+
+                if (!idToken) {
+                    throw new Error('No ID token received from Google Auth');
+                }
+
+                const { error } = await supabase.auth.signInWithIdToken({
+                    provider: 'google',
+                    token: idToken,
+                });
+
+                if (error) throw error;
+            } else {
+                // Standard Web Flow
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'consent',
+                        },
                     },
-                },
-            });
-            if (error) throw error;
+                });
+                if (error) throw error;
+            }
         } catch (error) {
             console.error('Sign in error:', error);
             throw error;
@@ -59,6 +79,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logOut = async () => {
         try {
+            if (Capacitor.isNativePlatform()) {
+                await FirebaseAuthentication.signOut();
+            }
             await supabase.auth.signOut();
         } catch (error) {
             console.error('Sign out error:', error);
