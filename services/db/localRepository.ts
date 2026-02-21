@@ -3,6 +3,7 @@ import { Transaction, Category } from '../../types';
 const STORAGE_KEY = 'costpilot_local_db';
 const CATEGORY_KEY = 'costpilot_local_categories';
 const SYNC_META_KEY = 'costpilot_sync_meta';
+const SETTINGS_KEY = 'costpilot_settings';
 
 export interface LocalExpense extends Transaction {
     user_id: string | null;
@@ -158,5 +159,22 @@ export const LocalRepository = {
             }
         });
         saveRawData(CATEGORY_KEY, catData);
+    },
+
+    // --- SETTINGS ---
+    getSettings: () => {
+        const data = localStorage.getItem(SETTINGS_KEY);
+        const defaults = { currency: 'USD' };
+        try {
+            return data ? { ...defaults, ...JSON.parse(data) } : defaults;
+        } catch {
+            return defaults;
+        }
+    },
+
+    updateSettings: (updates: Record<string, any>) => {
+        const current = LocalRepository.getSettings();
+        const next = { ...current, ...updates };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
     }
 };

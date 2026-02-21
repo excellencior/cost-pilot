@@ -40,6 +40,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const loadData = useCallback(() => {
     const freshTransactions = LocalRepository.getAllExpenses();
     setTransactions(freshTransactions);
+    const settings = LocalRepository.getSettings();
+    setCurrency(settings.currency);
+
+    // Categories logic...
     const localCats = LocalRepository.getAllCategories();
     if (localCats.length > 0) {
       setCategories(localCats);
@@ -54,6 +58,11 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   useEffect(() => {
     onDataPulledRef.current = loadData;
   }, [loadData, onDataPulledRef]);
+
+  // Persist currency whenever it changes
+  useEffect(() => {
+    LocalRepository.updateSettings({ currency });
+  }, [currency]);
 
   useEffect(() => {
     loadData();
