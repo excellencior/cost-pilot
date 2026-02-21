@@ -21,9 +21,11 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
 
     const filteredResults = useMemo(() => {
         return transactions.filter(t => {
-            const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                t.category.name.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCategory = selectedCategoryId === 'all' || t.category.id === selectedCategoryId;
+            const title = t.title || '';
+            const categoryName = t.category?.name || '';
+            const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCategory = selectedCategoryId === 'all' || t.category?.id === selectedCategoryId;
             return matchesSearch && matchesCategory;
         }).sort((a, b) => {
             if (sortBy === 'date') return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -157,15 +159,18 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
 
             {/* Search and Filters Header */}
             <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 relative group">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
-                    <input
-                        type="text"
-                        placeholder="Find transactions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-slate-800 transition-all text-slate-900 dark:text-white"
-                    />
+                <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block px-1">Search</label>
+                    <div className="relative group">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
+                        <input
+                            type="text"
+                            placeholder="Find transactions..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-slate-900 dark:text-white shadow-sm"
+                        />
+                    </div>
                 </div>
                 <div className="md:w-64">
                     <Dropdown
@@ -178,18 +183,20 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                         onChange={setSelectedCategoryId}
                     />
                 </div>
-                <div className="md:w-48">
-                    <Dropdown
-                        label="Sort By"
-                        options={[
-                            { id: 'date', name: 'Newest First' },
-                            { id: 'amount', name: 'Highest Amount' },
-                            { id: 'title', name: 'Alphabetical' }
-                        ]}
-                        value={sortBy}
-                        onChange={(val) => setSortBy(val as any)}
-                    />
-                </div>
+                {isFiltering && (
+                    <div className="md:w-48 animate-in slide-in-from-right-2 duration-300">
+                        <Dropdown
+                            label="Sort By"
+                            options={[
+                                { id: 'date', name: 'Newest First' },
+                                { id: 'amount', name: 'Highest Amount' },
+                                { id: 'title', name: 'Alphabetical' }
+                            ]}
+                            value={sortBy}
+                            onChange={(val) => setSortBy(val as any)}
+                        />
+                    </div>
+                )}
             </div>
 
             {

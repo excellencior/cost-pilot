@@ -58,7 +58,7 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
     onClose();
   };
 
-  const icons = ['restaurant', 'directions_bus', 'shopping_cart', 'movie', 'health_and_safety', 'shopping_bag', 'payments', 'trending_up', 'flight', 'home', 'fitness_center', 'work', 'savings', 'account_balance', 'electric_bolt_outlined', 'water_drop', 'wifi'];
+  const icons = ['restaurant', 'directions_bus', 'shopping_cart', 'movie', 'health_and_safety', 'shopping_bag', 'payments', 'trending_up', 'flight', 'home', 'fitness_center', 'work', 'savings', 'account_balance', 'bolt', 'water_drop', 'wifi'];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

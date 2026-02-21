@@ -175,9 +175,9 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <DatePicker value={startDate} onChange={setStartDate} className="w-40" />
+              <DatePicker value={startDate} onChange={setStartDate} className="w-44" />
               <span className="text-slate-400 text-[10px] font-bold">TO</span>
-              <DatePicker value={endDate} onChange={setEndDate} className="w-40" />
+              <DatePicker value={endDate} onChange={setEndDate} className="w-44" />
             </div>
           )}
         </div>

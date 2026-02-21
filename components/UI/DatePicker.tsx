@@ -100,7 +100,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none"
             >
-                <span>{value ? formatDate(value) : formatDate(new Date().toISOString().split('T')[0])}</span>
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-left mr-2">
+                    {value ? formatDate(value) : formatDate(new Date().toISOString().split('T')[0])}
+                </span>
                 <span className="material-symbols-outlined text-slate-400 text-lg">calendar_today</span>
             </button>
 
