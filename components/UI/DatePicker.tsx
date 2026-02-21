@@ -94,11 +94,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     return (
         <div className={`relative ${className}`} ref={containerRef}>
-            {label && <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block px-1">{label}</label>}
+            {label && <label className="label-text">{label}</label>}
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none"
+                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[46px]"
             >
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-left mr-2">
                     {value ? formatDate(value) : formatDate(new Date().toISOString().split('T')[0])}

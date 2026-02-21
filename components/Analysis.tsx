@@ -127,7 +127,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
   }, [transactions]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-500">
       {/* Header with Back Button */}
       <div className="flex items-center gap-4 px-1">
         <button
@@ -183,10 +183,9 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
         </div>
       </section>
 
-      {/* Main Analysis Dashboard */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <section className="lg:col-span-3 card p-5 flex flex-col justify-between overflow-hidden">
-          <div className="flex items-center justify-between mb-8">
+        <section className="lg:col-span-3 card p-4 flex flex-col justify-between overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Period Spending</p>
               <h2 className="text-4xl font-black text-slate-900 dark:text-white">
@@ -246,14 +245,13 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
           </div>
         </section>
 
-        {/* Flexible Breakdown List */}
-        <section className="lg:col-span-2 card flex flex-col p-5">
-          <div className="flex items-center justify-between mb-6">
+        <section className="lg:col-span-2 card flex flex-col p-4">
+          <div className="flex items-center justify-between mb-4">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category Detail</p>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{categoryData.length} ACTIVE</p>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {categoryData.length > 0 ? (
               categoryData.map((item, i) => (
                 <div key={i} className="group">

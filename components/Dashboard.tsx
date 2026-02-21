@@ -24,9 +24,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   const recentTransactions = transactions.slice(0, 4);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Hero Stats */}
-      <section className="card p-5 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30">
+      <section className="card p-4 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
 
@@ -61,7 +61,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Mini Progress Bar */}
-        <div className="mt-8 relative z-10 space-y-2">
+        <div className="mt-6 relative z-10 space-y-1.5">
           <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
             <span>Expense Progress</span>
             <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
@@ -122,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {/* Financial Health */}
         <section className="space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white px-1">Overview</h3>
-          <div className="card p-5 bg-slate-900 text-white dark:bg-slate-800/50">
+          <div className="card p-4 bg-slate-900 text-white dark:bg-slate-800/50">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Financial Health</h4>
             <div className="space-y-4">
               <div className="flex justify-between items-end">

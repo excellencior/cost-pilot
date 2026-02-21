@@ -115,8 +115,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     return (
         <div className="h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5">
-                <div className="flex items-center justify-between mb-10 px-2">
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4">
+                <div className="flex items-center justify-between mb-6 px-2">
                     <div className="flex items-center gap-3">
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
                         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CostPilot</h1>
@@ -124,12 +124,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     <CloudButton />
                 </div>
 
-                <nav className="flex-1 space-y-2">
+                <nav className="flex-1 space-y-1">
                     {navItems.map((item) => (
                         <button
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-bold transition-all relative group ${currentView === item.view
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold transition-all relative group ${currentView === item.view
                                 ? 'text-primary-600 dark:text-primary-400'
                                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
@@ -175,7 +175,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full max-w-7xl mx-auto">
+                <div className="flex-1 p-3 md:p-4 lg:p-6 overflow-y-auto w-full max-w-5xl mx-auto">
                     {children}
                     {currentView === 'settings' && <Footer />}
                 </div>

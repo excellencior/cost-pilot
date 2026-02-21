@@ -141,7 +141,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div>
                 <label className="label-text">Amount</label>
                 <input
                   type="number"
@@ -155,7 +155,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div>
                 <DatePicker
                   label="Date"
                   value={date}
@@ -164,7 +164,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div>
               <label className="label-text">Description</label>
               <input
                 type="text"
@@ -180,7 +180,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPickerOpen(true)}
-                className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
+                className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
               >
                 <div className="size-10 rounded-lg bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
                   <span className="material-symbols-outlined text-xl">{category.icon}</span>

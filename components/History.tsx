@@ -86,7 +86,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
     if (selectedMonthKey && monthlySummaries[selectedMonthKey] && !isFiltering) {
         const data = monthlySummaries[selectedMonthKey];
         return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                 <button
                     onClick={() => setSelectedMonthKey(null)}
                     className="flex items-center gap-2 text-slate-500 hover:text-primary-600 transition-colors group mb-2"
@@ -117,7 +117,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                         <button
                             key={t.id}
                             onClick={() => onTransactionClick(t)}
-                            className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                            className="flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
                         >
                             <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                 ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -142,7 +142,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header with Back Button */}
             <div className="flex items-center gap-4 px-1">
                 <button
@@ -223,7 +223,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                     <button
                                         key={t.id}
                                         onClick={() => onTransactionClick(t)}
-                                        className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all group text-left shadow-sm"
+                                        className="flex items-center gap-4 p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all group text-left shadow-sm"
                                     >
                                         <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                             ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'

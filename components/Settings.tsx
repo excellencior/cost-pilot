@@ -212,7 +212,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div className="flex items-center justify-between px-1">
 				<div className="flex items-center gap-4">
 					<button
@@ -239,7 +239,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 				{/* Profile / Account */}
-				<div className="card p-5 space-y-6">
+				<div className="card p-4 space-y-5">
 					<div className="flex items-center gap-4">
 						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800 relative">
 							{user?.user_metadata?.avatar_url ? (
@@ -298,7 +298,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				{/* Categories Shortcut */}
 				<button
 					onClick={() => onNavigate('category-picker')}
-					className="card p-5 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
+					className="card p-4 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
 				>
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">Categories</p>
@@ -312,7 +312,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</button>
 
 				{/* Preferences - Currency */}
-				<div className="card p-5 flex flex-col justify-between relative group">
+				<div className="card p-4 flex flex-col justify-between relative group">
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Primary Currency</p>
 						<div className="flex items-baseline gap-2">
@@ -332,7 +332,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</div>
 
 				{/* Data Exports */}
-				<div className="card p-5 space-y-4">
+				<div className="card p-4 space-y-4">
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Data Management</p>
 						<div className="grid grid-cols-2 gap-4 mt-4">
