@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View } from '../types';
 import { useCloudBackup } from './CloudBackupContext';
+import Footer from './Footer';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -112,7 +113,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     );
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
+        <div className="h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5">
                 <div className="flex items-center justify-between mb-10 px-2">
@@ -158,7 +159,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-w-0 relative pb-20 md:pb-0">
+            <main className="flex-1 flex flex-col min-w-0 relative h-full">
                 <header className="md:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
                     <div className="flex items-center gap-2">
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-md object-cover" />
@@ -176,6 +177,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
                 <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full max-w-7xl mx-auto">
                     {children}
+                    {currentView === 'settings' && <Footer />}
                 </div>
 
                 {/* Floating Action Button — only on relevant pages */}

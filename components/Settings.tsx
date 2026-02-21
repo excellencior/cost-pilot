@@ -3,6 +3,7 @@ import { Transaction, View } from '../types';
 import { useAuth } from './AuthContext';
 import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
+import { LocalRepository } from '../services/db/localRepository';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -25,7 +26,8 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 	const [endDate, setEndDate] = useState('');
 
 	const toggleDarkMode = () => {
-		document.documentElement.classList.toggle('dark');
+		const isDark = document.documentElement.classList.toggle('dark');
+		LocalRepository.updateSettings({ theme: isDark ? 'dark' : 'light' });
 	};
 
 	const formatLastBackup = (iso: string | null) => {

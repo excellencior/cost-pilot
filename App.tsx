@@ -20,7 +20,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const { triggerBackup } = useCloudBackup();
   const userId = user?.id;
 
-  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [currentView, setCurrentView] = useState<View>(() => LocalRepository.getSettings().lastView as View || 'dashboard');
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
@@ -31,6 +31,16 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
+
+  // Apply theme on mount
+  useEffect(() => {
+    const theme = LocalRepository.getSettings().theme;
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
 
   const getCurrencySymbol = (code: string) => {
     const symbols: Record<string, string> = { 'USD': '$', 'BDT': '৳', 'EUR': '€' };
@@ -66,6 +76,11 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   useEffect(() => {
     LocalRepository.updateSettings({ currency });
   }, [currency]);
+
+  // Persist current view whenever it changes
+  useEffect(() => {
+    LocalRepository.updateSettings({ lastView: currentView });
+  }, [currentView]);
 
   useEffect(() => {
     loadData();
