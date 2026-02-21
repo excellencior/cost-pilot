@@ -32,30 +32,30 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="flex-1">
-            <p className="text-primary-100 text-sm font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
-            <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded backdrop-blur-md">
+            <p className="text-primary-100 text-[10px] font-bold uppercase tracking-widest mb-1 opacity-90 flex items-center gap-2">
+              Total balance of
+              <span className="bg-white/20 text-white px-2.5 py-1 rounded backdrop-blur-md shadow-sm">
                 {currentMonth.month} {currentMonth.year}
               </span>
-            </div>
+            </p>
+            <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
           </div>
 
-          <div className="flex gap-6 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-8">
+          <div className="flex gap-12 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-8">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-primary-100">
+              <div className="flex items-center gap-2 text-green-300">
                 <span className="material-symbols-outlined text-base">arrow_upward</span>
                 <span className="text-xs font-black uppercase tracking-widest">Income</span>
               </div>
-              <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.income.toLocaleString()}</p>
+              <p className="text-3xl font-bold font-mono text-green-400">{currencySymbol}{currentMonth.income.toLocaleString()}</p>
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-primary-100">
+              <div className="flex items-center gap-2 text-rose-300">
                 <span className="material-symbols-outlined text-base">arrow_downward</span>
                 <span className="text-xs font-black uppercase tracking-widest">Expenses</span>
               </div>
-              <p className="text-3xl font-bold font-mono">{currencySymbol}{currentMonth.expense.toLocaleString()}</p>
+              <p className="text-3xl font-bold font-mono text-rose-400">{currencySymbol}{currentMonth.expense.toLocaleString()}</p>
             </div>
           </div>
         </div>
