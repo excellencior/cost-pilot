@@ -108,7 +108,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				</div>
 				<button
 					onClick={toggleDarkMode}
-					className="size-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
+					className="size-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
 					title="Toggle Dark Mode"
 				>
 					<span className="material-symbols-outlined">
@@ -117,11 +117,11 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				</button>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 				{/* Profile / Account */}
-				<div className="card p-6 space-y-6">
+				<div className="card p-5 space-y-6">
 					<div className="flex items-center gap-4">
-						<div className="size-16 rounded-2xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800">
+						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800">
 							{user?.user_metadata?.avatar_url ? (
 								<img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
 							) : (
@@ -137,7 +137,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 						<button onClick={() => logOut()} className="btn-secondary w-full text-xs py-2 text-rose-600 dark:text-rose-400">Sign Out</button>
 					) : (
 						<div className="space-y-3">
-							<div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 space-y-2">
+							<div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 space-y-2">
 								<div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
 									<span className="material-symbols-outlined text-base text-primary-500">cloud_upload</span>
 									<span className="text-xs font-bold">Cloud Backup</span>
@@ -162,7 +162,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				{/* Categories Shortcut */}
 				<button
 					onClick={() => onNavigate('category-picker')}
-					className="card p-6 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
+					className="card p-5 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
 				>
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">Categories</p>
@@ -176,7 +176,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				</button>
 
 				{/* Preferences - Currency */}
-				<div className="card p-6 flex flex-col justify-between relative group">
+				<div className="card p-5 flex flex-col justify-between relative group">
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Primary Currency</p>
 						<div className="flex items-baseline gap-2">
@@ -190,7 +190,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 						<select
 							value={currency}
 							onChange={(e) => setCurrency(e.target.value)}
-							className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer"
+							className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer"
 						>
 							{CURRENCIES.map(c => (
 								<option key={c.code} value={c.code}>{c.code} - {c.name}</option>
@@ -201,7 +201,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				</div>
 
 				{/* Data Exports */}
-				<div className="card p-6 space-y-4">
+				<div className="card p-5 space-y-4">
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Data Management</p>
 						<div className="grid grid-cols-2 gap-4 mt-4">
@@ -239,7 +239,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 			</div>
 
 			{/* Cloud Backup Card */}
-			<div className="card p-8 bg-slate-900 text-white dark:bg-slate-800 border-none relative overflow-hidden group">
+			<div className="card p-6 bg-slate-900 text-white dark:bg-slate-800 border-none relative overflow-hidden group">
 				<div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-primary-500/20 transition-all"></div>
 				<div className="relative z-10">
 					<div className="flex items-center justify-between mb-4">
@@ -285,7 +285,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 					{backupStatus === 'error' && user && (
 						<button
 							onClick={retryBackup}
-							className="mt-4 bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+							className="mt-4 bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
 						>
 							<span className="material-symbols-outlined text-sm">refresh</span>
 							Retry Sync

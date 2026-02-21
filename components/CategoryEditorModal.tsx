@@ -69,8 +69,8 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             {editingCategory ? 'Edit Category' : 'New Category'}
           </h2>
@@ -82,19 +82,19 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-5 space-y-6">
           {step === 1 && !editingCategory && !defaultType ? (
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => { setType('expense'); handleNext(); }}
-                className="p-8 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
+                className="p-6 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
               >
                 <span className="material-symbols-outlined text-4xl text-rose-600 dark:text-rose-400">arrow_downward</span>
                 <span className="font-bold text-xs uppercase tracking-widest text-rose-600">Expense</span>
               </button>
               <button
                 onClick={() => { setType('income'); handleNext(); }}
-                className="p-8 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
+                className="p-6 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 flex flex-col items-center gap-3 hover:scale-[1.02] transition-all"
               >
                 <span className="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">arrow_upward</span>
                 <span className="font-bold text-xs uppercase tracking-widest text-green-600">Income</span>
@@ -121,9 +121,9 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
                     <button
                       key={i}
                       onClick={() => setIcon(i)}
-                      className={`size-10 rounded-xl flex items-center justify-center transition-all ${icon === i
-                          ? 'bg-primary-600 text-white shadow-lg'
-                          : 'bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      className={`size-10 rounded-lg flex items-center justify-center transition-all ${icon === i
+                        ? 'bg-primary-600 text-white shadow-lg'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                     >
                       <span className="material-symbols-outlined text-xl">{i}</span>

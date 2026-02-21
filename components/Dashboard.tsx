@@ -25,11 +25,11 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Hero Stats */}
-      <section className="card p-6 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30">
+      <section className="card p-5 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="flex-1">
             <p className="text-primary-100 text-sm font-bold uppercase tracking-widest mb-1 opacity-90">Total Balance</p>
             <h2 className="text-5xl font-black mb-1">{currencySymbol}{balance.toLocaleString()}</h2>
@@ -40,7 +40,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="flex gap-8 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-8">
+          <div className="flex gap-6 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-8">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-primary-100">
                 <span className="material-symbols-outlined text-base">arrow_upward</span>
@@ -75,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       </section>
 
       {/* Recent & Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Transactions */}
         <section className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-1">
@@ -96,7 +96,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   onClick={() => onTransactionClick(t)}
                   className="w-full card p-4 flex items-center gap-4 hover:border-primary-200 dark:hover:border-primary-900 group"
                 >
-                  <div className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                  <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                     }`}>
                     <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
                   </div>
@@ -110,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </button>
               ))
             ) : (
-              <div className="card p-12 flex flex-col items-center justify-center text-slate-400 border-dashed">
+              <div className="card p-8 flex flex-col items-center justify-center text-slate-400 border-dashed">
                 <span className="material-symbols-outlined text-4xl mb-2 opacity-20">history_edu</span>
                 <p className="text-sm font-medium">No transactions yet</p>
               </div>
@@ -121,7 +121,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {/* Financial Health */}
         <section className="space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white px-1">Overview</h3>
-          <div className="card p-6 bg-slate-900 text-white dark:bg-slate-800/50">
+          <div className="card p-5 bg-slate-900 text-white dark:bg-slate-800/50">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Financial Health</h4>
             <div className="space-y-4">
               <div className="flex justify-between items-end">

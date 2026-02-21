@@ -73,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
         <div className="relative" ref={popoverRef}>
             <button
                 onClick={() => setShowPopover(!showPopover)}
-                className={`size-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90 ${cloudIcon.color}`}
+                className={`size-9 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90 ${cloudIcon.color}`}
                 title="Cloud backup status"
             >
                 <span className={`material-symbols-outlined text-[20px] ${cloudIcon.spin ? 'animate-spin' : ''}`}>
@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             </button>
 
             {showPopover && (
-                <div className="absolute right-0 top-11 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 top-11 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="flex items-center gap-2 mb-2">
                         <span className={`material-symbols-outlined text-base ${cloudIcon.color} ${cloudIcon.spin ? 'animate-spin' : ''}`}>
                             {cloudIcon.icon}
@@ -98,7 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     {backupStatus === 'error' && (
                         <button
                             onClick={() => { retryBackup(); setShowPopover(false); }}
-                            className="mt-3 w-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-900 dark:text-white px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
+                            className="mt-3 w-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-900 dark:text-white px-4 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
                             <span className="material-symbols-outlined text-sm">refresh</span>
                             Retry Sync
@@ -112,10 +112,10 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6">
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5">
                 <div className="flex items-center justify-between mb-10 px-2">
                     <div className="flex items-center gap-3">
-                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-xl shadow-lg shadow-primary-500/20 object-cover" />
+                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
                         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CostPilot</h1>
                     </div>
                     <CloudButton />
@@ -126,13 +126,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         <button
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all relative group ${currentView === item.view
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-bold transition-all relative group ${currentView === item.view
                                 ? 'text-primary-600 dark:text-primary-400'
                                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
                         >
                             {currentView === item.view && (
-                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/5 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10 animate-fade-in"></div>
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/5 backdrop-blur-md rounded-lg border border-slate-900/5 dark:border-white/10 animate-fade-in"></div>
                             )}
                             <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
                             <span className="relative z-10">{item.label}</span>
@@ -159,7 +159,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             <main className="flex-1 flex flex-col min-w-0 relative pb-20 md:pb-0">
                 <header className="md:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
                     <div className="flex items-center gap-2">
-                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-lg object-cover" />
+                        <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-md object-cover" />
                         <span className="font-bold text-slate-900 dark:text-white">CostPilot</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto w-full max-w-7xl mx-auto">
+                <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full max-w-7xl mx-auto">
                     {children}
                 </div>
 
@@ -180,7 +180,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                 {(['dashboard', 'history', 'overview'] as View[]).includes(currentView) && (
                     <button
                         onClick={onAddEntry}
-                        className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-2xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
+                        className="fixed bottom-24 right-6 md:bottom-12 md:right-12 size-16 bg-primary-600 text-white rounded-xl shadow-2xl shadow-primary-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group"
                     >
                         <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
                     </button>
@@ -192,13 +192,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         <button
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
-                            className={`flex flex-col items-center gap-1 p-2 min-w-[72px] transition-all relative rounded-xl ${currentView === item.view
+                            className={`flex flex-col items-center gap-1 p-2 min-w-[72px] transition-all relative rounded-lg ${currentView === item.view
                                 ? 'text-primary-600 dark:text-primary-400'
                                 : 'text-slate-400 dark:text-slate-500'
                                 }`}
                         >
                             {currentView === item.view && (
-                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/10 backdrop-blur-md rounded-xl border border-slate-900/5 dark:border-white/10 animate-scale-in"></div>
+                                <div className="absolute inset-0 bg-slate-900/5 dark:bg-white/10 backdrop-blur-md rounded-lg border border-slate-900/5 dark:border-white/10 animate-scale-in"></div>
                             )}
                             <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
                             <span className="text-[10px] font-bold relative z-10">{item.label}</span>

@@ -105,13 +105,13 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Unified Control Bar */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto">
+      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full md:w-auto">
           {(['month', 'custom'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              className={`flex-1 md:flex-none px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${filterMode === mode ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 md:flex-none px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${filterMode === mode ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               {mode === 'month' ? 'Monthly' : 'Search Range'}
             </button>
@@ -124,31 +124,31 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
               >
                 {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
               </select>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
               >
                 {years.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
               <span className="text-slate-400 text-[10px] font-bold">TO</span>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
             </div>
           )}
         </div>
       </section>
 
       {/* Main Analysis Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <section className="lg:col-span-3 card p-6 flex flex-col justify-between overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        <section className="lg:col-span-3 card p-5 flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between mb-8">
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Period Spending</p>
@@ -156,11 +156,11 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
                 {currencySymbol}{totalExpense.toLocaleString()}
               </h2>
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <button onClick={() => setActiveTab('pie')} className={`p-2 rounded-lg transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+              <button onClick={() => setActiveTab('pie')} className={`p-2 rounded-md transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
                 <span className="material-symbols-outlined text-lg">pie_chart</span>
               </button>
-              <button onClick={() => setActiveTab('trend')} className={`p-2 rounded-lg transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
+              <button onClick={() => setActiveTab('trend')} className={`p-2 rounded-md transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400'}`}>
                 <span className="material-symbols-outlined text-lg">show_chart</span>
               </button>
             </div>
@@ -202,7 +202,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
         </section>
 
         {/* Flexible Breakdown List */}
-        <section className="lg:col-span-2 card flex flex-col p-6">
+        <section className="lg:col-span-2 card flex flex-col p-5">
           <div className="flex items-center justify-between mb-6">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category Detail</p>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{categoryData.length} ACTIVE</p>
@@ -214,7 +214,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, currency }) => {
                 <div key={i} className="group">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 transition-colors">
+                      <div className="size-9 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 transition-colors">
                         <span className="material-symbols-outlined text-lg">{item.icon}</span>
                       </div>
                       <div>

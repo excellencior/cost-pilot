@@ -21,7 +21,7 @@ const LoginScreen: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-background-dark px-6">
+        <div className="flex flex-col items-center justify-center h-screen bg-background-dark px-5">
             {/* Background decorations */}
             <div className="fixed top-[-10%] left-[-10%] w-[100%] h-[40%] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none z-0"></div>
             <div className="fixed bottom-[10%] right-[-5%] w-[100%] h-[40%] rounded-full bg-purple-400/10 blur-[100px] pointer-events-none z-0"></div>
@@ -29,7 +29,7 @@ const LoginScreen: React.FC = () => {
             <div className="relative z-10 text-center">
                 {/* Logo */}
                 <div className="mb-8">
-                    <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center shadow-2xl shadow-primary/30">
+                    <div className="w-24 h-24 mx-auto rounded-xl bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center shadow-2xl shadow-primary/30">
                         <span className="material-symbols-outlined text-5xl text-white">account_balance_wallet</span>
                     </div>
                 </div>
@@ -41,7 +41,7 @@ const LoginScreen: React.FC = () => {
                 {/* Sign In Button */}
                 <button
                     onClick={handleSignIn}
-                    className="flex items-center gap-3 px-6 py-4 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 mx-auto"
+                    className="flex items-center gap-3 px-5 py-4 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 mx-auto"
                 >
                     <svg className="w-6 h-6" viewBox="0 0 24 24">
                         <path

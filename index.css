@@ -9,19 +9,29 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-primary-100 dark:bg-slate-950 dark:text-slate-100 overflow-x-hidden;
+    /* Colors & Typography */
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-primary-100;
+    @apply dark:bg-slate-950 dark:text-slate-100;
+    /* Layout */
+    @apply overflow-x-hidden;
   }
 }
 
 @layer components {
+
+  /* --- Glass Effects --- */
   .glass-morphic {
-    @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 shadow-xl;
+    @apply bg-white/70 dark:bg-slate-900/40 backdrop-blur-2xl;
+    @apply border border-white/20 dark:border-white/5;
+    @apply shadow-xl;
   }
 
   .glass-surface {
-    @apply bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/10 dark:border-white/5;
+    @apply bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl;
+    @apply border border-white/10 dark:border-white/5;
   }
 
+  /* --- Utilities --- */
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -35,24 +45,49 @@
     font-variation-settings: 'FILL' 1;
   }
 
+  /* --- UI Elements --- */
   .card {
-    @apply bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all;
+    /* Colors & Borders */
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800;
+    /* Shape & Shadow */
+    @apply rounded-xl shadow-sm transition-all;
   }
 
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    /* Colors & Typography */
+    @apply bg-primary-600 text-white font-semibold;
+    /* Sizing & Shape */
+    @apply py-2 px-4 rounded-lg shadow-sm;
+    /* States & Animations */
+    @apply hover:bg-primary-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold py-2 px-4 rounded-xl transition-all active:scale-95 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700;
+    /* Colors & Typography */
+    @apply bg-white text-slate-700 font-semibold;
+    @apply dark:bg-slate-800 dark:text-slate-200;
+    /* Borders, Sizing & Shape */
+    @apply border border-slate-200 dark:border-slate-700 py-2 px-4 rounded-lg;
+    /* States & Animations */
+    @apply hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95;
   }
 
   .input-field {
-    @apply w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all dark:bg-slate-900 dark:border-slate-800 dark:text-white dark:focus:ring-primary-900;
+    /* Colors & Typography */
+    @apply bg-white text-slate-900;
+    @apply dark:bg-slate-900 dark:text-white;
+    /* Borders, Sizing & Shape */
+    @apply w-full border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-3;
+    /* States & Animations */
+    @apply outline-none transition-all;
+    @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-900;
   }
 
   .label-text {
-    @apply text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 block;
+    /* Typography */
+    @apply text-xs font-bold uppercase tracking-wider block mb-1.5;
+    /* Colors */
+    @apply text-slate-500 dark:text-slate-400;
   }
 
   /* Animation Utilities */

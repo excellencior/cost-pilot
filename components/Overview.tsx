@@ -24,7 +24,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="size-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+            className="size-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
@@ -40,8 +40,8 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
 
       {/* Mini Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="card p-6 flex items-center gap-4">
-          <div className="size-12 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400">
+        <div className="card p-5 flex items-center gap-4">
+          <div className="size-12 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400">
             <span className="material-symbols-outlined">arrow_upward</span>
           </div>
           <div>
@@ -49,8 +49,8 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
             <p className="text-2xl font-bold text-slate-900 dark:text-white">{currencySymbol}{(month.income || 0).toLocaleString()}</p>
           </div>
         </div>
-        <div className="card p-6 flex items-center gap-4">
-          <div className="size-12 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+        <div className="card p-5 flex items-center gap-4">
+          <div className="size-12 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
             <span className="material-symbols-outlined">arrow_downward</span>
           </div>
           <div>
@@ -74,7 +74,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
               onClick={() => onTransactionClick(t)}
               className="w-full card p-4 flex items-center gap-4 group hover:border-primary-200 dark:hover:border-primary-900 text-left transition-all"
             >
-              <div className={`size-12 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
+              <div className={`size-12 rounded-lg flex items-center justify-center bg-slate-50 dark:bg-slate-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
                 <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
               </div>
               <div className="flex-1 min-w-0">

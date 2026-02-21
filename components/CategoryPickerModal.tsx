@@ -31,8 +31,8 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in">
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+                <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white capitalize">
                         Select {type} Category
                     </h3>
@@ -44,7 +44,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                     </button>
                 </div>
 
-                <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                         {filteredCategories.map((cat) => (
                             <button
@@ -54,12 +54,12 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                                     onSelect(cat);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all active:scale-95 ${selectedCategoryId === cat.id
+                                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all active:scale-95 ${selectedCategoryId === cat.id
                                     ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 text-primary-600 dark:text-primary-400'
                                     : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-800 text-slate-500 hover:border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
-                                <div className={`size-12 rounded-xl flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                <div className={`size-12 rounded-lg flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                                     }`}>
                                     <span className="material-symbols-outlined text-2xl">{cat.icon}</span>
                                 </div>
@@ -69,7 +69,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                     </div>
                 </div>
 
-                <div className="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-center">
+                <div className="p-5 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-center">
                     <p className="text-xs text-slate-500 font-medium">
                         Manage your categories in <span className="text-primary-600 font-bold">Settings</span>
                     </p>

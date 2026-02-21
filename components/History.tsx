@@ -106,9 +106,9 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                         <button
                             key={t.id}
                             onClick={() => onTransactionClick(t)}
-                            className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                            className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
                         >
-                            <div className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${t.type === 'income'
+                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                 ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                                 : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                                 }`}>
@@ -133,7 +133,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Search and Filters Header */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
                 <header className="px-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white">Financial History</h2>
@@ -149,14 +149,14 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                             placeholder="Find transactions..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-slate-800 transition-all text-slate-900 dark:text-white"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-slate-800 transition-all text-slate-900 dark:text-white"
                         />
                     </div>
                     <div className="md:w-64">
                         <select
                             value={selectedCategoryId}
                             onChange={(e) => setSelectedCategoryId(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
+                            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
                         >
                             <option value="all">All Categories</option>
                             {categories.map(cat => (
@@ -190,9 +190,9 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                                 <button
                                     key={t.id}
                                     onClick={() => onTransactionClick(t)}
-                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all group text-left shadow-sm"
+                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all group text-left shadow-sm"
                                 >
-                                    <div className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${t.type === 'income'
+                                    <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                         ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
                                         : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                                         }`}>
@@ -219,7 +219,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                 </div>
             ) : (
                 /* Monthly Summary View */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-in">
                     {monthKeys.length > 0 ? (
                         monthKeys.map(key => {
                             const data = monthlySummaries[key];
@@ -229,7 +229,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                                     onClick={() => setSelectedMonthKey(key)}
                                     className="card p-0 overflow-hidden group hover:border-primary-300 dark:hover:border-primary-800 transition-all hover:shadow-xl hover:shadow-primary-500/5 text-left"
                                 >
-                                    <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                                    <div className="p-5 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
                                         <div>
                                             <h3 className="text-xl font-bold text-slate-900 dark:text-white">{data.monthName}</h3>
                                             <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">{data.year}</p>
@@ -239,7 +239,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                                         </div>
                                     </div>
 
-                                    <div className="p-6 grid grid-cols-2 gap-6 font-bold">
+                                    <div className="p-5 grid grid-cols-2 gap-5 font-bold">
                                         <div className="space-y-1">
                                             <p className="text-[10px] text-slate-400 uppercase tracking-widest">Inflow</p>
                                             <p className="text-lg text-green-600">+{currencySymbol}{data.income.toLocaleString()}</p>
