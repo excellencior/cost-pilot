@@ -35,11 +35,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     }, [showPopover]);
 
     const getCloudIcon = () => {
-        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-slate-300 dark:text-slate-600', spin: false };
+        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-slate-400 opacity-50', spin: false };
         switch (backupStatus) {
             case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-500', spin: true };
             case 'success': return { icon: 'cloud_done', color: 'text-green-500', spin: false };
             case 'error': return { icon: 'cloud_off', color: 'text-rose-500', spin: false };
+            case 'idle':
             default: return { icon: 'cloud_done', color: 'text-green-500', spin: false };
         }
     };
@@ -58,11 +59,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     };
 
     const getPopoverStatusText = () => {
-        if (!isCloudEnabled) return 'Cloud backup is disabled';
+        if (!isCloudEnabled) return 'Syncing is turned off';
         switch (backupStatus) {
             case 'syncing': return statusMessage || 'Syncing your data...';
             case 'success': return statusMessage || 'All data backed up';
             case 'error': return statusMessage || 'Backup failed';
+            case 'idle':
             default: return 'Cloud backup is active';
         }
     };
@@ -82,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
             </button>
 
             {showPopover && (
-                <div className="absolute right-0 top-11 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 md:left-0 top-11 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="flex items-center gap-2 mb-2">
                         <span className={`material-symbols-outlined text-base ${cloudIcon.color} ${cloudIcon.spin ? 'animate-spin' : ''}`}>
                             {cloudIcon.icon}

@@ -53,6 +53,16 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         };
     }, []);
 
+    // Reset cloud status when user logs out
+    useEffect(() => {
+        if (!user && isCloudEnabled) {
+            setIsCloudEnabled(false);
+            CloudBackupService.setEnabled(false);
+            setBackupStatus('idle');
+            setStatusMessage('');
+        }
+    }, [user, isCloudEnabled]);
+
     // Cross-device sync: detect new device (empty local DB) on login
     useEffect(() => {
         if (!user || !isCloudEnabled || hasCheckedNewDevice.current) return;

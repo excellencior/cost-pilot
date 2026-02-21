@@ -121,11 +121,27 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, categoryCount, transact
 				{/* Profile / Account */}
 				<div className="card p-5 space-y-6">
 					<div className="flex items-center gap-4">
-						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800">
+						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800 relative">
 							{user?.user_metadata?.avatar_url ? (
-								<img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+								<img
+									src={user.user_metadata.avatar_url}
+									alt="Profile"
+									className="w-full h-full object-cover"
+									onError={(e) => {
+										(e.target as HTMLImageElement).style.display = 'none';
+										const parent = (e.target as HTMLImageElement).parentElement;
+										if (parent) {
+											const span = document.createElement('span');
+											span.className = 'text-xl font-bold uppercase';
+											span.innerText = (user?.user_metadata?.full_name || user?.email || 'Z')[0];
+											parent.appendChild(span);
+										}
+									}}
+								/>
 							) : (
-								<span className="material-symbols-outlined text-4xl">person</span>
+								<span className="text-xl font-bold uppercase">
+									{(user?.user_metadata?.full_name || user?.email || 'Z')[0]}
+								</span>
 							)}
 						</div>
 						<div className="min-w-0">

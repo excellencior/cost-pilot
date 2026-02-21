@@ -28,13 +28,14 @@ This is the most critical part for Native apps. You need **two** Client IDs func
 ### Step A: Locate your Web Client ID
 Find the "Web application" Client ID that your web app and Supabase currently use in your Google Cloud Console.
 
-### Step B: Inject into Android
-Open `android/app/src/main/res/values/strings.xml` and add your Web Client ID under the name `server_client_id`:
+### Step B: Android Native Configuration
+#### [MODIFY] android/app/src/main/res/values/strings.xml
+- Add the `<string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>` required by the `@capacitor-firebase/authentication` plugin.
 
 ```xml
 <resources>
     <!-- Your existing config -->
-    <string name="server_client_id">YOUR_WEB_CLIENT_ID_HERE</string>
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID_HERE</string>
 </resources>
 ```
 
