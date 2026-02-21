@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, XAxis, YAxis } from 'recharts';
 import { Transaction } from '../types';
+import Dropdown from './UI/Dropdown';
+import DatePicker from './UI/DatePicker';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981'];
 
@@ -114,7 +116,15 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
     });
   }, [filteredTransactions]);
 
-  const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - 2 + i);
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    years.add(currentDate.getFullYear());
+    transactions.forEach(t => {
+      const year = parseInt(t.date.split('-')[0]);
+      if (!isNaN(year)) years.add(year);
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [transactions]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -145,29 +155,29 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
           ))}
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto hide-scrollbar">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {filterMode === 'month' ? (
             <div className="flex gap-2">
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
-              >
-                {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
-              </select>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
-              >
-                {years.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+              <Dropdown
+                options={MONTHS.map((m, i) => ({ id: String(i), name: m }))}
+                value={String(selectedMonth)}
+                onChange={(val) => setSelectedMonth(parseInt(val))}
+                placeholder="Month"
+                className="w-36"
+              />
+              <Dropdown
+                options={availableYears.map(y => ({ id: String(y), name: String(y) }))}
+                value={String(selectedYear)}
+                onChange={(val) => setSelectedYear(parseInt(val))}
+                placeholder="Year"
+                className="w-24"
+              />
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
+              <DatePicker value={startDate} onChange={setStartDate} className="w-40" />
               <span className="text-slate-400 text-[10px] font-bold">TO</span>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-[10px] font-bold dark:text-white outline-none" />
+              <DatePicker value={endDate} onChange={setEndDate} className="w-40" />
             </div>
           )}
         </div>

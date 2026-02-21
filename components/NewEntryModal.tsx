@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Category, Transaction } from '../types';
 import CategoryPickerModal from './CategoryPickerModal';
+import DatePicker from './UI/DatePicker';
+import ConfirmModal from './UI/ConfirmModal';
 
 interface NewEntryModalProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
   const [category, setCategory] = useState<Category>(categories[0]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -76,11 +79,13 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
   };
 
   const handleDelete = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
     if (editingTransaction && onDelete) {
-      if (confirm('Are you sure you want to delete this transaction?')) {
-        onDelete(editingTransaction.id);
-        onClose();
-      }
+      onDelete(editingTransaction.id);
+      onClose();
     }
   };
 
@@ -151,13 +156,10 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="label-text">Date</label>
-                <input
-                  type="date"
-                  required
-                  className="input-field"
+                <DatePicker
+                  label="Date"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={setDate}
                 />
               </div>
             </div>
@@ -217,6 +219,16 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
         categories={categories}
         selectedCategoryId={category.id}
         type={type}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Transaction"
+        message="Are you sure you want to remove this record? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
       />
     </>
   );

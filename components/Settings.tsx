@@ -5,6 +5,9 @@ import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
 import { LocalRepository } from '../services/db/localRepository';
 import { formatDate } from '../utils';
+import Dropdown from './UI/Dropdown';
+import DatePicker from './UI/DatePicker';
+import ConfirmModal from './UI/ConfirmModal';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -214,18 +217,13 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 						<p className="text-xs text-slate-500 mt-2">All financial metrics will use this symbol.</p>
 					</div>
 
-					<div className="relative mt-4">
-						<select
-							value={currency}
-							onChange={(e) => setCurrency(e.target.value)}
-							className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all cursor-pointer"
-						>
-							{CURRENCIES.map(c => (
-								<option key={c.code} value={c.code}>{c.code} - {c.name}</option>
-							))}
-						</select>
-						<span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
-					</div>
+					<Dropdown
+						label="Select Currency"
+						options={CURRENCIES.map(c => ({ id: c.code, name: `${c.code} - ${c.name}` }))}
+						value={currency}
+						onChange={setCurrency}
+						className="mt-4"
+					/>
 				</div>
 
 				{/* Data Exports */}
@@ -233,24 +231,16 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 					<div>
 						<p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Data Management</p>
 						<div className="grid grid-cols-2 gap-4 mt-4">
-							<div>
-								<label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
-								<input
-									type="date"
-									value={startDate}
-									onChange={(e) => setStartDate(e.target.value)}
-									className="input-field py-1.5 text-xs"
-								/>
-							</div>
-							<div>
-								<label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">End Date</label>
-								<input
-									type="date"
-									value={endDate}
-									onChange={(e) => setEndDate(e.target.value)}
-									className="input-field py-1.5 text-xs"
-								/>
-							</div>
+							<DatePicker
+								label="Start Date"
+								value={startDate}
+								onChange={setStartDate}
+							/>
+							<DatePicker
+								label="End Date"
+								value={endDate}
+								onChange={setEndDate}
+							/>
 						</div>
 					</div>
 					<div className="flex gap-2">

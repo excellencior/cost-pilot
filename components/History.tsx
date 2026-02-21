@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction, Category } from '../types';
 import { formatDate } from '../utils';
+import Dropdown from './UI/Dropdown';
 
 interface HistoryProps {
     transactions: Transaction[];
@@ -167,27 +168,27 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     />
                 </div>
                 <div className="md:w-64">
-                    <select
+                    <Dropdown
+                        label="Category"
+                        options={[
+                            { id: 'all', name: 'All Categories' },
+                            ...categories.map(c => ({ id: c.id, name: c.name }))
+                        ]}
                         value={selectedCategoryId}
-                        onChange={(e) => setSelectedCategoryId(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
-                    >
-                        <option value="all">All Categories</option>
-                        {categories.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                    </select>
+                        onChange={setSelectedCategoryId}
+                    />
                 </div>
                 <div className="md:w-48">
-                    <select
+                    <Dropdown
+                        label="Sort By"
+                        options={[
+                            { id: 'date', name: 'Newest First' },
+                            { id: 'amount', name: 'Highest Amount' },
+                            { id: 'title', name: 'Alphabetical' }
+                        ]}
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as any)}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm font-bold dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
-                    >
-                        <option value="date">Newest First</option>
-                        <option value="amount">Highest Amount</option>
-                        <option value="title">Alphabetical</option>
-                    </select>
+                        onChange={(val) => setSortBy(val as any)}
+                    />
                 </div>
             </div>
 
