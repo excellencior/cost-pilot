@@ -31,21 +31,21 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-                <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white capitalize">
+            <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize">
                         Select {type} Category
                     </h3>
                     <button
                         onClick={onClose}
-                        className="size-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined">close</span>
+                        <span className="material-symbols-outlined text-xl">close</span>
                     </button>
                 </div>
 
                 <div className="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-4 gap-3">
                         {filteredCategories.map((cat) => (
                             <button
                                 key={cat.id}
@@ -54,16 +54,16 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                                     onSelect(cat);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all active:scale-95 ${selectedCategoryId === cat.id
+                                className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all active:scale-95 ${selectedCategoryId === cat.id
                                     ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 text-primary-600 dark:text-primary-400'
                                     : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-800 text-slate-500 hover:border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
-                                <div className={`size-12 rounded-lg flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                <div className={`size-10 rounded-lg flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                                     }`}>
-                                    <span className="material-symbols-outlined text-2xl">{cat.icon}</span>
+                                    <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-center line-clamp-1">{cat.name}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-center line-clamp-1">{cat.name}</span>
                             </button>
                         ))}
                     </div>

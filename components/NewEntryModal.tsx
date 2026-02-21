@@ -92,9 +92,9 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
           onClick={onClose}
         />
 
-        <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-          <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
             </h2>
             <div className="flex items-center gap-2">
@@ -117,7 +117,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
             </div>
           </div>
 
-          <form onSubmit={handleSave} className="p-5 space-y-6">
+          <form onSubmit={handleSave} className="p-5 space-y-4">
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
               {(['expense', 'income'] as const).map((t) => (
                 <button
@@ -125,7 +125,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
                   type="button"
                   onClick={() => setType(t)}
                   disabled={!!editingTransaction}
-                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all capitalize ${type === t
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${type === t
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                     : 'text-slate-500 opacity-50'
                     }`}
@@ -135,7 +135,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="label-text">Amount</label>
                 <input
@@ -178,16 +178,16 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPickerOpen(true)}
-                className="w-full flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
+                className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
               >
-                <div className="size-12 rounded-lg bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
-                  <span className="material-symbols-outlined text-2xl">{category.icon}</span>
+                <div className="size-10 rounded-lg bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
+                  <span className="material-symbols-outlined text-xl">{category.icon}</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{category.name}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">Tap to change</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{category.name}</p>
+                  <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">Tap to change</p>
                 </div>
-                <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                <span className="material-symbols-outlined text-slate-400 text-xl">chevron_right</span>
               </button>
             </div>
 
@@ -195,13 +195,13 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="btn-secondary flex-1 py-2 text-sm"
+                className="btn-secondary flex-1 py-2 text-xs"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn-primary flex-1 py-2 text-sm"
+                className="btn-primary flex-1 py-2 text-xs"
               >
                 {editingTransaction ? 'Update' : 'Save'}
               </button>
