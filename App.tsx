@@ -29,7 +29,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [selectedMonth, setSelectedMonth] = useState<MonthlyData | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
 
   const getCurrencySymbol = (code: string) => {
@@ -41,7 +41,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const freshTransactions = LocalRepository.getAllExpenses();
     setTransactions(freshTransactions);
     const settings = LocalRepository.getSettings();
-    setCurrency(settings.currency);
+    // Currency is already handled by state initialization, but we can sync it here if needed
+    if (currency !== settings.currency) {
+      setCurrency(settings.currency);
+    }
 
     // Categories logic...
     const localCats = LocalRepository.getAllCategories();
