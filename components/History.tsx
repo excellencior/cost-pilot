@@ -160,7 +160,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             {/* Search and Filters Header */}
             <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block px-1">Search</label>
+                    <label className="text-[0.75rem] font-bold text-slate-400 uppercase tracking-wider block px-1">Search</label>
                     <div className="relative group">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
                         <input
