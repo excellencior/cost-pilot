@@ -140,7 +140,7 @@ export const CloudBackupService = {
 
         } catch (error: any) {
             console.error('Pull from remote failed:', error);
-            emitStatus('error', `Download failed: ${error?.message || 'Unknown error'}`);
+            emitStatus('error', 'Download failed. Please check your connection.');
             return false;
         }
     },
@@ -205,7 +205,7 @@ export const CloudBackupService = {
 
                 if (error) {
                     console.error('[CloudBackup] Category push error:', JSON.stringify(error));
-                    throw new Error(`Category sync failed: ${error.message} (${error.code})`);
+                    throw new Error('Some settings failed to sync. Tap to retry.');
                 }
 
                 // Mark as synced locally
@@ -232,7 +232,7 @@ export const CloudBackupService = {
 
                     if (error) {
                         console.error('[CloudBackup] Transaction push error:', JSON.stringify(error));
-                        throw new Error(`Transaction sync failed: ${error.message} (${error.code})`);
+                        throw new Error('New data failed to sync. Tap to retry.');
                     }
                 }
 

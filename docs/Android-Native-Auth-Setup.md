@@ -44,7 +44,7 @@ Native Android Google sign-in strictly requires an **Android OAuth Client ID**.
 1. In Google Cloud Console, navigate to **APIs & Services > Credentials**.
 2. Click **Create Credentials > OAuth client ID**.
 3. Application type: **Android**.
-4. Set the **Package name** (found in your `capacitor.config.ts`, e.g., `com.costpilot.app`).
+4. Set the **Package name** (Your actual underlying Android package name is `com.costpilot.app`).
 5. Provide the **SHA-1 certificate fingerprint**.
     - For local development (Emulator/USB debugging), use your Android Debug Keystore:
       ```bash

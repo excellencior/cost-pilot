@@ -191,19 +191,19 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               </button>
             </div>
 
-            <div className="pt-2 flex gap-3">
+            <div className="flex gap-2 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="btn-secondary flex-1"
+                className="btn-secondary flex-1 py-2 text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn-primary flex-1"
+                className="btn-primary flex-1 py-2 text-sm"
               >
-                {editingTransaction ? 'Update Entry' : 'Save Transaction'}
+                {editingTransaction ? 'Update' : 'Save'}
               </button>
             </div>
           </form>

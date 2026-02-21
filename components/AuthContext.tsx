@@ -71,8 +71,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 });
                 if (error) throw error;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Sign in error:', error);
+            if (Capacitor.isNativePlatform()) {
+                // User-friendly message for UI, details stay in log
+                alert('Sign-in failed. Please try again or check your account settings.');
+            }
             throw error;
         }
     };

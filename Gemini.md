@@ -35,3 +35,6 @@ The project uses **Tailwind CSS v3**.
 ## Data Persistence
 - Core logic is handled by `LocalRepository.ts` for offline-first reliability.
 - Sync logic (if enabled) is managed via `SyncManager.ts` connecting to Supabase.
+
+### Build and Development
+- For Android builds, always use the global `gradle` installation instead of the `./gradlew` wrapper.
