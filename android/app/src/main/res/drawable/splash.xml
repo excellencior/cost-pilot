@@ -5,11 +5,10 @@
 
     <!-- Centered logo -->
     <item
-        android:gravity="center"
-        android:width="120dp"
-        android:height="120dp">
+        android:gravity="center">
         <bitmap
             android:gravity="center"
+            android:mipMap="true"
             android:src="@drawable/costpilot_logo" />
     </item>
 </layer-list>
