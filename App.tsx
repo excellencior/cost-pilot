@@ -14,6 +14,7 @@ import { useAuth } from './components/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from './components/CloudBackupContext';
 import { LocalRepository } from './services/db/localRepository';
 import Layout from './components/Layout';
+import Toast from './components/UI/Toast';
 
 const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void) | null> }> = ({ onDataPulledRef }) => {
   const { user } = useAuth();
@@ -31,6 +32,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
+  const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
 
   // Apply theme on mount
   useEffect(() => {
@@ -93,15 +95,21 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   }, [user, loadData]);
 
   const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
+    const isEditing = 'id' in transaction;
     const transactionData: any = {
       ...transaction,
-      id: 'id' in transaction ? transaction.id : crypto.randomUUID(),
+      id: isEditing ? (transaction as Transaction).id : crypto.randomUUID(),
       user_id: userId || null,
     };
     LocalRepository.upsertExpense(transactionData);
     setEditingTransaction(null);
     loadData();
     triggerBackup();
+
+    setToast({
+      message: isEditing ? 'Transaction updated' : 'New entry added',
+      show: true
+    });
   };
 
   const handleDeleteTransaction = async (id: string) => {
@@ -109,6 +117,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     setEditingTransaction(null);
     loadData();
     triggerBackup();
+    setToast({ message: 'Transaction removed', show: true });
   };
 
   const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
@@ -126,6 +135,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     setEditingCategory(null);
     loadData();
     triggerBackup();
+    setToast({
+      message: ('id' in catData) ? 'Category updated' : 'New category created',
+      show: true
+    });
   };
 
   const monthlyHistory = useMemo(() => {
@@ -309,6 +322,13 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         onSave={handleSaveCategory}
         editingCategory={editingCategory}
         defaultType={defaultCategoryType}
+      />
+
+      <Toast
+        message={toast.message}
+        isOpen={toast.show}
+        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+        duration={1200}
       />
     </Layout>
   );
