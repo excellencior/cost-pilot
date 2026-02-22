@@ -25,19 +25,26 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              // Extract the package name precisely
+              const parts = id.split('node_modules/')[1].split('/');
+              const pkg = parts[0].startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0];
+
+              // Core React (only exact packages)
+              if (['react', 'react-dom', 'scheduler'].includes(pkg)) {
                 return 'vendor-core';
               }
-              if (id.includes('supabase') || id.includes('firebase') || id.includes('capacitor')) {
+              // Cloud services
+              if (pkg.includes('supabase') || pkg.includes('firebase') || pkg.includes('capacitor')) {
                 return 'vendor-cloud';
               }
-              if (id.includes('recharts') || id.includes('d3') || id.includes('victory')) {
+              // Charting
+              if (pkg.includes('recharts') || pkg.startsWith('d3-') || pkg.includes('victory')) {
                 return 'vendor-ui';
               }
-              if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('canvg')) {
+              // Export/PDF
+              if (pkg.includes('jspdf') || pkg.includes('html2canvas') || pkg.includes('canvg')) {
                 return 'vendor-export';
               }
-              return 'vendor-others';
             }
           }
         }
