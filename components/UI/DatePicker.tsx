@@ -83,7 +83,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     const handleYearSelect = (y: number) => {
         setViewDate(new Date(y, viewDate.getMonth(), 1));
-        setViewMode('months');
+        setViewMode('days');
     };
 
     const renderDays = () => {
@@ -128,16 +128,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
     };
 
     const renderMonths = () => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="max-h-[220px] overflow-y-auto px-1 space-y-1 custom-scrollbar">
                 {months.map((m, i) => (
                     <button
                         key={m}
                         type="button"
                         onClick={() => handleMonthSelect(i)}
-                        className={`py-3 text-xs font-bold rounded-xl transition-all ${viewDate.getMonth() === i
-                            ? 'bg-primary-600 text-white'
+                        className={`w-full py-3 text-sm font-bold rounded-xl transition-all ${viewDate.getMonth() === i
+                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
                             : 'bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
                             }`}
                     >
@@ -149,21 +149,22 @@ const DatePicker: React.FC<DatePickerProps> = ({
     };
 
     const renderYears = () => {
-        const currentYear = viewDate.getFullYear();
-        const startYear = currentYear - 5;
+        const currentYear = new Date().getFullYear();
         const years = [];
-        for (let i = 0; i < 12; i++) {
-            years.push(startYear + i);
+        // Show a generous range of years
+        for (let i = currentYear - 50; i <= currentYear + 10; i++) {
+            years.push(i);
         }
+
         return (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="max-h-[220px] overflow-y-auto px-1 space-y-1 custom-scrollbar">
                 {years.map((y) => (
                     <button
                         key={y}
                         type="button"
                         onClick={() => handleYearSelect(y)}
-                        className={`py-3 text-xs font-bold rounded-xl transition-all ${currentYear === y
-                            ? 'bg-primary-600 text-white'
+                        className={`w-full py-3 text-sm font-bold rounded-xl transition-all ${viewDate.getFullYear() === y
+                            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
                             : 'bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
                             }`}
                     >
@@ -185,35 +186,45 @@ const DatePicker: React.FC<DatePickerProps> = ({
             />
 
             {/* Modal - truly screen centered */}
-            <div className="relative bg-brand-surface-light dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-2xl shadow-2xl p-6 w-full max-w-[320px] animate-scale-in">
+            <div className="relative bg-brand-surface-light dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-3xl shadow-2xl p-6 w-full max-w-[320px] animate-scale-in">
                 <div className="flex items-center justify-between mb-6">
-                    <button onClick={handlePrevMonth} className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors text-stone-500">
-                        <span className="material-symbols-outlined">chevron_left</span>
+                    <button onClick={handlePrevMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
+                        <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                     </button>
-                    <div className="text-center flex items-center gap-1.5">
+
+                    <div className="flex items-center gap-1">
                         <button
                             type="button"
-                            onClick={() => setViewMode('months')}
-                            className="text-base font-bold text-stone-900 dark:text-white capitalize hover:text-primary-600 transition-colors"
+                            onClick={() => setViewMode(viewMode === 'months' ? 'days' : 'months')}
+                            className={`px-3 py-1.5 rounded-full text-sm font-bold transition-all border ${viewMode === 'months'
+                                ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-600'
+                                : 'bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-800 text-stone-900 dark:text-white hover:border-primary-500'
+                                }`}
                         >
-                            {monthName}
+                            {viewDate.toLocaleString('default', { month: 'short' })}
                         </button>
                         <button
                             type="button"
-                            onClick={() => setViewMode('years')}
-                            className="text-base font-bold text-stone-400 hover:text-primary-600 transition-colors"
+                            onClick={() => setViewMode(viewMode === 'years' ? 'days' : 'years')}
+                            className={`px-3 py-1.5 rounded-full text-sm font-bold transition-all border ${viewMode === 'years'
+                                ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-600'
+                                : 'bg-stone-50 dark:bg-stone-800/50 border-stone-100 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:border-primary-500'
+                                }`}
                         >
                             {viewDate.getFullYear()}
                         </button>
                     </div>
-                    <button onClick={handleNextMonth} className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors text-stone-500">
-                        <span className="material-symbols-outlined">chevron_right</span>
+
+                    <button onClick={handleNextMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
+                        <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                     </button>
                 </div>
 
-                {viewMode === 'days' && renderDays()}
-                {viewMode === 'months' && renderMonths()}
-                {viewMode === 'years' && renderYears()}
+                <div className="min-h-[220px] flex flex-col justify-center">
+                    {viewMode === 'days' && renderDays()}
+                    {viewMode === 'months' && renderMonths()}
+                    {viewMode === 'years' && renderYears()}
+                </div>
 
                 {viewMode === 'days' && (
                     <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex justify-center">
