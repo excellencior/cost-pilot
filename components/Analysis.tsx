@@ -4,7 +4,7 @@ import { Transaction } from '../types';
 import Dropdown from './UI/Dropdown';
 import DatePicker from './UI/DatePicker';
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f43f5e', '#f59e0b', '#10b981'];
+const COLORS = ['#8C7851', '#C5A059', '#D9C698', '#B08D4D', '#A18F6B', '#6F5F40'];
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -132,23 +132,23 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
       <div className="flex items-center gap-4 px-1">
         <button
           onClick={onBack}
-          className="size-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+          className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">Analysis</h2>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Financial Insights</p>
+          <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">Analysis</h2>
+          <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Financial Insights</p>
         </div>
       </div>
       {/* Unified Control Bar */}
-      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full md:w-auto">
+      <section className="bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-200 dark:border-stone-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between transition-colors">
+        <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-lg w-full md:w-auto">
           {(['month', 'custom'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              className={`flex-1 md:flex-none px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${filterMode === mode ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 md:flex-none px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${filterMode === mode ? 'bg-brand-surface-light dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
               {mode === 'month' ? 'Monthly' : 'Search Range'}
             </button>
@@ -176,7 +176,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
           ) : (
             <div className="flex items-center gap-2">
               <DatePicker value={startDate} onChange={setStartDate} className="w-44" />
-              <span className="text-slate-400 text-[10px] font-bold">TO</span>
+              <span className="text-stone-400 text-[10px] font-bold">TO</span>
               <DatePicker value={endDate} onChange={setEndDate} className="w-44" />
             </div>
           )}
@@ -184,29 +184,45 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <section className="lg:col-span-3 card p-4 flex flex-col justify-between overflow-hidden">
+        <section className="lg:col-span-3 card p-3 md:p-5 flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Period Spending</p>
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white">
+              <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1">Period Spending</p>
+              <h2 className="text-4xl font-black text-stone-900 dark:text-white">
                 {currencySymbol}{totalExpense.toLocaleString()}
               </h2>
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <button
-                onClick={() => setActiveTab('pie')}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'pie' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-              >
-                <span className="material-symbols-outlined text-lg">pie_chart</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Category</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('trend')}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'trend' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-              >
-                <span className="material-symbols-outlined text-lg">show_chart</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Trend</span>
-              </button>
+            <div className="flex items-center gap-2">
+              {/* Desktop Toggle */}
+              <div className="hidden md:flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl">
+                <button
+                  onClick={() => setActiveTab('pie')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'pie' ? 'bg-brand-surface-light dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                >
+                  <span className="material-symbols-outlined text-lg">pie_chart</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Category</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('trend')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all ${activeTab === 'trend' ? 'bg-brand-surface-light dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                >
+                  <span className="material-symbols-outlined text-lg">show_chart</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Trend</span>
+                </button>
+              </div>
+
+              {/* Mobile Dropdown */}
+              <div className="md:hidden">
+                <Dropdown
+                  options={[
+                    { id: 'pie', name: 'Category' },
+                    { id: 'trend', name: 'Trend' }
+                  ]}
+                  value={activeTab}
+                  onChange={(val) => setActiveTab(val as 'pie' | 'trend')}
+                  className="w-32"
+                />
+              </div>
             </div>
           </div>
 
@@ -223,32 +239,32 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#8C7851" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#8C7851" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" hide />
                   <YAxis hide />
-                  <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                  <Area type="monotone" dataKey="value" stroke="#8C7851" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
                   <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
                 </AreaChart>
               )}
             </ResponsiveContainer>
             {activeTab === 'pie' && totalExpense > 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Exp</span>
-                <span className="text-2xl font-black text-slate-900 dark:text-white">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Total Exp</span>
+                <span className="text-2xl font-black text-stone-900 dark:text-white">
                   {totalExpense > 9999 ? `${(totalExpense / 1000).toFixed(1)}k` : totalExpense}
                 </span>
               </div>
             )}
           </div>
         </section>
-
-        <section className="lg:col-span-2 card flex flex-col p-4">
+        {/* Flexible Breakdown List */}
+        <section className="lg:col-span-2 card flex flex-col p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category Detail</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{categoryData.length} ACTIVE</p>
+            <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Category Detail</p>
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{categoryData.length} ACTIVE</p>
           </div>
 
           <div className="space-y-4">
@@ -257,24 +273,24 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
                 <div key={i} className="group">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 transition-colors">
+                      <div className="size-9 rounded-lg bg-stone-50 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 border border-stone-100 dark:border-stone-800 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 transition-colors">
                         <span className="material-symbols-outlined text-lg">{item.icon}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{item.name}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">{item.name}</p>
+                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                           {Math.round((item.value / totalExpense) * 100)}% coverage
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-black text-slate-900 dark:text-white">{currencySymbol}{item.value.toLocaleString()}</p>
-                      <p className="text-[9px] font-bold text-slate-500 flex gap-1 justify-end">
+                      <p className="text-sm font-black text-stone-900 dark:text-white">{currencySymbol}{item.value.toLocaleString()}</p>
+                      <p className="text-[9px] font-bold text-stone-500 flex gap-1 justify-end">
                         {item.descriptions.slice(0, 1).map((d, index) => <span key={index} className="truncate max-w-[80px]">{d}</span>)}
                       </p>
                     </div>
                   </div>
-                  <div className="w-full h-1 bg-slate-50 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-stone-50 dark:bg-stone-800/50 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-1000"
                       style={{

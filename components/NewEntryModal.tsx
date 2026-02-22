@@ -93,13 +93,13 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="absolute inset-0 bg-slate-900/60 transition-opacity animate-backdrop"
+          className="absolute inset-0 bg-stone-900/60 transition-opacity animate-backdrop"
           onClick={onClose}
         />
 
-        <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+        <div className="relative w-full max-w-sm bg-brand-surface-light dark:bg-brand-surface-dark rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-stone-800">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white">
               {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
             </h2>
             <div className="flex items-center gap-2">
@@ -115,7 +115,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               )}
               <button
                 onClick={onClose}
-                className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="size-8 rounded-full flex items-center justify-center text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -123,7 +123,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
           </div>
 
           <form onSubmit={handleSave} className="p-5 space-y-4">
-            <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+            <div className="flex p-1 bg-stone-100 dark:bg-stone-800 rounded-lg">
               {(['expense', 'income'] as const).map((t) => (
                 <button
                   key={t}
@@ -131,8 +131,8 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
                   onClick={() => setType(t)}
                   disabled={!!editingTransaction}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${type === t
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500 opacity-50'
+                    ? 'bg-brand-surface-light dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm'
+                    : 'text-stone-500 opacity-50'
                     }`}
                 >
                   {t}
@@ -180,16 +180,16 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsPickerOpen(true)}
-                className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
+                className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-100 dark:border-stone-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all text-left"
               >
-                <div className="size-10 rounded-lg bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
-                  <span className="material-symbols-outlined text-xl">{category.icon}</span>
+                <div className="size-10 rounded-lg bg-brand-surface-light dark:bg-stone-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400">
+                  <span className="material-symbols-outlined text-xl">{category?.icon || 'category'}</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{category.name}</p>
-                  <p className="text-[9px] text-slate-500 font-medium uppercase tracking-tight">Tap to change</p>
+                  <p className="text-xs font-bold text-stone-900 dark:text-white uppercase tracking-wider">{category?.name || 'Select Category'}</p>
+                  <p className="text-[9px] text-stone-500 font-medium uppercase tracking-tight">Tap to change</p>
                 </div>
-                <span className="material-symbols-outlined text-slate-400 text-xl">chevron_right</span>
+                <span className="material-symbols-outlined text-stone-400 text-xl">chevron_right</span>
               </button>
             </div>
 

@@ -18,7 +18,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinished }) => {
 
     return (
         <div
-            className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
+            className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-stone-950 transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
         >
             <div className="flex flex-col items-center gap-5 animate-in fade-in zoom-in duration-700">
                 <img
@@ -30,8 +30,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinished }) => {
             </div>
 
             <div className="absolute bottom-16 flex flex-col items-center gap-1 animate-in fade-in duration-1000 delay-500">
-                <p className="text-slate-500 text-xs font-medium tracking-wider">© Apurbo</p>
-                <p className="text-slate-600 text-[11px] italic">Built for simplicity</p>
+                <p className="text-stone-500 text-xs font-medium tracking-wider">© Apurbo</p>
+                <p className="text-stone-600 text-[11px] italic">Built for simplicity</p>
             </div>
         </div>
     );

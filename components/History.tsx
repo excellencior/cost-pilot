@@ -89,7 +89,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                 <button
                     onClick={() => setSelectedMonthKey(null)}
-                    className="flex items-center gap-2 text-slate-500 hover:text-primary-600 transition-colors group mb-2"
+                    className="flex items-center gap-2 text-stone-500 hover:text-primary-600 transition-colors group mb-2"
                 >
                     <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
                     <span className="font-bold text-sm uppercase tracking-wider">Back to Summary</span>
@@ -97,14 +97,14 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
 
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-1">
                     <div>
-                        <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white capitalize">
-                            {data.monthName} <span className="text-slate-400 font-light">{data.year}</span>
+                        <h2 className="text-3xl font-extrabold text-stone-900 dark:text-white capitalize">
+                            {data.monthName} <span className="text-stone-400 font-light">{data.year}</span>
                         </h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Detailed transactions for this period</p>
+                        <p className="text-sm text-stone-500 dark:text-stone-400">Detailed transactions for this period</p>
                     </div>
                     <div className="flex gap-4">
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net Savings</p>
+                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Net Savings</p>
                             <p className={`text-xl font-bold ${data.savings >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
                                 {data.savings >= 0 ? '+' : ''}{currencySymbol}{data.savings.toLocaleString()}
                             </p>
@@ -117,7 +117,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                         <button
                             key={t.id}
                             onClick={() => onTransactionClick(t)}
-                            className="flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
                         >
                             <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                 ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -126,12 +126,12 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                 <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-slate-900 dark:text-white truncate">{t.title}</p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">
+                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">
                                     {t.category.name} • {formatDate(t.date)}
                                 </p>
                             </div>
-                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
+                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
                                 {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
                             </div>
                         </button>
@@ -142,33 +142,33 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header with Back Button */}
             <div className="flex items-center gap-4 px-1">
                 <button
                     onClick={onBack}
-                    className="size-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">History</h2>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Transaction Ledger</p>
+                    <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">History</h2>
+                    <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Transaction Ledger</p>
                 </div>
             </div>
 
             {/* Search and Filters Header */}
             <div className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 space-y-1">
-                    <label className="text-[0.75rem] font-bold text-slate-400 uppercase tracking-wider block px-1">Search</label>
+                    <label className="text-[0.75rem] font-bold text-stone-400 uppercase tracking-wider block px-1">Search</label>
                     <div className="relative group">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary-600 transition-colors">search</span>
                         <input
                             type="text"
                             placeholder="Find transactions..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-slate-900 dark:text-white shadow-sm"
+                            className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
                         />
                     </div>
                 </div>
@@ -204,7 +204,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     /* Search Results View */
                     <div className="space-y-4 animate-scale-in" >
                         <div className="flex items-center justify-between px-1">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
                                 Found {filteredResults.length} matches
                             </p>
                             {(searchQuery || selectedCategoryId !== 'all') && (
@@ -223,7 +223,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                     <button
                                         key={t.id}
                                         onClick={() => onTransactionClick(t)}
-                                        className="flex items-center gap-4 p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900 transition-all group text-left shadow-sm"
+                                        className="flex items-center gap-4 p-3 md:p-3.5 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all group text-left shadow-sm"
                                     >
                                         <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                             ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -232,18 +232,18 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                             <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-slate-900 dark:text-white truncate">{t.title}</p>
-                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">
+                                            <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                            <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">
                                                 {t.category.name} • {formatDate(t.date)}
                                             </p>
                                         </div>
-                                        <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
+                                        <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
                                             {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
                                         </div>
                                     </button>
                                 ))
                             ) : (
-                                <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 opacity-30">
+                                <div className="col-span-full py-20 flex flex-col items-center justify-center text-stone-400 opacity-30">
                                     <span className="material-symbols-outlined text-6xl">search_off</span>
                                     <p className="font-bold uppercase mt-2">No matches found</p>
                                 </div>
@@ -262,41 +262,41 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         onClick={() => setSelectedMonthKey(key)}
                                         className="card p-0 overflow-hidden group hover:border-primary-300 dark:hover:border-primary-800 transition-all hover:shadow-xl hover:shadow-primary-500/5 text-left"
                                     >
-                                        <div className="p-5 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                                        <div className="p-4 md:p-5 border-b border-stone-50 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-800/30">
                                             <div>
-                                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{data.monthName}</h3>
-                                                <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">{data.year}</p>
+                                                <h3 className="text-xl font-bold text-stone-900 dark:text-white">{data.monthName}</h3>
+                                                <p className="text-xs text-stone-500 font-medium tracking-wide uppercase">{data.year}</p>
                                             </div>
-                                            <div className="size-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary-600 group-hover:bg-primary-50 transition-all">
+                                            <div className="size-10 rounded-full bg-brand-base-light dark:bg-stone-800 flex items-center justify-center text-stone-400 group-hover:text-primary-600 group-hover:bg-primary-50 transition-all">
                                                 <span className="material-symbols-outlined">chevron_right</span>
                                             </div>
                                         </div>
 
-                                        <div className="p-5 grid grid-cols-2 gap-5 font-bold">
+                                        <div className="p-4 md:p-5 grid grid-cols-2 gap-4 md:gap-5 font-bold">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest">Inflow</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-widest">Inflow</p>
                                                 <p className="text-lg text-green-600">+{currencySymbol}{data.income.toLocaleString()}</p>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest">Outflow</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-widest">Outflow</p>
                                                 <p className="text-lg text-rose-600">-{currencySymbol}{data.expense.toLocaleString()}</p>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest">Savings</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-widest">Savings</p>
                                                 <p className={`text-lg ${data.savings >= 0 ? 'text-primary-600' : 'text-amber-600'}`}>
                                                     {currencySymbol}{data.savings.toLocaleString()}
                                                 </p>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest">Entries</p>
-                                                <p className="text-lg text-slate-700 dark:text-slate-300">{data.transactions.length}</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-widest">Entries</p>
+                                                <p className="text-lg text-stone-700 dark:text-stone-300">{data.transactions.length}</p>
                                             </div>
                                         </div>
                                     </button>
                                 );
                             })
                         ) : (
-                            <div className="col-span-full card p-20 flex flex-col items-center justify-center text-slate-400 border-dashed border-2 opacity-50">
+                            <div className="col-span-full card p-20 flex flex-col items-center justify-center text-stone-400 border-dashed border-2 opacity-50">
                                 <span className="material-symbols-outlined text-6xl mb-4 opacity-20">history_edu</span>
                                 <p className="text-lg font-black uppercase tracking-widest">Zero Operations</p>
                                 <p className="text-sm font-medium">Add records to start tracking history</p>

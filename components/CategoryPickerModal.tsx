@@ -26,19 +26,19 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-900/40 animate-backdrop"
+                className="absolute inset-0 bg-stone-900/40 animate-backdrop"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize">
+            <div className="relative w-full max-w-sm bg-brand-surface-light dark:bg-brand-surface-dark rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-stone-800">
+                    <h3 className="text-lg font-bold text-stone-900 dark:text-white capitalize">
                         Select {type} Category
                     </h3>
                     <button
                         onClick={onClose}
-                        className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="size-8 rounded-full flex items-center justify-center text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                     >
                         <span className="material-symbols-outlined text-xl">close</span>
                     </button>
@@ -54,12 +54,12 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                                     onSelect(cat);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all active:scale-95 ${selectedCategoryId === cat.id
-                                    ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 text-primary-600 dark:text-primary-400'
-                                    : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-800 text-slate-500 hover:border-slate-200 hover:bg-slate-50'
+                                className={`flex flex-col items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${selectedCategoryId === cat.id
+                                    ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400'
+                                    : 'bg-brand-surface-light dark:bg-stone-800 border-stone-50 dark:border-stone-800 text-stone-500 hover:border-stone-200 hover:bg-stone-50'
                                     }`}
                             >
-                                <div className={`size-10 rounded-lg flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                <div className={`size-10 rounded-lg flex items-center justify-center shadow-sm ${selectedCategoryId === cat.id ? 'bg-primary-600 text-white' : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300'
                                     }`}>
                                     <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                                 </div>
@@ -69,8 +69,8 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                     </div>
                 </div>
 
-                <div className="p-5 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-center">
-                    <p className="text-xs text-slate-500 font-medium">
+                <div className="p-5 bg-stone-50 dark:bg-stone-800/30 border-t border-stone-100 dark:border-stone-800 text-center">
+                    <p className="text-xs text-stone-500 font-medium">
                         Manage your categories in <span className="text-primary-600 font-bold">Settings</span>
                     </p>
                 </div>

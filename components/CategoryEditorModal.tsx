@@ -64,19 +64,19 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+      <div className="relative w-full max-w-md bg-brand-surface-light dark:bg-brand-surface-dark rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+        <div className="flex items-center justify-between p-5 border-b border-stone-100 dark:border-stone-800">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-white">
             {editingCategory ? 'Edit Category' : 'New Category'}
           </h2>
           <button
             onClick={onClose}
-            className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="size-8 rounded-full flex items-center justify-center text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -123,7 +123,7 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
                       onClick={() => setIcon(i)}
                       className={`size-10 rounded-lg flex items-center justify-center transition-all ${icon === i
                         ? 'bg-primary-600 text-white shadow-lg'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        : 'bg-stone-50 dark:bg-stone-800 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700'
                         }`}
                     >
                       <span className="material-symbols-outlined text-xl">{i}</span>
