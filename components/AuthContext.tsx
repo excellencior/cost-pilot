@@ -25,6 +25,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!supabase) {
+            setLoading(false);
+            return;
+        }
+
         // Check active sessions
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
@@ -52,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     throw new Error('No ID token received from Google Auth');
                 }
 
-                const { error } = await supabase.auth.signInWithIdToken({
+                const { error } = await supabase!.auth.signInWithIdToken({
                     provider: 'google',
                     token: idToken,
                 });
@@ -60,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 if (error) throw error;
             } else {
                 // Standard Web Flow
+                if (!supabase) throw new Error('Supabase not configured');
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
@@ -85,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (Capacitor.isNativePlatform()) {
                 await FirebaseAuthentication.signOut();
             }
-            await supabase.auth.signOut();
+            if (supabase) await supabase.auth.signOut();
         } catch (error) {
             console.error('Sign out error:', error);
             throw error;
