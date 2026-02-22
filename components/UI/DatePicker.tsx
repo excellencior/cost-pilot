@@ -16,6 +16,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     className = ''
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>('days');
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Parse initial date with safety
@@ -31,6 +32,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     useEffect(() => {
         if (isOpen) {
             setViewDate(parseDate(value));
+            setViewMode('days');
             // Prevent body scroll when modal is open
             document.body.style.overflow = 'hidden';
         } else {
@@ -53,11 +55,19 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const firstDayOfMonth = (y: number, m: number) => new Date(y, m, 1).getDay();
 
     const handlePrevMonth = () => {
-        setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+        if (viewMode === 'days') {
+            setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+        } else if (viewMode === 'years') {
+            setViewDate(new Date(viewDate.getFullYear() - 12, viewDate.getMonth(), 1));
+        }
     };
 
     const handleNextMonth = () => {
-        setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+        if (viewMode === 'days') {
+            setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+        } else if (viewMode === 'years') {
+            setViewDate(new Date(viewDate.getFullYear() + 12, viewDate.getMonth(), 1));
+        }
     };
 
     const handleDateSelect = (d: number) => {
@@ -66,35 +76,103 @@ const DatePicker: React.FC<DatePickerProps> = ({
         setIsOpen(false);
     };
 
-    const days = [];
-    const totalDays = daysInMonth(viewDate.getFullYear(), viewDate.getMonth());
-    const startDay = firstDayOfMonth(viewDate.getFullYear(), viewDate.getMonth());
+    const handleMonthSelect = (m: number) => {
+        setViewDate(new Date(viewDate.getFullYear(), m, 1));
+        setViewMode('days');
+    };
 
-    // Padding for start of month
-    for (let i = 0; i < startDay; i++) {
-        days.push(<div key={`empty-${i}`} className="p-2" />);
-    }
+    const handleYearSelect = (y: number) => {
+        setViewDate(new Date(y, viewDate.getMonth(), 1));
+        setViewMode('months');
+    };
 
-    for (let i = 1; i <= totalDays; i++) {
-        const isSelected = value === `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        const isToday = new Date().toISOString().split('T')[0] === `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    const renderDays = () => {
+        const days = [];
+        const totalDays = daysInMonth(viewDate.getFullYear(), viewDate.getMonth());
+        const startDay = firstDayOfMonth(viewDate.getFullYear(), viewDate.getMonth());
 
-        days.push(
-            <button
-                key={i}
-                type="button"
-                onClick={() => handleDateSelect(i)}
-                className={`size-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all relative ${isSelected
-                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-stone-900'
-                    : isToday
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold'
-                        : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
-                    }`}
-            >
-                {i}
-            </button>
+        for (let i = 0; i < startDay; i++) {
+            days.push(<div key={`empty-${i}`} className="p-2" />);
+        }
+
+        for (let i = 1; i <= totalDays; i++) {
+            const isSelected = value === `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            const isToday = new Date().toISOString().split('T')[0] === `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
+            days.push(
+                <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleDateSelect(i)}
+                    className={`size-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all relative ${isSelected
+                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-stone-900'
+                        : isToday
+                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold'
+                            : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                        }`}
+                >
+                    {i}
+                </button>
+            );
+        }
+        return (
+            <>
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                        <div key={i} className="text-[10px] font-bold text-stone-400 text-center">{d}</div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">{days}</div>
+            </>
         );
-    }
+    };
+
+    const renderMonths = () => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return (
+            <div className="grid grid-cols-3 gap-2">
+                {months.map((m, i) => (
+                    <button
+                        key={m}
+                        type="button"
+                        onClick={() => handleMonthSelect(i)}
+                        className={`py-3 text-xs font-bold rounded-xl transition-all ${viewDate.getMonth() === i
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
+                            }`}
+                    >
+                        {m}
+                    </button>
+                ))}
+            </div>
+        );
+    };
+
+    const renderYears = () => {
+        const currentYear = viewDate.getFullYear();
+        const startYear = currentYear - 5;
+        const years = [];
+        for (let i = 0; i < 12; i++) {
+            years.push(startYear + i);
+        }
+        return (
+            <div className="grid grid-cols-3 gap-2">
+                {years.map((y) => (
+                    <button
+                        key={y}
+                        type="button"
+                        onClick={() => handleYearSelect(y)}
+                        className={`py-3 text-xs font-bold rounded-xl transition-all ${currentYear === y
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-stone-50 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
+                            }`}
+                    >
+                        {y}
+                    </button>
+                ))}
+            </div>
+        );
+    };
 
     const monthName = viewDate.toLocaleString('default', { month: 'long' });
 
@@ -112,34 +190,42 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     <button onClick={handlePrevMonth} className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors text-stone-500">
                         <span className="material-symbols-outlined">chevron_left</span>
                     </button>
-                    <div className="text-center">
-                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{viewDate.getFullYear()}</p>
-                        <p className="text-base font-bold text-stone-900 dark:text-white capitalize">{monthName}</p>
+                    <div className="text-center flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('months')}
+                            className="text-base font-bold text-stone-900 dark:text-white capitalize hover:text-primary-600 transition-colors"
+                        >
+                            {monthName}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('years')}
+                            className="text-base font-bold text-stone-400 hover:text-primary-600 transition-colors"
+                        >
+                            {viewDate.getFullYear()}
+                        </button>
                     </div>
                     <button onClick={handleNextMonth} className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors text-stone-500">
                         <span className="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
 
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                        <div key={i} className="text-[10px] font-bold text-stone-400 text-center">{d}</div>
-                    ))}
-                </div>
+                {viewMode === 'days' && renderDays()}
+                {viewMode === 'months' && renderMonths()}
+                {viewMode === 'years' && renderYears()}
 
-                <div className="grid grid-cols-7 gap-1">
-                    {days}
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex justify-center">
-                    <button
-                        type="button"
-                        onClick={() => handleDateSelect(new Date().getDate())}
-                        className="text-[11px] font-bold text-primary-600 uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform"
-                    >
-                        Select Today
-                    </button>
-                </div>
+                {viewMode === 'days' && (
+                    <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex justify-center">
+                        <button
+                            type="button"
+                            onClick={() => handleDateSelect(new Date().getDate())}
+                            className="text-[11px] font-bold text-primary-600 uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform"
+                        >
+                            Select Today
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     ) : null;
