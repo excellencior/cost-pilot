@@ -115,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     return (
         <div className="h-screen flex flex-col md:flex-row bg-brand-base-light dark:bg-brand-base-dark overflow-hidden">
             {/* Sidebar (Desktop) */}
-            <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-brand-surface-light dark:bg-brand-surface-dark border-r border-stone-200/60 dark:border-stone-800/60 z-30 transition-colors">
+            <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-brand-surface-light dark:bg-brand-surface-dark border-r border-stone-200/60 dark:border-stone-800/60 z-30 transition-colors p-5">
                 <div className="flex items-center justify-between mb-6 px-2">
                     <div className="flex items-center gap-3">
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
@@ -175,7 +175,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     </div>
                 </header>
 
-                <div className="flex-1 p-3 md:p-4 lg:p-6 pb-24 md:pb-6 overflow-y-auto w-full max-w-5xl mx-auto">
+                <div className="flex-1 px-5 py-4 md:px-10 md:py-6 lg:px-14 pb-24 md:pb-6 overflow-y-auto w-full max-w-5xl mx-auto">
                     {children}
                     {currentView === 'settings' && <Footer />}
                 </div>
