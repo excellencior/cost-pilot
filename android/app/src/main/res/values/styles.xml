@@ -18,7 +18,7 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenAnimatedIcon">@drawable/costpilot_logo</item>
-        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <item name="windowSplashScreenBackground">#0c0a09</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

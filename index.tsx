@@ -8,15 +8,24 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
 import 'material-symbols';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { AuthProvider } from './components/AuthContext';
 import SplashScreen from './components/SplashScreen';
+import { Capacitor } from '@capacitor/core';
+import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
 
 const Root: React.FC = () => {
-  const [showSplash, setShowSplash] = useState(!Capacitor.isNativePlatform());
+  const [showSplash, setShowSplash] = useState(true);
+
+  // Dismiss native Capacitor splash once React app mounts
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      CapSplashScreen.hide();
+    }
+  }, []);
 
   const handleSplashFinished = useCallback(() => {
     setShowSplash(false);
