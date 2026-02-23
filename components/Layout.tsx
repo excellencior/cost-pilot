@@ -124,7 +124,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     return (
         <div className="h-screen flex flex-col md:flex-row bg-brand-base-light dark:bg-brand-base-dark overflow-hidden">
             {/* Sidebar (Desktop) */}
-            <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-brand-surface-light dark:bg-brand-surface-dark border-r border-stone-200/60 dark:border-stone-800/60 z-30 transition-colors p-5">
+            <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 bg-brand-surface-light dark:bg-brand-surface-dark border-r border-[#AF8F42]/30 dark:border-[#AF8F42]/40 z-30 transition-colors p-5">
                 <div className="flex items-center justify-between mb-6 px-2">
                     <div className="flex items-center gap-3">
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
@@ -139,18 +139,51 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                             key={item.view}
                             onClick={() => onNavigate(item.view)}
                             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold transition-all relative group ${currentView === item.view
-                                ? 'text-primary-600 dark:text-primary-400'
+                                ? 'text-[#AF8F42] dark:text-[#D4AF37]'
                                 : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                                 }`}
                         >
                             {currentView === item.view && (
-                                <div className="absolute inset-0 bg-primary-500/5 dark:bg-white/5 backdrop-blur-md rounded-lg border border-primary-500/5 dark:border-white/10 animate-fade-in"></div>
+                                <div className="absolute inset-0 bg-[#AF8F42]/10 dark:bg-[#AF8F42]/5 backdrop-blur-md rounded-lg border border-[#AF8F42]/20 dark:border-[#AF8F42]/10 animate-fade-in"></div>
                             )}
                             <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
                             <span className="relative z-10">{item.label}</span>
                         </button>
                     ))}
                 </nav>
+
+                {/* Sidebar Middle - Trust Section */}
+                <div className="my-10 px-4 py-6 rounded-2xl border border-[#AF8F42]/20 dark:border-[#AF8F42]/10 bg-gradient-to-br from-stone-50 to-white dark:from-stone-800/50 dark:to-stone-900/50 relative overflow-hidden group">
+                    <div className="absolute -top-12 -right-12 size-24 bg-[#AF8F42]/10 rounded-full blur-2xl group-hover:bg-[#AF8F42]/20 transition-all"></div>
+                    <div className="relative z-10 flex flex-col items-center text-center">
+                        <div className="size-10 rounded-full bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-3 border border-primary-200 dark:border-primary-800">
+                            <span className="material-symbols-outlined text-xl">verified_user</span>
+                        </div>
+                        <p className="text-xs font-bold text-stone-900 dark:text-white uppercase tracking-wider mb-1">Local-First</p>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium leading-relaxed">
+                            Your data stays on this device. Encrypted & Private.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Legal & Support Section */}
+                <div className="pb-6 space-y-3 px-2">
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-2">Legal & Support</p>
+                    <div className="space-y-1">
+                        <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">article</span>
+                            Terms of Service
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">policy</span>
+                            Privacy Policy
+                        </button>
+                        <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">headset_mic</span>
+                            Get Help
+                        </button>
+                    </div>
+                </div>
 
                 {userEmail && (
                     <div className="mt-auto pt-6 border-t border-stone-100 dark:border-stone-800">
@@ -169,7 +202,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 relative h-full md:ml-64">
-                <header className="md:hidden flex items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-stone-200/60 dark:border-stone-800/60 sticky top-0 z-30 transition-colors">
+                <header className="md:hidden flex items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors">
                     <div className="flex items-center gap-2">
                         <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-md object-cover" />
                         <span className="font-bold text-stone-900 dark:text-white">CostPilot</span>

@@ -17,8 +17,15 @@ const Footer: React.FC = () => {
                 <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-2 font-medium tracking-widest uppercase italic">
                     Designed for visual clarity
                 </p>
+                <div className="flex items-center gap-4 mt-4 text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+                    <button className="hover:text-[#AF8F42] transition-colors">Terms</button>
+                    <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+                    <button className="hover:text-[#AF8F42] transition-colors">Privacy</button>
+                    <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+                    <button className="hover:text-[#AF8F42] transition-colors">Support</button>
+                </div>
             </div>
-            <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-2 font-medium tracking-widest uppercase text-center">
+            <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-4 font-medium tracking-widest uppercase text-center">
                 &copy; {new Date().getFullYear()} CostPilot • All Rights Reserved
             </p>
         </footer>
