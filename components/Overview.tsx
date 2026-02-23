@@ -72,8 +72,8 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
         {typeFilter && (
           <div className="flex items-center gap-2 px-1 animate-in fade-in duration-300">
             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${typeFilter === 'income'
-                ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
+              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+              : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
               }`}>
               <span className="material-symbols-outlined text-sm">{typeFilter === 'income' ? 'arrow_upward' : 'arrow_downward'}</span>
               Showing {typeFilter} only
@@ -137,7 +137,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
                     <button
                       key={t.id}
                       onClick={() => onTransactionClick(t)}
-                      className="w-full card p-3 flex items-center gap-4 group hover:border-primary-200/50 dark:hover:border-primary-900/50 text-left transition-all"
+                      className="w-full card p-3 flex items-center gap-4 group border-stone-500 dark:border-stone-500 hover:border-primary-400 dark:hover:border-primary-400 text-left transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary-500/10 shadow-sm active:scale-[0.99]"
                     >
                       <div className={`size-12 rounded-lg flex items-center justify-center bg-stone-50 dark:bg-stone-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
                         <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>

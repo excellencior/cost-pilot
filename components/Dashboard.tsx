@@ -108,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                   key={t.id}
                   onClick={() => onTransactionClick(t)}
-                  className="w-full card p-3 md:p-4 flex items-center gap-3 md:gap-4 hover:border-primary-200/50 dark:hover:border-primary-900/50 group"
+                  className="w-full card p-3 md:p-4 flex items-center gap-3 md:gap-4 border-stone-500 dark:border-stone-500 hover:border-primary-400 dark:hover:border-primary-400 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary-500/10 group active:scale-[0.99]"
                 >
                   <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                     }`}>
