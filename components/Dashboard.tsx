@@ -8,6 +8,7 @@ interface DashboardProps {
   onAddEntry: () => void;
   onViewAll: () => void;
   onTransactionClick: (t: Transaction) => void;
+  onTypeFilter: (type: 'income' | 'expense') => void;
   currencySymbol: string;
 }
 
@@ -17,6 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onAddEntry,
   onViewAll,
   onTransactionClick,
+  onTypeFilter,
   currencySymbol
 }) => {
   const currentMonth = monthlyData[0] || { month: 'Unknown', year: new Date().getFullYear(), income: 0, expense: 0 };
@@ -39,29 +41,35 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="flex flex-row sm:flex-row items-center gap-2 md:gap-4 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
+            <button
+              onClick={() => onTypeFilter('income')}
+              className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
+            >
               <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
                 <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
               </div>
-              <div>
+              <div className="text-left">
                 <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Income</p>
                 <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
                   {currencySymbol}{currentMonth.income.toLocaleString()}
                 </p>
               </div>
-            </div>
+            </button>
 
-            <div className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
+            <button
+              onClick={() => onTypeFilter('expense')}
+              className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
+            >
               <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
                 <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
               </div>
-              <div>
+              <div className="text-left">
                 <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Expense</p>
                 <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
                   {currencySymbol}{currentMonth.expense.toLocaleString()}
                 </p>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 

@@ -33,6 +33,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
+  const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
 
   // Apply theme on mount
   useEffect(() => {
@@ -208,11 +209,12 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
               setEditingTransaction(null);
               setIsEntryModalOpen(true);
             }}
-            onViewAll={() => setCurrentView('overview')}
+            onViewAll={() => { setTypeFilter(null); setCurrentView('overview'); }}
             onTransactionClick={(t) => {
               setEditingTransaction(t);
               setIsEntryModalOpen(true);
             }}
+            onTypeFilter={(type) => { setTypeFilter(type); setCurrentView('overview'); }}
             currencySymbol={getCurrencySymbol(currency)}
           />
         );
@@ -222,12 +224,14 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
           <Overview
             month={displayMonth}
             transactions={getMonthTransactions(displayMonth)}
-            onBack={() => setCurrentView('dashboard')}
+            onBack={() => { setTypeFilter(null); setCurrentView('dashboard'); }}
             onTransactionClick={(t) => {
               setEditingTransaction(t);
               setIsEntryModalOpen(true);
             }}
             currency={currency}
+            typeFilter={typeFilter}
+            onClearFilter={() => setTypeFilter(null)}
           />
         );
       case 'history':
@@ -276,11 +280,12 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
           monthlyData={monthlyHistory}
           transactions={transactions}
           onAddEntry={() => setIsEntryModalOpen(true)}
-          onViewAll={() => setCurrentView('history')}
+          onViewAll={() => { setTypeFilter(null); setCurrentView('history'); }}
           onTransactionClick={(t) => {
             setEditingTransaction(t);
             setIsEntryModalOpen(true);
           }}
+          onTypeFilter={(type) => { setTypeFilter(type); setCurrentView('overview'); }}
           currencySymbol={getCurrencySymbol(currency)}
         />;
     }

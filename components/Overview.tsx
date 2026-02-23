@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Transaction, MonthlyData } from '../types';
 import { formatDate } from '../utils';
 
@@ -8,6 +8,8 @@ interface OverviewProps {
   onBack: () => void;
   onTransactionClick: (t: Transaction) => void;
   currency: string;
+  typeFilter?: 'income' | 'expense' | null;
+  onClearFilter?: () => void;
 }
 
 const getCurrencySymbol = (code: string) => {
@@ -15,8 +17,12 @@ const getCurrencySymbol = (code: string) => {
   return symbols[code] || '$';
 };
 
-const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTransactionClick, currency }) => {
+const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTransactionClick, currency, typeFilter, onClearFilter }) => {
   const currencySymbol = getCurrencySymbol(currency);
+  const filteredTransactions = useMemo(() => {
+    if (!typeFilter) return transactions;
+    return transactions.filter(t => t.type === typeFilter);
+  }, [transactions, typeFilter]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -63,15 +69,36 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
 
       {/* Transaction List */}
       <section className="space-y-4">
+        {typeFilter && (
+          <div className="flex items-center gap-2 px-1 animate-in fade-in duration-300">
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${typeFilter === 'income'
+                ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
+              }`}>
+              <span className="material-symbols-outlined text-sm">{typeFilter === 'income' ? 'arrow_upward' : 'arrow_downward'}</span>
+              Showing {typeFilter} only
+            </div>
+            {onClearFilter && (
+              <button
+                onClick={onClearFilter}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all active:scale-95 uppercase tracking-wider"
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center justify-between px-1">
           <h3 className="font-bold text-stone-900 dark:text-white">Transaction Timeline</h3>
-          <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">{transactions.length} items</span>
+          <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">{filteredTransactions.length} items</span>
         </div>
 
         <div className="flex flex-col gap-5">
           {(() => {
             // Group transactions by date
-            const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+            const sorted = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
             const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
             sorted.forEach(t => {
               const [year, month, day] = t.date.split('-').map(Number);
