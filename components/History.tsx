@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Transaction, Category } from '../types';
 import { formatDate } from '../utils';
 import Dropdown from './UI/Dropdown';
+import CalendarView from './CalendarView';
 
 interface HistoryProps {
     transactions: Transaction[];
@@ -16,6 +17,8 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
     const [sortBy, setSortBy] = useState<'date' | 'amount' | 'title'>('date');
+    const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
+    const [calendarTypeFilter, setCalendarTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
 
     const isFiltering = searchQuery.length > 0 || selectedCategoryId !== 'all';
 
@@ -112,30 +115,62 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     </div>
                 </header>
 
-                <div className="flex flex-col gap-3">
-                    {data.transactions.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => onTransactionClick(t)}
-                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
-                        >
-                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
-                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
-                                }`}>
-                                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                <div className="flex flex-col gap-5">
+                    {(() => {
+                        // Group transactions by date using string splitting to avoid timezone issues
+                        const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
+                        data.transactions.forEach(t => {
+                            const [year, month, day] = t.date.split('-').map(Number);
+                            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            if (!grouped[dateKey]) {
+                                const d = new Date(year, month - 1, day);
+                                grouped[dateKey] = {
+                                    label: `${day} ${d.toLocaleString('default', { month: 'long' })} - ${year}`,
+                                    transactions: []
+                                };
+                            }
+                            grouped[dateKey].transactions.push(t);
+                        });
+                        const sortedDateKeys = Object.keys(grouped).sort().reverse();
+
+                        return sortedDateKeys.map(dateKey => (
+                            <div key={dateKey} className="space-y-2.5">
+                                <div className="flex items-center gap-3 px-1 pt-1">
+                                    <span className="material-symbols-outlined text-base text-primary-500 dark:text-primary-400">calendar_today</span>
+                                    <h3 className="text-xs font-extrabold text-stone-600 dark:text-stone-300 uppercase tracking-widest whitespace-nowrap">
+                                        {grouped[dateKey].label}
+                                    </h3>
+                                    <div className="flex-1 h-px bg-stone-200 dark:bg-stone-700"></div>
+                                </div>
+                                <div className="flex flex-col gap-2.5">
+                                    {grouped[dateKey].transactions.map((t) => (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => onTransactionClick(t)}
+                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                                        >
+                                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
+                                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                                                }`}>
+                                                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
+                                                </div>
+                                            </div>
+                                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
+                                                {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">
-                                    {t.category.name} • {formatDate(t.date)}
-                                </p>
-                            </div>
-                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
-                                {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
-                            </div>
-                        </button>
-                    ))}
+                        ));
+                    })()}
                 </div>
             </div>
         );
@@ -155,52 +190,94 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">History</h2>
                     <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Transaction Ledger</p>
                 </div>
+                <div className="flex-1"></div>
+                <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl">
+                    <button
+                        onClick={() => setViewMode('summary')}
+                        className={`size-9 rounded-lg flex items-center justify-center transition-all ${viewMode === 'summary' ? 'bg-white dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                        title="List View"
+                    >
+                        <span className="material-symbols-outlined">list</span>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('calendar')}
+                        className={`size-9 rounded-lg flex items-center justify-center transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
+                        title="Calendar View"
+                    >
+                        <span className="material-symbols-outlined">calendar_month</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Search and Filters Header */}
-            <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 space-y-1">
-                    <label className="text-[0.75rem] font-bold text-stone-400 uppercase tracking-wider block px-1">Search</label>
-                    <div className="relative group">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary-600 transition-colors">search</span>
-                        <input
-                            type="text"
-                            placeholder="Find transactions..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
-                        />
+            {/* Search and Filters Header - Only shown in summary view */}
+            {viewMode === 'summary' && (
+                <div className="flex flex-col md:flex-row gap-3">
+                    <div className="flex-1 space-y-1">
+                        <label className="text-[0.75rem] font-bold text-stone-400 uppercase tracking-wider block px-1">Search</label>
+                        <div className="relative group">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-primary-600 transition-colors">search</span>
+                            <input
+                                type="text"
+                                placeholder="Find transactions..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl py-2 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="md:w-64">
-                    <Dropdown
-                        label="Category"
-                        options={[
-                            { id: 'all', name: 'All Categories' },
-                            ...categories.map(c => ({ id: c.id, name: c.name }))
-                        ]}
-                        value={selectedCategoryId}
-                        onChange={setSelectedCategoryId}
-                    />
-                </div>
-                {isFiltering && (
-                    <div className="md:w-48 animate-in slide-in-from-right-2 duration-300">
+                    <div className="md:w-64">
                         <Dropdown
-                            label="Sort By"
+                            label="Category"
                             options={[
-                                { id: 'date', name: 'Newest First' },
-                                { id: 'amount', name: 'Highest Amount' },
-                                { id: 'title', name: 'Alphabetical' }
+                                { id: 'all', name: 'All Categories' },
+                                ...categories.map(c => ({ id: c.id, name: c.name }))
                             ]}
-                            value={sortBy}
-                            onChange={(val) => setSortBy(val as any)}
+                            value={selectedCategoryId}
+                            onChange={setSelectedCategoryId}
                         />
                     </div>
-                )}
-            </div>
+                    {isFiltering && (
+                        <div className="md:w-48 animate-in slide-in-from-right-2 duration-300">
+                            <Dropdown
+                                label="Sort By"
+                                options={[
+                                    { id: 'date', name: 'Newest First' },
+                                    { id: 'amount', name: 'Highest Amount' },
+                                    { id: 'title', name: 'Alphabetical' }
+                                ]}
+                                value={sortBy}
+                                onChange={(val) => setSortBy(val as any)}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
 
             {
-                isFiltering ? (
+                viewMode === 'calendar' ? (
+                    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                        <div className="flex justify-end px-1">
+                            <Dropdown
+                                label="Showing"
+                                options={[
+                                    { id: 'all', name: 'Income & Expense' },
+                                    { id: 'income', name: 'Incomes Only' },
+                                    { id: 'expense', name: 'Expenses Only' }
+                                ]}
+                                value={calendarTypeFilter}
+                                onChange={(val) => setCalendarTypeFilter(val as any)}
+                                className="w-48"
+                            />
+                        </div>
+                        <CalendarView
+                            transactions={transactions}
+                            categories={categories}
+                            currencySymbol={currencySymbol}
+                            onTransactionClick={onTransactionClick}
+                            typeFilter={calendarTypeFilter}
+                        />
+                    </div>
+                ) : isFiltering ? (
                     /* Search Results View */
                     <div className="space-y-4 animate-scale-in" >
                         <div className="flex items-center justify-between px-1">

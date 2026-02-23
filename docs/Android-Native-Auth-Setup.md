@@ -84,10 +84,13 @@ const signIn = async () => {
 
             if (error) throw error;
         } else {
-            // Standard Web Flow
+            // Standard Web Flow (with branded redirect)
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
-                options: { queryParams: { access_type: 'offline', prompt: 'consent' } },
+                options: {
+                    redirectTo: `${import.meta.env.VITE_SITE_URL}/auth`,
+                    queryParams: { access_type: 'offline', prompt: 'consent' },
+                },
             });
             if (error) throw error;
         }

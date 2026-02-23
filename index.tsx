@@ -10,9 +10,11 @@ import '@fontsource/jetbrains-mono/700.css';
 import 'material-symbols';
 import React, { useState, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AuthProvider } from './components/AuthContext';
+import AuthCallback from './components/AuthCallback';
 import SplashScreen from './components/SplashScreen';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
@@ -32,12 +34,10 @@ const Root: React.FC = () => {
   }, []);
 
   return (
-    <React.StrictMode>
-      <AuthProvider>
-        {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
-        <App />
-      </AuthProvider>
-    </React.StrictMode>
+    <>
+      {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
+      <App />
+    </>
   );
 };
 
@@ -47,4 +47,16 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(<Root />);
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/auth" element={<AuthCallback />} />
+          <Route path="*" element={<Root />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+

@@ -115,8 +115,8 @@ export const CloudBackupService = {
 
             if (catError) throw catError;
 
-            if (remoteCategories && remoteCategories.length > 0) {
-                LocalRepository.bulkUpsert(remoteCategories as LocalCategory[], 'category', true);
+            if (remoteCategories) {
+                LocalRepository.replaceAll(remoteCategories as LocalCategory[], 'category');
             }
 
             // Pull transactions and re-attach category objects
@@ -127,10 +127,10 @@ export const CloudBackupService = {
 
             if (txError) throw txError;
 
-            if (remoteTransactions && remoteTransactions.length > 0) {
+            if (remoteTransactions) {
                 const allCats = remoteCategories || LocalRepository.getAllCategories();
                 const localizedTxs = remoteTransactions.map(tx => remoteTxToLocal(tx, allCats));
-                LocalRepository.bulkUpsert(localizedTxs as LocalExpense[], 'expense', true);
+                LocalRepository.replaceAll(localizedTxs as LocalExpense[], 'expense');
             }
 
             const pulledCount = (remoteCategories?.length || 0) + (remoteTransactions?.length || 0);

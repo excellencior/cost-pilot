@@ -340,7 +340,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				<div className="card p-4 space-y-4">
 					<div>
 						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Data Management</p>
-						<div className="grid grid-cols-2 gap-4 mt-4">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
 							<DatePicker
 								label="Start Date"
 								value={startDate}

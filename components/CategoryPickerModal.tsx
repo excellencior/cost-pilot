@@ -45,7 +45,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                 </div>
 
                 <div className="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                         {filteredCategories.map((cat) => (
                             <button
                                 key={cat.id}
@@ -54,7 +54,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                                     onSelect(cat);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-3 p-3 rounded-xl border transition-all active:scale-[0.98] ${selectedCategoryId === cat.id
+                                className={`flex flex-col items-center gap-2 p-2.5 rounded-xl border transition-all active:scale-[0.98] ${selectedCategoryId === cat.id
                                     ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400'
                                     : 'bg-brand-surface-light dark:bg-stone-800 border-stone-50 dark:border-stone-800 text-stone-500 hover:border-stone-200 hover:bg-stone-50'
                                     }`}
@@ -63,7 +63,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                                     }`}>
                                     <span className="material-symbols-outlined text-xl">{cat.icon}</span>
                                 </div>
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-center line-clamp-1">{cat.name}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-center break-words leading-tight">{cat.name}</span>
                             </button>
                         ))}
                     </div>

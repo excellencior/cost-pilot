@@ -69,6 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
+                        redirectTo: `${import.meta.env.VITE_SITE_URL}/auth`,
                         queryParams: {
                             access_type: 'offline',
                             prompt: 'consent',

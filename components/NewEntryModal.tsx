@@ -147,7 +147,6 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
                   type="number"
                   step="0.01"
                   required
-                  autoFocus
                   className="input-field font-mono text-lg"
                   placeholder="0.00"
                   value={amount}
