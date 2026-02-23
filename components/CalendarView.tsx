@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, Category } from '../types';
+import { formatCompactNumber } from '../utils';
+
 
 interface CalendarViewProps {
     transactions: Transaction[];
@@ -84,7 +86,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 md:gap-1.5">
+            <div className="grid grid-cols-7 gap-0.5 md:gap-1.5">
+
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
                     <div key={d} className="text-center py-2 text-[9px] font-black text-stone-400 tracking-widest">{d}</div>
                 ))}
@@ -95,7 +98,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     return (
                         <div
                             key={idx}
-                            className={`min-h-[65px] md:min-h-[80px] bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 p-1 flex flex-col justify-between transition-all ${!data.day ? 'opacity-20 grayscale' : 'hover:border-primary-200 dark:hover:border-primary-900/50'} ${isToday ? 'ring-1 ring-primary-500/30 border-primary-500/40 bg-primary-50/5 dark:bg-primary-900/5' : ''}`}
+                            className={`min-h-[60px] md:min-h-[80px] bg-brand-surface-light dark:bg-brand-surface-dark rounded-lg border border-stone-100 dark:border-stone-800 p-0.5 flex flex-col justify-between transition-all ${!data.day ? 'opacity-20 grayscale' : 'hover:border-primary-200 dark:hover:border-primary-900/50'} ${isToday ? 'ring-1 ring-primary-500/30 border-primary-500/40 bg-primary-50/5 dark:bg-primary-900/5' : ''}`}
+
                         >
                             {data.day && (
                                 <>
@@ -112,15 +116,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                                     </div>
                                     <div className="flex-1 flex flex-col justify-end gap-0.5 px-0.5 pb-0.5">
                                         {(typeFilter === 'all' || typeFilter === 'income') && stats!.income > 0 && (
-                                            <p className="text-[9px] md:text-[11px] font-black text-green-600 dark:text-green-400 leading-none truncate">
-                                                +{stats!.income.toLocaleString()}
+                                            <p className="text-[8px] md:text-[11px] font-black text-green-600 dark:text-green-400 leading-none truncate">
+                                                +{formatCompactNumber(stats!.income)}
                                             </p>
                                         )}
                                         {(typeFilter === 'all' || typeFilter === 'expense') && stats!.expense > 0 && (
-                                            <p className="text-[9px] md:text-[11px] font-black text-rose-600 dark:text-rose-400 leading-none truncate">
-                                                -{stats!.expense.toLocaleString()}
+                                            <p className="text-[8px] md:text-[11px] font-black text-rose-600 dark:text-rose-400 leading-none truncate">
+                                                -{formatCompactNumber(stats!.expense)}
                                             </p>
                                         )}
+
                                     </div>
                                 </>
                             )}

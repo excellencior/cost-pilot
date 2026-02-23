@@ -10,3 +10,12 @@ export const formatDate = (dateString: string) => {
         return dateString;
     }
 };
+export const formatCompactNumber = (number: number) => {
+    if (number < 1000) return number.toLocaleString();
+    return new Intl.NumberFormat('en-US', {
+        notation: 'compact',
+        maximumFractionDigits: 1
+    }).format(number);
+};
+
+
