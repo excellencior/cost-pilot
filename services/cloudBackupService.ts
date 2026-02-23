@@ -160,6 +160,124 @@ export const CloudBackupService = {
         }
     },
 
+    /**
+     * Identify differences between local and remote data for reconciliation.
+     */
+    getSyncDiff: async (userId: string) => {
+        if (!supabase) return null;
+
+        try {
+            // Fetch remote data
+            const { data: remoteTxs, error: txError } = await supabase
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (txError) throw txError;
+
+            const { data: remoteCats, error: catError } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (catError) throw catError;
+
+            // Get all local data (including deleted items)
+            const localTxs = LocalRepository.getRawExpenses();
+            const remoteMap = new Map(remoteTxs?.map(tx => [tx.id, tx]));
+            const localMap = new Map(Object.entries(localTxs));
+
+            const diff = {
+                addedLocally: [] as any[],    // New locally, doesn't exist remotely (is_synced: false)
+                deletedLocally: [] as any[],  // Exists remotely, but marked deleted locally
+                deletedRemotely: [] as any[], // is_synced: true, but missing from remote
+                modifiedLocally: [] as any[], // Exists in both, but local is newer
+                remoteOnly: [] as any[],      // New remotely (from other devices)
+            };
+
+            // Analyze local items
+            for (const [id, local] of localMap.entries()) {
+                const remote = remoteMap.get(id);
+                if (!remote) {
+                    if (local.is_synced && !local.deleted) {
+                        // Was synced, missing remotely -> Someone deleted it in cloud
+                        diff.deletedRemotely.push(local);
+                    } else if (!local.is_synced && !local.deleted) {
+                        // Not synced, missing remotely -> New local addition
+                        diff.addedLocally.push(local);
+                    }
+                } else {
+                    if (local.deleted) {
+                        diff.deletedLocally.push(local);
+                    } else if (new Date(local.updated_at) > new Date(remote.updated_at)) {
+                        diff.modifiedLocally.push({ local, remote });
+                    }
+                }
+            }
+
+            // Analyze remote items for those missing locally
+            for (const [id, remote] of remoteMap.entries()) {
+                if (!localMap.has(id)) {
+                    diff.remoteOnly.push(remoteTxToLocal(remote, remoteCats || []));
+                }
+            }
+
+            return diff;
+        } catch (error) {
+            console.error('[CloudBackup] getSyncDiff failed:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Apply user decisions for sync reconciliation.
+     */
+    applyReconciliation: async (userId: string, actions: { id: string, action: 'keep_local' | 'restore_cloud' | 'confirm_delete' | 'discard_local' }[]) => {
+        if (!supabase) return false;
+
+        try {
+            emitStatus('syncing', 'Reconciling data...');
+
+            for (const item of actions) {
+                switch (item.action) {
+                    case 'keep_local':
+                        // Just mark as unsynced so the next startBackup handles it
+                        const local = LocalRepository.getRawExpenses()[item.id];
+                        if (local) {
+                            LocalRepository.upsertExpense({ ...local, is_synced: false });
+                        }
+                        break;
+
+                    case 'restore_cloud':
+                        // Pull specific item from cloud (already fetched in list, but we reuse pull logic)
+                        const { data: remote } = await supabase.from('transactions').select('*').eq('id', item.id).single();
+                        if (remote) {
+                            const cats = LocalRepository.getAllCategories();
+                            LocalRepository.bulkUpsert([remoteTxToLocal(remote, cats)], 'expense', true);
+                        }
+                        break;
+
+                    case 'confirm_delete':
+                        // Ensure it's marked as deleted and unsynced so startBackup deletes it remotely
+                        LocalRepository.deleteExpense(item.id);
+                        break;
+
+                    case 'discard_local':
+                        // Hard delete locally
+                        LocalRepository.hardDeleteExpense(item.id);
+                        break;
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('[CloudBackup] applyReconciliation failed:', error);
+            return false;
+        } finally {
+            emitStatus('idle');
+        }
+    },
+
     // --- Push to Remote (Backup) ---
     startBackup: async (userId: string): Promise<boolean> => {
         if (!supabase) {
