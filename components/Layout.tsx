@@ -172,11 +172,17 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     <div className="pb-6 space-y-3 px-2">
                         <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-2">Legal & Support</p>
                         <div className="space-y-1">
-                            <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <button
+                                onClick={() => onNavigate('terms')}
+                                className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group"
+                            >
                                 <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">article</span>
                                 Terms of Service
                             </button>
-                            <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <button
+                                onClick={() => onNavigate('privacy')}
+                                className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group"
+                            >
                                 <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">policy</span>
                                 Privacy Policy
                             </button>

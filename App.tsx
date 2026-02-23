@@ -11,6 +11,8 @@ import NewEntryModal from './components/NewEntryModal';
 import CategoryManagement from './components/CategoryManagement';
 import CategoryEditorModal from './components/CategoryEditorModal';
 import Support from './components/Support';
+import TermsOfService from './components/TermsOfService';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import { useAuth } from './components/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from './components/CloudBackupContext';
 import { LocalRepository } from './services/db/localRepository';
@@ -278,6 +280,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         />;
       case 'support':
         return <Support onBack={() => setCurrentView('dashboard')} />;
+      case 'terms':
+        return <TermsOfService onBack={() => setCurrentView('dashboard')} />;
+      case 'privacy':
+        return <PrivacyPolicy onBack={() => setCurrentView('dashboard')} />;
       default:
         return <Dashboard
           monthlyData={monthlyHistory}

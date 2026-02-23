@@ -22,9 +22,19 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                     Designed for visual clarity
                 </p>
                 <div className="flex items-center gap-4 mt-4 text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
-                    <button className="hover:text-[#AF8F42] transition-colors">Terms</button>
+                    <button
+                        onClick={() => onNavigate?.('terms')}
+                        className="hover:text-[#AF8F42] transition-colors"
+                    >
+                        Terms
+                    </button>
                     <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-                    <button className="hover:text-[#AF8F42] transition-colors">Privacy</button>
+                    <button
+                        onClick={() => onNavigate?.('privacy')}
+                        className="hover:text-[#AF8F42] transition-colors"
+                    >
+                        Privacy
+                    </button>
                     <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
                     <button
                         onClick={() => onNavigate?.('support')}
