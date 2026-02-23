@@ -12,7 +12,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, userEmail }) => {
-    const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, retryBackup } = useCloudBackup();
+    const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, retryBackup, pullUpdates } = useCloudBackup();
     const [showPopover, setShowPopover] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +105,15 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         >
                             <span className="material-symbols-outlined text-sm">refresh</span>
                             Retry Sync
+                        </button>
+                    )}
+                    {isCloudEnabled && backupStatus !== 'syncing' && backupStatus !== 'error' && (
+                        <button
+                            onClick={() => { pullUpdates(); setShowPopover(false); }}
+                            className="mt-3 w-full bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-4 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-sm">sync</span>
+                            Sync Now
                         </button>
                     )}
                 </div>

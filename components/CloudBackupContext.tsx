@@ -10,6 +10,7 @@ interface CloudBackupContextType {
     toggleCloudBackup: () => void;
     triggerBackup: () => void;
     retryBackup: () => void;
+    pullUpdates: () => void;
     onDataPulled?: () => void;
 }
 
@@ -113,6 +114,15 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         CloudBackupService.startBackup(user.id);
     }, [user]);
 
+    const pullUpdates = useCallback(() => {
+        if (!user || !isCloudEnabled) return;
+        CloudBackupService.pullFromRemote(user.id).then((success) => {
+            if (success && onDataPulled) {
+                onDataPulled();
+            }
+        });
+    }, [user, isCloudEnabled, onDataPulled]);
+
     return (
         <CloudBackupContext.Provider value={{
             isCloudEnabled,
@@ -122,6 +132,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
             toggleCloudBackup,
             triggerBackup,
             retryBackup,
+            pullUpdates,
             onDataPulled,
         }}>
             {children}

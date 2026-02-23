@@ -126,6 +126,20 @@ export const LocalRepository = {
         saveRawData(key, data);
     },
 
+    // Replace all local data with remote data (for full sync / pull updates)
+    // This removes local items not present in the remote set, propagating deletions.
+    replaceAll: (items: any[], type: 'expense' | 'category') => {
+        const key = type === 'expense' ? STORAGE_KEY : CATEGORY_KEY;
+        const newData: Record<string, any> = {};
+        items.forEach(item => {
+            newData[item.id] = {
+                ...item,
+                is_synced: true
+            };
+        });
+        saveRawData(key, newData);
+    },
+
     // --- META ---
     getLastSync: (): string | null => {
         const meta = localStorage.getItem(SYNC_META_KEY);
