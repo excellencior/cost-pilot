@@ -68,40 +68,71 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
           <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">{transactions.length} items</span>
         </div>
 
-        <div className="space-y-3">
-          {transactions.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onTransactionClick(t)}
-              className="w-full card p-3 flex items-center gap-4 group hover:border-primary-200/50 dark:hover:border-primary-900/50 text-left transition-all"
-            >
-              <div className={`size-12 rounded-lg flex items-center justify-center bg-stone-50 dark:bg-stone-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
-                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t.category.name}</span>
-                  <span className="size-1 rounded-full bg-stone-200 dark:bg-stone-800"></span>
-                  <p className="text-[10px] font-medium text-stone-500">
-                    {formatDate(t.date)}
-                  </p>
+        <div className="flex flex-col gap-5">
+          {(() => {
+            // Group transactions by date
+            const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+            const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
+            sorted.forEach(t => {
+              const [year, month, day] = t.date.split('-').map(Number);
+              const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+              if (!grouped[dateKey]) {
+                const d = new Date(year, month - 1, day);
+                grouped[dateKey] = {
+                  label: `${day} ${d.toLocaleString('default', { month: 'long' })} - ${year}`,
+                  transactions: []
+                };
+              }
+              grouped[dateKey].transactions.push(t);
+            });
+            const sortedDateKeys = Object.keys(grouped).sort().reverse();
+
+            if (sortedDateKeys.length === 0) {
+              return (
+                <div className="py-20 card flex flex-col items-center justify-center text-stone-400 border-dashed border-2">
+                  <span className="material-symbols-outlined text-4xl mb-4 opacity-20">history_edu</span>
+                  <p className="text-sm font-bold uppercase tracking-widest opacity-40">No records for this month</p>
+                </div>
+              );
+            }
+
+            return sortedDateKeys.map(dateKey => (
+              <div key={dateKey} className="space-y-2.5">
+                <div className="flex items-center gap-3 px-1 pt-1">
+                  <span className="material-symbols-outlined text-base text-primary-500 dark:text-primary-400">calendar_today</span>
+                  <h3 className="text-xs font-extrabold text-stone-600 dark:text-stone-300 uppercase tracking-widest whitespace-nowrap">
+                    {grouped[dateKey].label}
+                  </h3>
+                  <div className="flex-1 h-px bg-stone-200 dark:bg-stone-700"></div>
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {grouped[dateKey].transactions.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onTransactionClick(t)}
+                      className="w-full card p-3 flex items-center gap-4 group hover:border-primary-200/50 dark:hover:border-primary-900/50 text-left transition-all"
+                    >
+                      <div className={`size-12 rounded-lg flex items-center justify-center bg-stone-50 dark:bg-stone-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
+                        <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t.category.name}</span>
+                          <span className="text-[10px] font-medium text-stone-400 dark:text-stone-500 uppercase tracking-wider">{formatDate(t.date)}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold text-lg ${t.type === 'expense' ? 'text-stone-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
+                          {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toLocaleString()}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`font-bold text-lg ${t.type === 'expense' ? 'text-stone-900 dark:text-white' : 'text-green-600 dark:text-green-400'}`}>
-                  {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toLocaleString()}
-                </p>
-              </div>
-            </button>
-          ))}
-
-          {transactions.length === 0 && (
-            <div className="py-20 card flex flex-col items-center justify-center text-stone-400 border-dashed border-2">
-              <span className="material-symbols-outlined text-4xl mb-4 opacity-20">history_edu</span>
-              <p className="text-sm font-bold uppercase tracking-widest opacity-40">No records for this month</p>
-            </div>
-          )}
+            ));
+          })()}
         </div>
       </section>
     </div>

@@ -112,30 +112,62 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     </div>
                 </header>
 
-                <div className="flex flex-col gap-3">
-                    {data.transactions.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => onTransactionClick(t)}
-                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
-                        >
-                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
-                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
-                                }`}>
-                                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                <div className="flex flex-col gap-5">
+                    {(() => {
+                        // Group transactions by date using string splitting to avoid timezone issues
+                        const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
+                        data.transactions.forEach(t => {
+                            const [year, month, day] = t.date.split('-').map(Number);
+                            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            if (!grouped[dateKey]) {
+                                const d = new Date(year, month - 1, day);
+                                grouped[dateKey] = {
+                                    label: `${day} ${d.toLocaleString('default', { month: 'long' })} - ${year}`,
+                                    transactions: []
+                                };
+                            }
+                            grouped[dateKey].transactions.push(t);
+                        });
+                        const sortedDateKeys = Object.keys(grouped).sort().reverse();
+
+                        return sortedDateKeys.map(dateKey => (
+                            <div key={dateKey} className="space-y-2.5">
+                                <div className="flex items-center gap-3 px-1 pt-1">
+                                    <span className="material-symbols-outlined text-base text-primary-500 dark:text-primary-400">calendar_today</span>
+                                    <h3 className="text-xs font-extrabold text-stone-600 dark:text-stone-300 uppercase tracking-widest whitespace-nowrap">
+                                        {grouped[dateKey].label}
+                                    </h3>
+                                    <div className="flex-1 h-px bg-stone-200 dark:bg-stone-700"></div>
+                                </div>
+                                <div className="flex flex-col gap-2.5">
+                                    {grouped[dateKey].transactions.map((t) => (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => onTransactionClick(t)}
+                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                                        >
+                                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
+                                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                                                }`}>
+                                                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
+                                                </div>
+                                            </div>
+                                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
+                                                {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">
-                                    {t.category.name} • {formatDate(t.date)}
-                                </p>
-                            </div>
-                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
-                                {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
-                            </div>
-                        </button>
-                    ))}
+                        ));
+                    })()}
                 </div>
             </div>
         );

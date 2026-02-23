@@ -38,3 +38,6 @@ The project uses **Tailwind CSS v3**.
 
 ### Build and Development
 - For Android builds, always use the global `gradle` installation instead of the `./gradlew` wrapper.
+
+## Agent Rules
+- **Never open the browser** through MCP tools to check on or verify UI updates. The developer will handle visual verification themselves.
