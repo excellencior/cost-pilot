@@ -137,7 +137,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
                     <button
                       key={t.id}
                       onClick={() => onTransactionClick(t)}
-                      className="w-full card p-3 flex items-center gap-4 group border-stone-500 dark:border-stone-500 hover:border-primary-400 dark:hover:border-primary-400 text-left transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary-500/10 shadow-sm active:scale-[0.99]"
+                      className="w-full card p-3 flex items-center gap-4 group border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 text-left transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 shadow-sm active:scale-[0.99]"
                     >
                       <div className={`size-12 rounded-lg flex items-center justify-center bg-stone-50 dark:bg-stone-800 shrink-0 ${t.type === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-green-600 dark:text-green-400'}`}>
                         <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>

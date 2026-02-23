@@ -147,7 +147,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         <button
                                             key={t.id}
                                             onClick={() => onTransactionClick(t)}
-                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-500 dark:border-stone-500 hover:border-primary-400 dark:hover:border-primary-400 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary-500/10 group text-left active:scale-[0.99]"
+                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 group text-left active:scale-[0.99]"
                                         >
                                             <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                                 ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -182,7 +182,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             <div className="flex items-center gap-4 px-1">
                 <button
                     onClick={onBack}
-                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
+                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-950 dark:border-stone-300 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
@@ -221,7 +221,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                 placeholder="Find transactions..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl py-2 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
+                                className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-950 dark:border-stone-300 rounded-xl py-2 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
                             />
                         </div>
                     </div>
@@ -300,7 +300,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                     <button
                                         key={t.id}
                                         onClick={() => onTransactionClick(t)}
-                                        className="flex items-center gap-4 p-3 md:p-3.5 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-500 dark:border-stone-500 hover:border-primary-400 dark:hover:border-primary-400 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-primary-500/10 group text-left shadow-sm active:scale-[0.99]"
+                                        className="flex items-center gap-4 p-3 md:p-3.5 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 group text-left shadow-sm active:scale-[0.99]"
                                     >
                                         <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                             ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'

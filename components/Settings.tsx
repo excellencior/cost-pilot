@@ -218,7 +218,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				<div className="flex items-center gap-4">
 					<button
 						onClick={onBack}
-						className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
+						className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
 					>
 						<span className="material-symbols-outlined">arrow_back</span>
 					</button>
@@ -229,7 +229,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</div>
 				<button
 					onClick={toggleDarkMode}
-					className="size-12 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
+					className="size-12 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
 					title="Toggle Dark Mode"
 				>
 					<span className="material-symbols-outlined">
@@ -242,7 +242,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				{/* Profile / Account */}
 				<div className="card-section p-4 space-y-5">
 					<div className="flex items-center gap-4">
-						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800 relative">
+						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-[#AF8F42]/50 dark:border-[#AF8F42]/60 relative">
 							{user?.user_metadata?.avatar_url ? (
 								<img
 									src={user.user_metadata.avatar_url}
