@@ -22,7 +22,7 @@ interface CloudBackupProviderProps {
 }
 
 export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ children, onDataPulled }) => {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [isCloudEnabled, setIsCloudEnabled] = useState(() => CloudBackupService.isEnabled());
     const [backupStatus, setBackupStatus] = useState<BackupStatus>('idle');
     const [statusMessage, setStatusMessage] = useState('');
@@ -54,15 +54,16 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         };
     }, []);
 
-    // Reset cloud status when user logs out
+    // Reset cloud status when user logs out (but only AFTER auth has finished loading)
     useEffect(() => {
-        if (!user && isCloudEnabled) {
+        if (!authLoading && !user && isCloudEnabled) {
+            console.log('[CloudBackup] User logged out, disabling cloud backup toggle');
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
             setBackupStatus('idle');
             setStatusMessage('');
         }
-    }, [user, isCloudEnabled]);
+    }, [user, authLoading, isCloudEnabled]);
 
     // Cross-device sync: detect new device (empty local DB) on login
     useEffect(() => {
