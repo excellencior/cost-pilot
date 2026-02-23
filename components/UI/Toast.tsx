@@ -29,8 +29,10 @@ const Toast: React.FC<ToastProps> = ({ message, isOpen, onClose, duration = 1200
     if (!internalOpen) return null;
 
     return (
-        <div className={`fixed bottom-10 left-6 z-[100] transition-all duration-300 ease-in-out ${isExiting ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100'
-            } ${!isExiting ? 'animate-in slide-in-from-left-full' : ''}`}
+        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 z-[100] transition-all duration-300 ease-in-out ${isExiting
+            ? 'opacity-0 translate-y-4 sm:translate-y-0 sm:-translate-x-full'
+            : 'opacity-100 translate-y-0'
+            } ${!isExiting ? 'animate-in fade-in slide-in-from-bottom-full sm:slide-in-from-left-full' : ''}`}
             role="alert"
         >
             <div className="bg-stone-900 dark:bg-brand-surface-dark text-white px-4 py-2 rounded-lg shadow-xl border border-white/10 flex items-center gap-3 backdrop-blur-md">
