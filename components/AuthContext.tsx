@@ -113,13 +113,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logOut = async () => {
         try {
+            // Force reset any hanging sync state
+            const { CloudBackupService } = await import('../services/cloudBackupService');
+            CloudBackupService.resetSyncState();
+
             if (Capacitor.isNativePlatform()) {
-                await FirebaseAuthentication.signOut();
+                await FirebaseAuthentication.signOut().catch(e => console.error('Firebase signOut error:', e));
             }
-            if (supabase) await supabase.auth.signOut();
+            if (supabase) {
+                // We use a shorter timeout or just don't await indefinitely for signOut
+                // to ensure the UI updates and prevents the "stuck" feeling
+                await Promise.race([
+                    supabase.auth.signOut(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Sign out timeout')), 3000))
+                ]).catch(e => console.error('Supabase signOut error:', e));
+            }
         } catch (error) {
             console.error('Sign out error:', error);
-            throw error;
+        } finally {
+            // ALWAYS clear local state regardless of server response
+            setSession(null);
+            setUser(null);
+            setLoading(false);
         }
     };
 

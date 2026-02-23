@@ -103,8 +103,19 @@ export const CloudBackupService = {
     // --- Pull from Remote (Cross-Device Sync) ---
     pullFromRemote: async (userId: string): Promise<boolean> => {
         if (!supabase) return false;
+        if (isSyncing) {
+            console.log('[CloudBackup] Pull skipped: sync already in progress');
+            return false;
+        }
+
+        if (!navigator.onLine) {
+            emitStatus('error', 'No internet connection');
+            return false;
+        }
 
         try {
+            isSyncing = true;
+            console.log('[CloudBackup] Starting pull from remote for user:', userId);
             emitStatus('syncing', 'Downloading your data...');
 
             // Pull categories first (needed to reconstruct transaction.category)
@@ -116,6 +127,7 @@ export const CloudBackupService = {
             if (catError) throw catError;
 
             if (remoteCategories) {
+                console.log(`[CloudBackup] Pulled ${remoteCategories.length} categories`);
                 LocalRepository.replaceAll(remoteCategories as LocalCategory[], 'category');
             }
 
@@ -128,6 +140,7 @@ export const CloudBackupService = {
             if (txError) throw txError;
 
             if (remoteTransactions) {
+                console.log(`[CloudBackup] Pulled ${remoteTransactions.length} transactions`);
                 const allCats = remoteCategories || LocalRepository.getAllCategories();
                 const localizedTxs = remoteTransactions.map(tx => remoteTxToLocal(tx, allCats));
                 LocalRepository.replaceAll(localizedTxs as LocalExpense[], 'expense');
@@ -139,9 +152,11 @@ export const CloudBackupService = {
             return true;
 
         } catch (error: any) {
-            console.error('Pull from remote failed:', error);
+            console.error('[CloudBackup] Pull from remote failed:', error);
             emitStatus('error', 'Download failed. Please check your connection.');
             return false;
+        } finally {
+            isSyncing = false;
         }
     },
 
@@ -284,4 +299,10 @@ export const CloudBackupService = {
         const expenses = LocalRepository.getAllExpenses();
         return expenses.length === 0;
     },
+
+    resetSyncState: () => {
+        isSyncing = false;
+        emitStatus('idle');
+        console.log('[CloudBackup] Sync state manually reset');
+    }
 };
