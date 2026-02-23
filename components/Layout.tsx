@@ -180,7 +180,10 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">policy</span>
                                 Privacy Policy
                             </button>
-                            <button className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group">
+                            <button
+                                onClick={() => onNavigate('support')}
+                                className="w-full flex items-center gap-3 px-2 py-1.5 text-[11px] font-bold text-stone-500 hover:text-[#AF8F42] transition-colors group"
+                            >
                                 <span className="material-symbols-outlined text-base group-hover:scale-110 transition-transform">headset_mic</span>
                                 Get Help
                             </button>
@@ -221,7 +224,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
                     <div className="flex-1 px-5 py-4 md:px-10 md:py-6 lg:px-14 pb-24 md:pb-6 overflow-y-auto w-full max-w-5xl mx-auto">
                         {children}
-                        {currentView === 'settings' && <Footer />}
+                        {currentView === 'settings' && <Footer onNavigate={onNavigate} />}
                     </div>
 
                     {/* Floating Action Button — only on relevant pages */}

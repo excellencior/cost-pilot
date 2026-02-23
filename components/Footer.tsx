@@ -1,6 +1,10 @@
-import React from 'react';
+import { View } from '../types';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+    onNavigate?: (view: View) => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     return (
         <footer className="w-full mt-6 py-4 border-t border-stone-200 dark:border-stone-800 bg-brand-surface-light/50 dark:bg-stone-900/50 backdrop-blur-sm">
             <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
@@ -22,7 +26,12 @@ const Footer: React.FC = () => {
                     <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
                     <button className="hover:text-[#AF8F42] transition-colors">Privacy</button>
                     <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-                    <button className="hover:text-[#AF8F42] transition-colors">Support</button>
+                    <button
+                        onClick={() => onNavigate?.('support')}
+                        className="hover:text-[#AF8F42] transition-colors"
+                    >
+                        Support
+                    </button>
                 </div>
             </div>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-4 font-medium tracking-widest uppercase text-center">

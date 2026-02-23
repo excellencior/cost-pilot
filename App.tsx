@@ -10,6 +10,7 @@ import Settings from './components/Settings';
 import NewEntryModal from './components/NewEntryModal';
 import CategoryManagement from './components/CategoryManagement';
 import CategoryEditorModal from './components/CategoryEditorModal';
+import Support from './components/Support';
 import { useAuth } from './components/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from './components/CloudBackupContext';
 import { LocalRepository } from './services/db/localRepository';
@@ -275,6 +276,8 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             setIsCategoryModalOpen(true);
           }}
         />;
+      case 'support':
+        return <Support onBack={() => setCurrentView('dashboard')} />;
       default:
         return <Dashboard
           monthlyData={monthlyHistory}
