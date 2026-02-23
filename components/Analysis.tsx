@@ -148,7 +148,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
             <button
               key={mode}
               onClick={() => setFilterMode(mode)}
-              className={`flex-1 md:flex-none px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${filterMode === mode ? 'bg-brand-surface-light dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`flex-1 md:flex-none px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${filterMode === mode ? 'bg-brand-surface-light dark:bg-stone-700 text-stone-900 dark:text-white shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
               {mode === 'month' ? 'Monthly' : 'Search Range'}
             </button>
@@ -163,7 +163,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
                 value={String(selectedMonth)}
                 onChange={(val) => setSelectedMonth(parseInt(val))}
                 placeholder="Month"
-                className="w-36"
+                className="w-32"
               />
               <Dropdown
                 options={availableYears.map(y => ({ id: String(y), name: String(y) }))}
@@ -174,10 +174,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
               />
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <DatePicker value={startDate} onChange={setStartDate} className="w-44" />
-              <span className="text-stone-400 text-[10px] font-bold">TO</span>
-              <DatePicker value={endDate} onChange={setEndDate} className="w-44" />
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+              <DatePicker value={startDate} onChange={setStartDate} className="w-full sm:w-32" />
+              <span className="text-stone-400 text-[10px] font-bold sm:px-1">TO</span>
+              <DatePicker value={endDate} onChange={setEndDate} className="w-full sm:w-32" />
             </div>
           )}
         </div>
