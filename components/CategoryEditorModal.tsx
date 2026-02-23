@@ -105,7 +105,6 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
               <div className="space-y-1.5">
                 <label className="label-text">Category Name</label>
                 <input
-                  autoFocus
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
