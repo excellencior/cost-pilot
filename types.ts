@@ -1,5 +1,5 @@
 
-export type View = 'dashboard' | 'analysis' | 'settings' | 'overview' | 'category-picker' | 'new-category' | 'history';
+export type View = 'dashboard' | 'analysis' | 'settings' | 'overview' | 'category-picker' | 'new-category' | 'history' | 'support' | 'terms' | 'privacy';
 
 export interface Transaction {
   id: string;

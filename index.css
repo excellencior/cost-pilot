@@ -59,9 +59,14 @@
   /* --- UI Elements --- */
   .card {
     /* Colors & Borders */
-    @apply bg-brand-surface-light dark:bg-brand-surface-dark border-stone-200/60 dark:border-stone-800/60;
+    @apply bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40;
     /* Shape & Shadow */
-    @apply rounded-xl shadow-sm transition-all;
+    @apply rounded-xl shadow-sm transition-all duration-500 ease-out;
+  }
+
+  .card-section {
+    @apply bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40;
+    @apply rounded-xl shadow-sm transition-all duration-500 ease-out;
   }
 
   .btn-primary {
@@ -78,7 +83,7 @@
     @apply bg-brand-surface-light text-stone-700 font-semibold;
     @apply dark:bg-brand-surface-dark dark:text-stone-200;
     /* Borders, Sizing & Shape */
-    @apply border border-stone-200 dark:border-stone-800 py-2.5 px-6 rounded-xl;
+    @apply border border-[#AF8F42]/40 dark:border-[#AF8F42]/50 py-2.5 px-6 rounded-xl;
     /* States & Animations */
     @apply hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95;
   }
@@ -88,7 +93,7 @@
     @apply bg-brand-surface-light text-stone-900;
     @apply dark:bg-brand-surface-dark dark:text-white;
     /* Borders, Sizing & Shape */
-    @apply w-full border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 h-[40px];
+    @apply w-full border border-[#AF8F42]/40 dark:border-[#AF8F42]/50 rounded-xl px-3 py-2 h-[40px];
     /* States & Animations */
     @apply outline-none transition-all;
     @apply focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 dark:focus:ring-primary-900/50;

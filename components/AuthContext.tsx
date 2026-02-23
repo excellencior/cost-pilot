@@ -4,6 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { ProfileService } from '../services/profileService';
+import { toast } from 'react-hot-toast';
 
 interface AuthContextType {
     user: User | null;
@@ -37,10 +39,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setLoading(false);
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            const newUser = session?.user ?? null;
+            setUser(newUser);
             setLoading(false);
+
+            // Auto-recovery logic
+            if (newUser) {
+                const profile = await ProfileService.getProfile(newUser.id);
+                if (profile?.deletion_scheduled_at) {
+                    const success = await ProfileService.cancelDeletion(newUser.id);
+                    if (success) {
+                        toast.success('Account deletion cancelled. Welcome back!', {
+                            duration: 6000,
+                            icon: '🎉',
+                            style: {
+                                borderRadius: '12px',
+                                background: '#1c1917',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                border: '1px solid #AF8F42'
+                            }
+                        });
+                    }
+                }
+            }
         });
 
         return () => subscription.unsubscribe();

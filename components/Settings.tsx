@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Transaction, View } from '../types';
 import { useAuth } from './AuthContext';
+import { Capacitor } from '@capacitor/core';
 import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -9,6 +10,7 @@ import { formatDate } from '../utils';
 import Dropdown from './UI/Dropdown';
 import DatePicker from './UI/DatePicker';
 import ConfirmModal from './UI/ConfirmModal';
+import { ProfileService } from '../services/profileService';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -17,6 +19,7 @@ interface SettingsProps {
 	transactions: Transaction[];
 	currency: string;
 	setCurrency: (c: string) => void;
+	onDeleteAccount: () => void;
 }
 
 const CURRENCIES = [
@@ -25,7 +28,15 @@ const CURRENCIES = [
 	{ code: 'EUR', name: 'Euro', symbol: '€' },
 ];
 
-const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, transactions, currency, setCurrency }) => {
+const Settings: React.FC<SettingsProps> = ({
+	onNavigate,
+	onBack,
+	categoryCount,
+	transactions,
+	currency,
+	setCurrency,
+	onDeleteAccount
+}) => {
 	const { user, signIn, logOut } = useAuth();
 	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup } = useCloudBackup();
 	const [startDate, setStartDate] = useState('');
@@ -217,7 +228,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				<div className="flex items-center gap-4">
 					<button
 						onClick={onBack}
-						className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
+						className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
 					>
 						<span className="material-symbols-outlined">arrow_back</span>
 					</button>
@@ -228,7 +239,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</div>
 				<button
 					onClick={toggleDarkMode}
-					className="size-12 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
+					className="size-12 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
 					title="Toggle Dark Mode"
 				>
 					<span className="material-symbols-outlined">
@@ -239,9 +250,9 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 				{/* Profile / Account */}
-				<div className="card p-4 space-y-5">
+				<div className="card-section p-4 space-y-5">
 					<div className="flex items-center gap-4">
-						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-primary-200 dark:border-primary-800 relative">
+						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-[#AF8F42]/50 dark:border-[#AF8F42]/60 relative">
 							{user?.user_metadata?.avatar_url ? (
 								<img
 									src={user.user_metadata.avatar_url}
@@ -303,7 +314,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				{/* Categories Shortcut */}
 				<button
 					onClick={() => onNavigate('category-picker')}
-					className="card p-4 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
+					className="card-section p-4 flex flex-col justify-between text-left hover:border-primary-600 dark:hover:border-primary-400 group transition-all active:scale-[0.98]"
 				>
 					<div>
 						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">Categories</p>
@@ -317,7 +328,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</button>
 
 				{/* Preferences - Currency */}
-				<div className="card p-4 flex flex-col justify-between relative group">
+				<div className="card-section p-4 flex flex-col justify-between relative group">
 					<div>
 						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Primary Currency</p>
 						<div className="flex items-baseline gap-2">
@@ -337,7 +348,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 				</div>
 
 				{/* Data Exports */}
-				<div className="card p-4 space-y-4">
+				<div className="card-section p-4 space-y-4">
 					<div>
 						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Data Management</p>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -367,7 +378,7 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 			</div>
 
 			{/* Cloud Backup Card */}
-			<div className="card p-6 bg-stone-900 text-white dark:bg-brand-surface-dark border-none relative overflow-hidden group">
+			<div className="card-section p-6 bg-stone-900 text-white dark:bg-brand-surface-dark relative overflow-hidden group">
 				<div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-primary-500/20 transition-all"></div>
 				<div className="relative z-10">
 					<div className="flex items-center justify-between mb-4">
@@ -419,10 +430,40 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 							Retry Sync
 						</button>
 					)}
-
-
 				</div>
 			</div>
+
+			{/* Web Version Link - Only show on APK */}
+			{Capacitor.isNativePlatform() && (
+				<div className="card-section p-4 flex justify-center">
+					<a
+						href="https://cost-pilot-xi.vercel.app"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-[10px] font-bold text-stone-400 hover:text-primary-600 dark:hover:text-primary-400 uppercase tracking-widest transition-colors flex items-center gap-1.5 group"
+					>
+						<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">language</span>
+						Go to Web Version
+					</a>
+				</div>
+			)}
+
+			{/* Danger Zone */}
+			{user && (
+				<div className="card-section p-4 border-rose-100 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/10">
+					<div>
+						<p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-1">Danger Zone</p>
+						<p className="text-[10px] text-stone-500 dark:text-stone-400 mb-4">Permanent actions. Be careful!</p>
+						<button
+							onClick={onDeleteAccount}
+							className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors flex items-center gap-2 group"
+						>
+							<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">delete_forever</span>
+							Delete Account
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

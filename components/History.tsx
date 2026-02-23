@@ -147,7 +147,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         <button
                                             key={t.id}
                                             onClick={() => onTransactionClick(t)}
-                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all hover:shadow-lg hover:shadow-primary-500/5 group text-left"
+                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 group text-left active:scale-[0.99]"
                                         >
                                             <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                                 ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -182,7 +182,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             <div className="flex items-center gap-4 px-1">
                 <button
                     onClick={onBack}
-                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
+                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-950 dark:border-stone-300 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
                 >
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
@@ -221,7 +221,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                 placeholder="Find transactions..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl py-2 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
+                                className="w-full bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-950 dark:border-stone-300 rounded-xl py-2 pl-10 pr-4 text-sm font-bold placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-primary-500/10 transition-all text-stone-900 dark:text-white shadow-sm"
                             />
                         </div>
                     </div>
@@ -300,7 +300,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                     <button
                                         key={t.id}
                                         onClick={() => onTransactionClick(t)}
-                                        className="flex items-center gap-4 p-3 md:p-3.5 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-100 dark:border-stone-800 hover:border-primary-200/50 dark:hover:border-primary-900/50 transition-all group text-left shadow-sm"
+                                        className="flex items-center gap-4 p-3 md:p-3.5 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 group text-left shadow-sm active:scale-[0.99]"
                                     >
                                         <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
                                             ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
@@ -337,7 +337,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                     <button
                                         key={key}
                                         onClick={() => setSelectedMonthKey(key)}
-                                        className="card p-0 overflow-hidden group hover:border-primary-300 dark:hover:border-primary-800 transition-all hover:shadow-xl hover:shadow-primary-500/5 text-left"
+                                        className="card-section p-0 overflow-hidden group hover:border-primary-300 dark:hover:border-primary-800 transition-all hover:shadow-xl hover:shadow-primary-500/5 text-left"
                                     >
                                         <div className="p-4 md:p-5 border-b border-stone-50 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-800/30">
                                             <div>
