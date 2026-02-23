@@ -10,6 +10,7 @@ import { formatDate } from '../utils';
 import Dropdown from './UI/Dropdown';
 import DatePicker from './UI/DatePicker';
 import ConfirmModal from './UI/ConfirmModal';
+import { ProfileService } from '../services/profileService';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -18,6 +19,7 @@ interface SettingsProps {
 	transactions: Transaction[];
 	currency: string;
 	setCurrency: (c: string) => void;
+	onDeleteAccount: () => void;
 }
 
 const CURRENCIES = [
@@ -26,7 +28,15 @@ const CURRENCIES = [
 	{ code: 'EUR', name: 'Euro', symbol: '€' },
 ];
 
-const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, transactions, currency, setCurrency }) => {
+const Settings: React.FC<SettingsProps> = ({
+	onNavigate,
+	onBack,
+	categoryCount,
+	transactions,
+	currency,
+	setCurrency,
+	onDeleteAccount
+}) => {
 	const { user, signIn, logOut } = useAuth();
 	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup } = useCloudBackup();
 	const [startDate, setStartDate] = useState('');
@@ -435,6 +445,23 @@ const Settings: React.FC<SettingsProps> = ({ onNavigate, onBack, categoryCount, 
 						<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">language</span>
 						Go to Web Version
 					</a>
+				</div>
+			)}
+
+			{/* Danger Zone */}
+			{user && (
+				<div className="card-section p-4 border-rose-100 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/10">
+					<div>
+						<p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-1">Danger Zone</p>
+						<p className="text-[10px] text-stone-500 dark:text-stone-400 mb-4">Permanent actions. Be careful!</p>
+						<button
+							onClick={onDeleteAccount}
+							className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors flex items-center gap-2 group"
+						>
+							<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">delete_forever</span>
+							Delete Account
+						</button>
+					</div>
 				</div>
 			)}
 		</div>

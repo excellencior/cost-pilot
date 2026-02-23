@@ -17,7 +17,9 @@ import { useAuth } from './components/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from './components/CloudBackupContext';
 import { LocalRepository } from './services/db/localRepository';
 import Layout from './components/Layout';
-import Toast from './components/UI/Toast';
+import { Toaster, toast } from 'react-hot-toast';
+import AccountDeletionModal from './components/UI/AccountDeletionModal';
+import { ProfileService } from './services/profileService';
 
 const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void) | null> }> = ({ onDataPulledRef }) => {
   const { user } = useAuth();
@@ -27,6 +29,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [currentView, setCurrentView] = useState<View>(() => LocalRepository.getSettings().lastView as View || 'dashboard');
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
@@ -35,7 +38,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
   const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
-  const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
   const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
 
   // Apply theme on mount
@@ -110,9 +112,14 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     loadData();
     triggerBackup();
 
-    setToast({
-      message: isEditing ? 'Transaction updated' : 'New entry added',
-      show: true
+    toast.success(isEditing ? 'Transaction updated' : 'New entry added', {
+      style: {
+        borderRadius: '12px',
+        background: '#1c1917',
+        color: '#fff',
+        fontWeight: 'bold',
+        border: '1px solid #AF8F42'
+      }
     });
   };
 
@@ -121,7 +128,15 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     setEditingTransaction(null);
     loadData();
     triggerBackup();
-    setToast({ message: 'Transaction removed', show: true });
+    toast.success('Transaction removed', {
+      style: {
+        borderRadius: '12px',
+        background: '#1c1917',
+        color: '#fff',
+        fontWeight: 'bold',
+        border: '1px solid #AF8F42'
+      }
+    });
   };
 
   const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
@@ -139,9 +154,14 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     setEditingCategory(null);
     loadData();
     triggerBackup();
-    setToast({
-      message: ('id' in catData) ? 'Category updated' : 'New category created',
-      show: true
+    toast.success(('id' in catData) ? 'Category updated' : 'New category created', {
+      style: {
+        borderRadius: '12px',
+        background: '#1c1917',
+        color: '#fff',
+        fontWeight: 'bold',
+        border: '1px solid #AF8F42'
+      }
     });
   };
 
@@ -263,6 +283,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
           transactions={transactions}
           currency={currency}
           setCurrency={setCurrency}
+          onDeleteAccount={() => setIsDeletionModalOpen(true)}
         />;
       case 'category-picker':
         return <CategoryManagement
@@ -338,11 +359,18 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         defaultType={defaultCategoryType}
       />
 
-      <Toast
-        message={toast.message}
-        isOpen={toast.show}
-        onClose={() => setToast(prev => ({ ...prev, show: false }))}
-        duration={1200}
+      <Toaster position="top-center" />
+
+      <AccountDeletionModal
+        isOpen={isDeletionModalOpen}
+        onClose={() => setIsDeletionModalOpen(false)}
+        userEmail={user?.email || ''}
+        onConfirm={async () => {
+          if (user) {
+            const success = await ProfileService.scheduleDeletion(user.id);
+            if (!success) throw new Error('Failed to schedule deletion.');
+          }
+        }}
       />
     </Layout>
   );
