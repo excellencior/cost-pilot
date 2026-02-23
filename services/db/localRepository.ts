@@ -46,6 +46,11 @@ export const LocalRepository = {
             .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
     },
 
+    // Get all expenses (including deleted) as a raw map
+    getRawExpenses: (): Record<string, LocalExpense> => {
+        return getRawData(STORAGE_KEY) as Record<string, LocalExpense>;
+    },
+
     // Get expenses pending sync
     getPendingSyncExpenses: (): LocalExpense[] => {
         const data = getRawData(STORAGE_KEY);
@@ -79,6 +84,15 @@ export const LocalRepository = {
             data[id].deleted = true;
             data[id].updated_at = new Date().toISOString();
             data[id].is_synced = false;
+            saveRawData(STORAGE_KEY, data);
+        }
+    },
+
+    // Hard delete expense (actually remove from storage)
+    hardDeleteExpense: (id: string) => {
+        const data = getRawData(STORAGE_KEY);
+        if (data[id]) {
+            delete data[id];
             saveRawData(STORAGE_KEY, data);
         }
     },
