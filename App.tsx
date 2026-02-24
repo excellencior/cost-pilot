@@ -27,6 +27,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   const userId = user?.id;
 
   const [currentView, setCurrentView] = useState<View>(() => LocalRepository.getSettings().lastView as View || 'dashboard');
+  const [previousView, setPreviousView] = useState<View>('dashboard');
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
@@ -216,9 +217,14 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     });
   };
 
+  const handleViewChange = (newView: View) => {
+    setPreviousView(currentView);
+    setCurrentView(newView);
+  };
+
   const handleMonthSelect = (month: MonthlyData) => {
     setSelectedMonth(month);
-    setCurrentView('overview');
+    handleViewChange('overview');
   };
 
   const renderView = () => {
@@ -300,11 +306,11 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
           }}
         />;
       case 'support':
-        return <Support onBack={() => setCurrentView('dashboard')} />;
+        return <Support onBack={() => setCurrentView(previousView)} />;
       case 'terms':
-        return <TermsOfService onBack={() => setCurrentView('dashboard')} />;
+        return <TermsOfService onBack={() => setCurrentView(previousView)} />;
       case 'privacy':
-        return <PrivacyPolicy onBack={() => setCurrentView('dashboard')} />;
+        return <PrivacyPolicy onBack={() => setCurrentView(previousView)} />;
       default:
         return <Dashboard
           monthlyData={monthlyHistory}
@@ -324,7 +330,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
   return (
     <Layout
       currentView={currentView}
-      onNavigate={setCurrentView}
+      onNavigate={handleViewChange}
       onAddEntry={() => {
         setEditingTransaction(null);
         setIsEntryModalOpen(true);

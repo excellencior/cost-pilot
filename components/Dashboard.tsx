@@ -28,16 +28,13 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Hero Stats */}
-      <section className="card p-4 md:p-6 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30 min-h-[160px] flex flex-col justify-center">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <section className="card p-4 md:p-4 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30 min-h-[100px] flex flex-col justify-center">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="flex flex-col justify-center">
             <p className="text-primary-100 text-[10px] font-bold uppercase tracking-widest mb-1 opacity-90 flex items-center gap-2">
               Balance ・ {currentMonth.month}
             </p>
-            <h2 className="text-3xl md:text-5xl font-black">{currencySymbol}{balance.toLocaleString()}</h2>
+            <h3 className="text-3xl md:text-5xl font-black">{currencySymbol}{balance.toLocaleString()}</h3>
           </div>
 
           <div className="flex flex-row sm:flex-row items-center gap-2 md:gap-4 w-full sm:w-auto">
