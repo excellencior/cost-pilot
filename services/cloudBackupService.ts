@@ -10,6 +10,33 @@ const LAST_BACKUP_KEY = 'costpilot_last_backup_time';
 
 let statusListeners: StatusCallback[] = [];
 let isSyncing = false;
+let syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
+const SYNC_TIMEOUT_MS = 30000; // 30 second safety net
+
+const startSyncGuard = (): boolean => {
+    if (isSyncing) {
+        console.warn('[CloudBackup] Sync already in progress, skipping');
+        return false;
+    }
+    isSyncing = true;
+    // Safety net: auto-reset after timeout to prevent permanent lock
+    syncTimeoutId = setTimeout(() => {
+        if (isSyncing) {
+            console.warn('[CloudBackup] Sync timed out, force-resetting isSyncing');
+            isSyncing = false;
+            emitStatus('error', 'Sync timed out. Please try again.');
+        }
+    }, SYNC_TIMEOUT_MS);
+    return true;
+};
+
+const endSyncGuard = () => {
+    isSyncing = false;
+    if (syncTimeoutId) {
+        clearTimeout(syncTimeoutId);
+        syncTimeoutId = null;
+    }
+};
 
 const emitStatus = (status: BackupStatus, message?: string) => {
     statusListeners.forEach(cb => cb(status, message));
@@ -103,10 +130,7 @@ export const CloudBackupService = {
     // --- Pull from Remote (Cross-Device Sync) ---
     pullFromRemote: async (userId: string): Promise<boolean> => {
         if (!supabase) return false;
-        if (isSyncing) {
-            console.log('[CloudBackup] Pull skipped: sync already in progress');
-            return false;
-        }
+        if (!startSyncGuard()) return false;
 
         if (!navigator.onLine) {
             emitStatus('error', 'No internet connection');
@@ -114,7 +138,6 @@ export const CloudBackupService = {
         }
 
         try {
-            isSyncing = true;
             console.log('[CloudBackup] Starting pull from remote for user:', userId);
             emitStatus('syncing', 'Downloading your data...');
 
@@ -156,7 +179,7 @@ export const CloudBackupService = {
             emitStatus('error', 'Download failed. Please check your connection.');
             return false;
         } finally {
-            isSyncing = false;
+            endSyncGuard();
         }
     },
 
@@ -285,7 +308,7 @@ export const CloudBackupService = {
             return false;
         }
 
-        if (isSyncing) return false;
+        if (!startSyncGuard()) return false;
 
         if (!navigator.onLine) {
             emitStatus('error', 'No internet connection');
@@ -298,7 +321,6 @@ export const CloudBackupService = {
         }
 
         try {
-            isSyncing = true;
             emitStatus('syncing', 'Backing up your data...');
 
             // --- 1. Ensure all referenced categories exist in Supabase ---
@@ -407,7 +429,7 @@ export const CloudBackupService = {
             emitStatus('error', error?.message || 'Backup failed. Tap to retry.');
             return false;
         } finally {
-            isSyncing = false;
+            endSyncGuard();
         }
     },
 
@@ -419,7 +441,7 @@ export const CloudBackupService = {
     },
 
     resetSyncState: () => {
-        isSyncing = false;
+        endSyncGuard();
         emitStatus('idle');
         console.log('[CloudBackup] Sync state manually reset');
     }

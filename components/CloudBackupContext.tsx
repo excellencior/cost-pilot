@@ -112,14 +112,23 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 const hasDiff = diff && (
                     diff.addedLocally.length > 0 ||
                     diff.deletedLocally.length > 0 ||
+                    diff.deletedRemotely.length > 0 ||
                     diff.remoteOnly.length > 0
                 );
+
+                // If the only differences are modifiedLocally, skip reconciliation — just push
+                const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
 
                 if (hasDiff) {
                     setSyncDiff(diff);
                     setIsReconciling(true);
                     setBackupStatus('idle'); // Stop showing syncing spinner while waiting for user
                     return; // Don't enable yet
+                }
+
+                // Modified-only: no user input needed, just enable and push
+                if (onlyModified) {
+                    // Fall through to normal sync below
                 }
             }
 
@@ -130,6 +139,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         } else if (!newValue) {
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
+            CloudBackupService.resetSyncState(); // Force-clear any stuck sync lock
             setBackupStatus('idle');
             setStatusMessage('');
         }
@@ -174,13 +184,24 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 const hasDiff = diff && (
                     diff.addedLocally.length > 0 ||
                     diff.deletedLocally.length > 0 ||
+                    diff.deletedRemotely.length > 0 ||
                     diff.remoteOnly.length > 0
                 );
+
+                // If the only differences are modifiedLocally, skip reconciliation — just push
+                const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
 
                 if (hasDiff) {
                     setSyncDiff(diff);
                     setIsReconciling(true);
                     setBackupStatus('idle');
+                    return;
+                }
+
+                // Modified-only: no user input needed, just push directly
+                if (onlyModified) {
+                    await CloudBackupService.startBackup(user.id);
+                    if (onDataPulled) onDataPulled();
                     return;
                 }
             }
