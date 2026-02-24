@@ -247,7 +247,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-xl px-3 py-1.5 text-[11px] text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[40px]"
+                className="w-full flex items-center justify-between bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-xl px-3 py-1 text-sm text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[40px]"
             >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span className="material-symbols-outlined text-stone-400 text-lg flex-shrink-0">calendar_today</span>

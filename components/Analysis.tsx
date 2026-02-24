@@ -142,7 +142,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
         </div>
       </div>
       {/* Unified Control Bar */}
-      <section className="bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-200 dark:border-stone-800 p-3 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between transition-colors">
+      <section className="bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-stone-200 dark:border-stone-800 p-3 shadow-sm flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between transition-colors">
         <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-lg w-full md:w-auto">
           {(['month', 'custom'] as const).map((mode) => (
             <button
@@ -175,9 +175,9 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-              <DatePicker value={startDate} onChange={setStartDate} className="w-full sm:w-32" />
+              <DatePicker value={startDate} onChange={setStartDate} className="w-full sm:w-40" />
               <span className="text-stone-400 text-[10px] font-bold sm:px-1">TO</span>
-              <DatePicker value={endDate} onChange={setEndDate} className="w-full sm:w-32" />
+              <DatePicker value={endDate} onChange={setEndDate} className="w-full sm:w-40" />
             </div>
           )}
         </div>
@@ -185,10 +185,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <section className="lg:col-span-3 card p-3 md:p-5 flex flex-col justify-between overflow-hidden">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div>
               <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1">Period Spending</p>
-              <h2 className="text-4xl font-black text-stone-900 dark:text-white">
+              <h2 className="text-3xl lg:text-4xl font-black text-stone-900 dark:text-white">
                 {currencySymbol}{totalExpense.toLocaleString()}
               </h2>
             </div>
