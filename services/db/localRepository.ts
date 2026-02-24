@@ -43,7 +43,14 @@ export const LocalRepository = {
         const data = getRawData(STORAGE_KEY);
         return Object.values(data)
             .filter((item: any) => !item.deleted)
-            .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            .sort((a: any, b: any) => {
+                const dateSort = new Date(b.date).getTime() - new Date(a.date).getTime();
+                if (dateSort !== 0) return dateSort;
+                const aTime = a.created_at || '';
+                const bTime = b.created_at || '';
+                if (bTime && aTime) return bTime.localeCompare(aTime);
+                return (b.id || '').localeCompare(a.id || '');
+            });
     },
 
     // Get all expenses (including deleted) as a raw map

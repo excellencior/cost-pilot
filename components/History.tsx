@@ -31,7 +31,15 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             const matchesCategory = selectedCategoryId === 'all' || t.category?.id === selectedCategoryId;
             return matchesSearch && matchesCategory;
         }).sort((a, b) => {
-            if (sortBy === 'date') return new Date(b.date).getTime() - new Date(a.date).getTime();
+            if (sortBy === 'date') {
+                const dateSort = new Date(b.date).getTime() - new Date(a.date).getTime();
+                if (dateSort !== 0) return dateSort;
+                // Secondary sort: newest created first
+                const aTime = (a as any).created_at || '';
+                const bTime = (b as any).created_at || '';
+                if (bTime && aTime) return bTime.localeCompare(aTime);
+                return b.id.localeCompare(a.id);
+            }
             if (sortBy === 'amount') return b.amount - a.amount;
             if (sortBy === 'title') return a.title.localeCompare(b.title);
             return 0;
@@ -50,8 +58,15 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
             }
         } = {};
 
-        // Sort transactions by date descending
-        const sorted = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        // Sort transactions by date descending, then by creation time
+        const sorted = [...transactions].sort((a, b) => {
+            const dateSort = new Date(b.date).getTime() - new Date(a.date).getTime();
+            if (dateSort !== 0) return dateSort;
+            const aTime = (a as any).created_at || '';
+            const bTime = (b as any).created_at || '';
+            if (bTime && aTime) return bTime.localeCompare(aTime);
+            return b.id.localeCompare(a.id);
+        });
 
         sorted.forEach(t => {
             const date = new Date(t.date);
@@ -157,8 +172,9 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 mt-0.5">
                                                     <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                    <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                                                     <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
                                                 </div>
                                             </div>
@@ -309,9 +325,11 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                                            <p className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">
-                                                {t.category.name} • {formatDate(t.date)}
-                                            </p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
+                                                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
+                                            </div>
                                         </div>
                                         <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
                                             {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
