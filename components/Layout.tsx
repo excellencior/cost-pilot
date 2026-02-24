@@ -33,6 +33,27 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
         { view: 'settings', icon: 'settings', label: 'Settings' },
     ];
 
+    // Track the last directly-selected main nav item
+    // Sub-views (overview, category-picker, etc.) keep whatever nav was last active
+    const mainNavViews = new Set(navItems.map(item => item.view));
+    const lastMainNavRef = useRef<View>(
+        mainNavViews.has(currentView) ? currentView : 'dashboard'
+    );
+
+    // Update ref only when currentView is a main nav item
+    useEffect(() => {
+        if (mainNavViews.has(currentView)) {
+            lastMainNavRef.current = currentView;
+        }
+    }, [currentView]);
+
+    // For legal/support sub-views, always highlight settings; for others, keep last nav
+    const activeNavView = (() => {
+        if (mainNavViews.has(currentView)) return currentView;
+        if (['terms', 'privacy', 'support'].includes(currentView)) return 'settings' as View;
+        return lastMainNavRef.current;
+    })();
+
     // Close popover on outside click
     useEffect(() => {
         if (!showPopover) return;
@@ -119,6 +140,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     const cloudPopoverJSX = showPopover ? ReactDOM.createPortal(
         <div
             ref={popoverRef}
+            onMouseDown={e => e.stopPropagation()}
             style={{ position: 'fixed', top: popoverPos.top, left: popoverPos.left, zIndex: 9999 }}
             className="w-64 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl shadow-2xl border border-stone-200 dark:border-stone-700 p-4 animate-in fade-in slide-in-from-top-2 duration-200"
         >
@@ -179,12 +201,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 <button
                                     key={item.view}
                                     onClick={() => handleNavigate(item.view)}
-                                    className={`w-full flex items-center gap-3 px-4 py-1 rounded-lg font-bold transition-all relative group ${currentView === item.view
+                                    className={`w-full flex items-center gap-3 px-4 py-1 rounded-lg font-bold transition-all relative group ${currentView === item.view || activeNavView === item.view
                                         ? 'text-[#AF8F42] dark:text-[#D4AF37]'
                                         : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                                         }`}
                                 >
-                                    {currentView === item.view && (
+                                    {(currentView === item.view || activeNavView === item.view) && (
                                         <div className="absolute inset-0 bg-[#AF8F42]/10 dark:bg-[#AF8F42]/5 backdrop-blur-md rounded-lg border border-[#AF8F42]/20 dark:border-[#AF8F42]/10 animate-fade-in"></div>
                                     )}
                                     <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
@@ -296,12 +318,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 <button
                                     key={item.view}
                                     onClick={() => handleNavigate(item.view)}
-                                    className={`flex flex-col items-center gap-1 p-2 min-w-[72px] transition-all relative rounded-lg ${currentView === item.view
+                                    className={`flex flex-col items-center gap-1 p-2 min-w-[72px] transition-all relative rounded-lg ${currentView === item.view || activeNavView === item.view
                                         ? 'text-primary-600 dark:text-primary-400'
                                         : 'text-stone-400 dark:text-stone-500'
                                         }`}
                                 >
-                                    {currentView === item.view && (
+                                    {(currentView === item.view || activeNavView === item.view) && (
                                         <div className="absolute inset-x-3 inset-y-2 bg-primary-500/5 dark:bg-white/10 backdrop-blur-md rounded-lg border border-primary-500/5 dark:border-white/10 animate-scale-in"></div>
                                     )}
                                     <span className="material-symbols-outlined text-2xl relative z-10">{item.icon}</span>
