@@ -86,6 +86,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
         setViewMode('days');
     };
 
+    const handleToday = () => {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        onChange(dateStr);
+        setIsOpen(false);
+    };
+
+    const handleClear = () => {
+        onChange('');
+        setIsOpen(false);
+    };
+
     const renderDays = () => {
         const days = [];
         const totalDays = daysInMonth(viewDate.getFullYear(), viewDate.getMonth());
@@ -227,13 +239,20 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 </div>
 
                 {viewMode === 'days' && (
-                    <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 flex justify-center">
+                    <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex gap-3">
                         <button
                             type="button"
-                            onClick={() => handleDateSelect(new Date().getDate())}
-                            className="text-[11px] font-bold text-primary-600 uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform"
+                            onClick={handleClear}
+                            className="flex-1 py-2 rounded-xl text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-widest bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/20 shadow-sm active:shadow-inner transition-all"
                         >
-                            Select Today
+                            Clear
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleToday}
+                            className="flex-1 py-2 rounded-xl text-[10px] font-bold text-primary-600 uppercase tracking-widest bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/20 shadow-md active:shadow-inner transition-all"
+                        >
+                            Today
                         </button>
                     </div>
                 )}
@@ -247,7 +266,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-xl px-3 py-1.5 text-[11px] text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[40px]"
+                className="w-full flex items-center justify-between bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-xl px-3 py-1 text-sm text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[40px]"
             >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span className="material-symbols-outlined text-stone-400 text-lg flex-shrink-0">calendar_today</span>

@@ -98,7 +98,15 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
         <div className="flex flex-col gap-5">
           {(() => {
             // Group transactions by date
-            const sorted = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
+            const sorted = [...filteredTransactions].sort((a, b) => {
+              const dateSort = b.date.localeCompare(a.date);
+              if (dateSort !== 0) return dateSort;
+              // Secondary sort: newest created first
+              const aTime = (a as any).created_at || '';
+              const bTime = (b as any).created_at || '';
+              if (bTime && aTime) return bTime.localeCompare(aTime);
+              return b.id.localeCompare(a.id);
+            });
             const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
             sorted.forEach(t => {
               const [year, month, day] = t.date.split('-').map(Number);
@@ -144,8 +152,9 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                        <div className="flex items-center justify-between mt-0.5">
+                        <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">{t.category.name}</span>
+                          <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                           <span className="text-[10px] font-medium text-stone-400 dark:text-stone-500 uppercase tracking-wider">{formatDate(t.date)}</span>
                         </div>
                       </div>
