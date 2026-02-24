@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { CloudBackupService, BackupStatus } from '../services/cloudBackupService';
 import { Capacitor } from '@capacitor/core';
 import SyncReconciliationModal, { SyncDiff, ReconciliationAction } from './UI/SyncReconciliationModal';
+import { toast } from 'react-hot-toast';
 
 interface CloudBackupContextType {
     isCloudEnabled: boolean;
@@ -31,6 +32,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
     const [lastBackupTime, setLastBackupTime] = useState<string | null>(() => CloudBackupService.getLastBackupTime());
     const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasCheckedNewDevice = useRef(false);
+    const isInitialAuthCheck = useRef(true);
 
     // Reconciliation state
     const [isReconciling, setIsReconciling] = useState(false);
@@ -60,9 +62,17 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         };
     }, []);
 
-    // Reset cloud status when user logs out (but only AFTER auth has finished loading)
+    // Reset cloud status when user logs out (but only AFTER auth has finished loading and initial check)
     useEffect(() => {
-        if (!authLoading && !user && isCloudEnabled) {
+        if (authLoading) return;
+
+        // After auth is no longer loading for the first time, we consider it initialized
+        if (isInitialAuthCheck.current) {
+            isInitialAuthCheck.current = false;
+            return;
+        }
+
+        if (!user && isCloudEnabled) {
             console.log('[CloudBackup] User logged out, disabling cloud backup toggle');
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
@@ -105,9 +115,17 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
     const toggleCloudBackup = useCallback(async () => {
         const newValue = !isCloudEnabled;
 
-        if (newValue && user) {
+        if (newValue) {
+            if (!user) {
+                toast.error('Please sign in to enable cloud backup', {
+                    style: { borderRadius: '12px', background: '#1c1917', color: '#fff' }
+                });
+                return;
+            }
+
             // Web Only: reconciliation flow
             if (!Capacitor.isNativePlatform() && !CloudBackupService.isLocalEmpty()) {
+                // ... rest of logic stays the same ...
                 const diff = await CloudBackupService.getSyncDiff(user.id);
                 const hasDiff = diff && (
                     diff.addedLocally.length > 0 ||
@@ -122,24 +140,22 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 if (hasDiff) {
                     setSyncDiff(diff);
                     setIsReconciling(true);
-                    setBackupStatus('idle'); // Stop showing syncing spinner while waiting for user
-                    return; // Don't enable yet
+                    setBackupStatus('idle');
+                    return;
                 }
 
-                // Modified-only: no user input needed, just enable and push
                 if (onlyModified) {
-                    // Fall through to normal sync below
+                    // fall through
                 }
             }
 
-            // Normal flow for APK or web with no diffs/empty local
             setIsCloudEnabled(true);
             CloudBackupService.setEnabled(true);
             performSync(user.id);
-        } else if (!newValue) {
+        } else {
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
-            CloudBackupService.resetSyncState(); // Force-clear any stuck sync lock
+            CloudBackupService.resetSyncState();
             setBackupStatus('idle');
             setStatusMessage('');
         }
@@ -180,7 +196,11 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         try {
             // Web Only: reconciliation flow for "Sync Now"
             if (!Capacitor.isNativePlatform()) {
-                const diff = await CloudBackupService.getSyncDiff(user.id);
+                // Add a timeout to diff check to prevent indefinite loading
+                const diffPromise = CloudBackupService.getSyncDiff(user.id);
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync timeout')), 15000));
+
+                const diff = await Promise.race([diffPromise, timeoutPromise]) as any;
                 const hasDiff = diff && (
                     diff.addedLocally.length > 0 ||
                     diff.deletedLocally.length > 0 ||
@@ -212,13 +232,12 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 setBackupStatus('success');
                 setStatusMessage('Data is up to date');
             } else {
-                setBackupStatus('error');
-                setStatusMessage('Failed to pull updates');
+                // Status is handled inside pullFromRemote service
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('[CloudBackup] Sync Now failed:', error);
             setBackupStatus('error');
-            setStatusMessage('An unexpected error occurred');
+            setStatusMessage(error.message === 'Sync timeout' ? 'Sync timed out' : 'An unexpected error occurred');
         }
     }, [user, isCloudEnabled, onDataPulled]);
 

@@ -132,13 +132,14 @@ export const CloudBackupService = {
         if (!supabase) return false;
         if (!startSyncGuard()) return false;
 
-        if (!navigator.onLine) {
-            emitStatus('error', 'No internet connection');
-            return false;
-        }
-
         try {
             console.log('[CloudBackup] Starting pull from remote for user:', userId);
+
+            if (!navigator.onLine) {
+                emitStatus('error', 'No internet connection');
+                return false;
+            }
+
             emitStatus('syncing', 'Downloading your data...');
 
             // Pull categories first (needed to reconstruct transaction.category)
@@ -310,17 +311,17 @@ export const CloudBackupService = {
 
         if (!startSyncGuard()) return false;
 
-        if (!navigator.onLine) {
-            emitStatus('error', 'No internet connection');
-            const onlineHandler = () => {
-                window.removeEventListener('online', onlineHandler);
-                CloudBackupService.startBackup(userId);
-            };
-            window.addEventListener('online', onlineHandler);
-            return false;
-        }
-
         try {
+            if (!navigator.onLine) {
+                emitStatus('error', 'No internet connection');
+                const onlineHandler = () => {
+                    window.removeEventListener('online', onlineHandler);
+                    CloudBackupService.startBackup(userId);
+                };
+                window.addEventListener('online', onlineHandler);
+                return false;
+            }
+
             emitStatus('syncing', 'Backing up your data...');
 
             // --- 1. Ensure all referenced categories exist in Supabase ---
