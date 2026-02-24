@@ -255,10 +255,9 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
 
             {
                 viewMode === 'calendar' ? (
-                    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                    <div className="space-y-2 animate-in fade-in zoom-in-95 duration-300">
                         <div className="flex justify-end px-1">
                             <Dropdown
-                                label="Showing"
                                 options={[
                                     { id: 'all', name: 'Income & Expense' },
                                     { id: 'income', name: 'Incomes Only' },

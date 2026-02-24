@@ -67,20 +67,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
     return (
         <div className="space-y-4 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between bg-brand-surface-light dark:bg-brand-surface-dark p-3 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm">
+            <div className="flex items-center justify-between bg-brand-surface-light dark:bg-brand-surface-dark p-1 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
                 <button
                     onClick={() => changeMonth(-1)}
-                    className="size-9 flex items-center justify-center rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
+                    className="size-9 flex items-center justify-center rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
                 >
                     <span className="material-symbols-outlined text-lg">chevron_left</span>
                 </button>
-                <div className="text-center">
-                    <h2 className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-widest">{monthName}</h2>
-                    <p className="text-[10px] font-bold text-stone-400">{year}</p>
+                <div className="text-center flex items-baseline justify-center gap-2">
+                    <h3 className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-widest">{monthName}</h3>
+                    <p className="text-[15px] font-bold text-stone-400">{year}</p>
                 </div>
                 <button
                     onClick={() => changeMonth(1)}
-                    className="size-9 flex items-center justify-center rounded-xl hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
+                    className="size-9 flex items-center justify-center rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
                 >
                     <span className="material-symbols-outlined text-lg">chevron_right</span>
                 </button>
@@ -89,7 +89,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             <div className="grid grid-cols-7 gap-0.5 md:gap-1.5">
 
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
-                    <div key={d} className="text-center py-2 text-[9px] font-black text-stone-400 tracking-widest">{d}</div>
+                    <div key={d} className="text-center py-2 text-[15px] font-black text-stone-400 tracking-widest">{d}</div>
                 ))}
                 {calendarData.map((data, idx) => {
                     const stats = data.day ? getDayStats(data.transactions) : null;
@@ -104,7 +104,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                             {data.day && (
                                 <>
                                     <div className="flex items-center justify-between px-0.5">
-                                        <span className={`text-[10px] font-black ${isToday ? 'bg-primary-600 text-white size-4 rounded-full flex items-center justify-center' : 'text-stone-400'}`}>
+                                        <span className={`text-[15px] font-black ${isToday ? 'bg-primary-500 text-white size-5 rounded-full flex items-center justify-center' : 'text-stone-500'}`}>
                                             {data.day}
                                         </span>
                                         {data.transactions.length > 0 && (
@@ -114,14 +114,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex-1 flex flex-col justify-end gap-0.5 px-0.5 pb-0.5">
+                                    <div className="flex-1 flex flex-col justify-end gap-0.5 px-1 pb-1">
                                         {(typeFilter === 'all' || typeFilter === 'income') && stats!.income > 0 && (
-                                            <p className="text-[8px] md:text-[11px] font-black text-green-600 dark:text-green-400 leading-none truncate">
+                                            <p className="text-[10px] md:text-[15px] font-black text-green-600 dark:text-green-400 leading-none truncate">
                                                 +{formatCompactNumber(stats!.income)}
                                             </p>
                                         )}
                                         {(typeFilter === 'all' || typeFilter === 'expense') && stats!.expense > 0 && (
-                                            <p className="text-[8px] md:text-[11px] font-black text-rose-600 dark:text-rose-400 leading-none truncate">
+                                            <p className="text-[10px] md:text-[15px] font-black text-rose-600 dark:text-rose-400 leading-none truncate">
                                                 -{formatCompactNumber(stats!.expense)}
                                             </p>
                                         )}
