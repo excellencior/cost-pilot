@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Transaction, View } from '../types';
 import { useAuth } from './AuthContext';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { useCloudBackup } from './CloudBackupContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -157,7 +159,25 @@ const Settings: React.FC<SettingsProps> = ({
 				}
 			});
 
-			doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+			if (Capacitor.isNativePlatform()) {
+				const pdfBase64 = doc.output('datauristring').split(',')[1];
+				const fileName = `CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+
+				const savedFile = await Filesystem.writeFile({
+					path: fileName,
+					data: pdfBase64,
+					directory: Directory.Cache
+				});
+
+				await Share.share({
+					title: 'Export PDF',
+					text: 'Your CostPilot financial report.',
+					url: savedFile.uri,
+					dialogTitle: 'Share PDF'
+				});
+			} else {
+				doc.save(`CostPilot_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+			}
 		} catch (error) {
 			console.error('PDF Export Error:', error);
 			alert('Failed to generate PDF. Please check console for details.');
@@ -200,22 +220,40 @@ const Settings: React.FC<SettingsProps> = ({
 			});
 
 			const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
-			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-			const url = URL.createObjectURL(blob);
+			if (Capacitor.isNativePlatform()) {
+				const fileName = `CostPilot_Export_${new Date().toISOString().split('T')[0]}.csv`;
+				const base64Data = btoa(unescape(encodeURIComponent(csvContent)));
 
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = `CostPilot_Export_${new Date().toISOString().split('T')[0]}.csv`;
+				const savedFile = await Filesystem.writeFile({
+					path: fileName,
+					data: base64Data,
+					directory: Directory.Cache
+				});
 
-			// Append to body to ensure it works in all browsers
-			document.body.appendChild(link);
-			link.click();
+				await Share.share({
+					title: 'Export CSV',
+					text: 'Your CostPilot financial export.',
+					url: savedFile.uri,
+					dialogTitle: 'Share CSV'
+				});
+			} else {
+				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+				const url = URL.createObjectURL(blob);
 
-			// Cleanup
-			setTimeout(() => {
-				document.body.removeChild(link);
-				URL.revokeObjectURL(url);
-			}, 100);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = `CostPilot_Export_${new Date().toISOString().split('T')[0]}.csv`;
+
+				// Append to body to ensure it works in all browsers
+				document.body.appendChild(link);
+				link.click();
+
+				// Cleanup
+				setTimeout(() => {
+					document.body.removeChild(link);
+					URL.revokeObjectURL(url);
+				}, 100);
+			}
 		} catch (error) {
 			console.error('CSV Export Error:', error);
 			alert('Failed to generate CSV. Please check console for details.');
