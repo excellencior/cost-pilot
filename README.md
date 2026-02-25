@@ -1,10 +1,6 @@
-<div align="center">
-  <img width="1200" height="475" alt="CostPilot Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # CostPilot
 
-CostPilot is a modern, premium financial companion designed to give you complete control over your expenses. Built with a "local-first" philosophy, it ensures your data remains private and accessible, with optional high-speed cloud sync for cross-device harmony.
+CostPilot is a modern, premium financial companion designed to give you complete control over your expenses. Built with a **local-first philosophy**, it ensures your data remains private and accessible, with optional high-speed cloud sync for cross-device harmony.
 
 [![React](https://img.shields.io/badge/React-19.0-blue?logo=react)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite)](https://vitejs.dev/)
@@ -14,88 +10,71 @@ CostPilot is a modern, premium financial companion designed to give you complete
 
 ---
 
-## ✨ Key Features
+## 💎 Premium Features
 
-- **📊 Dynamic Dashboard**: Get instant insights into your net balance, total income, and monthly expenses with sleek, interactive charts.
-- **📅 Visual History**: Toggle between a detailed transaction list and a beautiful calendar view to track your spending patterns over time.
-- **☁️ Cloud Sync (Supabase)**: Experience seamless data backup and cross-device synchronization. Toggle cloud backup whenever you need it.
-- **🔒 Private & Secure**: Local-first storage ensures your data stays on your device. Secure Google authentication handles your profile.
-- **📄 Pro Exports**: Generate professional PDF financial reports or CSV data exports directly from your device (Web & Mobile supported).
-- **🌓 Adaptive UI**: A premium design system with full Dark Mode support, featuring smooth micro-animations and responsive layouts.
-- **🤖 AI Insights**: (Coming Soon) Leveraging Google Gemini for intelligent financial advice and automated transaction categorization.
+CostPilot isn't just another expense tracker—it's a high-performance tool built for speed and visual clarity.
+
+- **🚀 High-Performance Dashboard**: Instant insights into net balance, income, and expenses with fluid, interactive charts.
+- **📅 Dual-Mode History**: Seamlessly toggle between a detailed transaction list and a beautiful **Calendar View** to visualize spending rhythms.
+- **☁️ Intelligent Cloud Sync**: Powered by Supabase. Secure your data with optional cross-device synchronization that you control.
+- **🔒 Local-First, Always**: Your financial data belongs to you. Fast local storage ensures zero-latency performance even without internet.
+- **📄 Professional Exports**: Generate crisp, clean PDF financial reports or CSV data exports directly from your phone or web browser.
+- **🌓 Adaptive Aesthetics**: A meticulously crafted design system with full **Dark Mode** support, smooth micro-animations, and a slick, professional feel.
+- **🤖 Gemini AI (Internal Preview)**: Experimental integration with Google Gemini for automated categorization and financial insights.
 
 ## 🚀 Tech Stack
 
-- **Core**: React 19, TypeScript, Vite
-- **Mobile**: Capacitor (Android native support)
-- **Database/Backend**: Supabase (PostgreSQL + Realtime Sync)
-- **Authentication**: Firebase Authentication (Google OAuth)
-- **Styling**: Tailwind CSS, Material Symbols
-- **Visuals**: Recharts (Graphs), jsPDF + autoTable (Reports)
-- **AI Integration**: Google Generative AI (Gemini)
+- **Frontend**: React 19, TypeScript, Vite
+- **Mobile**: Capacitor (Native Android support)
+- **Data Layer**: Supabase (PostgreSQL + Realtime Sync)
+- **Security**: Firebase Google OAuth
+- **Styling**: Tailwind CSS & Material Symbols
+- **Visuals**: Recharts, jsPDF + autoTable
+- **Intelligence**: Google Generative AI (Gemini)
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 
-- **Node.js** (v18 or higher)
-- **npm** or **yarn**
+- **Node.js** (v18+)
 - **Android Studio** (for mobile builds)
 
 ### Installation
 
-1.  **Clone the repository**:
+1.  **Clone & Install**:
     ```bash
-    git clone https://github.com/yourusername/cost-pilot.git
+    git clone https://github.com/excellencior/cost-pilot.git
     cd cost-pilot
-    ```
-
-2.  **Install dependencies**:
-    ```bash
     npm install
     ```
 
-3.  **Environment Setup**:
-    Create a `.env` file in the root directory and add your credentials:
+2.  **Environment Setup**:
+    Create a `.env` file with your credentials:
     ```env
     VITE_SUPABASE_URL=your_supabase_url
     VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
     VITE_GEMINI_API_KEY=your_gemini_api_key
     ```
 
-4.  **Run Development Server**:
+3.  **Run Dev**:
     ```bash
     npm run dev
     ```
 
-## 📱 Mobile Workflow (Capacitor)
+## 📱 Mobile Workflow
 
-CostPilot is optimized for Android. To build and run on mobile:
+CostPilot is fully optimized for Android.
 
 ```bash
-# Build the web app and sync with Android
+# Sync web build to Android
 npm run build:android
 
-# Open in Android Studio
+# Launch in Android Studio
 npx cap open android
 ```
-
-> [!TIP]
-> Always run `npm run build` before `npx cap sync` to ensure your mobile app has the latest changes.
-
-## 📂 Project Structure
-
-- `/components`: UI components and view controllers.
-- `/services`: Core logic for Supabase, Auth, and Local DB.
-- `/android`: Native Android project files.
-- `/docs`: Architectural diagrams and documentation.
-
-## 📄 License
-
-This project is private and intended for personal use by the developer.
 
 ---
 
 <p align="center">
-  Build with ❤️ by the CostPilot Team
+  Built with ❤️ for personal financial excellence
 </p>
