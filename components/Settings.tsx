@@ -77,7 +77,7 @@ const Settings: React.FC<SettingsProps> = ({
 
 	const statusConfig = getStatusConfig();
 
-	const handleExportPDF = () => {
+	const handleExportPDF = async () => {
 		try {
 			const doc = new jsPDF();
 			const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
@@ -184,7 +184,7 @@ const Settings: React.FC<SettingsProps> = ({
 		}
 	};
 
-	const handleExportCSV = () => {
+	const handleExportCSV = async () => {
 		try {
 			let filteredTransactions = transactions;
 			if (startDate || endDate) {
