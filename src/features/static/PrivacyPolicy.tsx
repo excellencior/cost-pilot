@@ -35,12 +35,13 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
                         2. Data Storage & Supabase
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-4">
-                        By default, your transactions and financial data are stored on your local device. When you enable Cloud Backup:
+                        By default, your transactions and financial data are stored solely on your local device. We offer a manual Cloud Backup feature:
                     </p>
                     <ul className="list-disc list-inside space-y-3 pl-2 text-sm text-stone-600 dark:text-stone-300">
-                        <li>Your data is synced to <strong>Supabase</strong>, our trusted cloud infrastructure provider.</li>
-                        <li>This enables seamless synchronization across your devices and protects against data loss.</li>
+                        <li>Data is synced to <strong>Supabase</strong> only when you explicitly press the "Sync Now" button. We do not automatically upload your data.</li>
+                        <li>This enables secure synchronization across your devices and protects against data loss on your terms.</li>
                         <li>Data is handled according to Supabase's industry-standard security protocols.</li>
+                        <li>In the event of sync conflicts between your local and cloud data, CostPilot provides a reconciliation screen where you choose exactly which data to keep.</li>
                     </ul>
                 </section>
 

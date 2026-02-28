@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { CloudBackupService, BackupStatus } from '../../infrastructure/supabase/supabase-sync';
+import { LocalRepository } from '../../infrastructure/local/local-repository';
 import { Capacitor } from '@capacitor/core';
 import SyncReconciliationModal, { SyncDiff, ReconciliationAction } from '../../shared/ui/SyncReconciliationModal';
 import { toast } from 'react-hot-toast';
@@ -99,6 +100,9 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
     */
 
     const performSync = useCallback((userId: string) => {
+        // Force-clear any stale sync guard from previous failed operations
+        CloudBackupService.resetSyncState();
+
         // Check if this is a new device (no local transactions)
         if (CloudBackupService.isLocalEmpty()) {
             // Pull remote data first, then refresh UI
@@ -140,11 +144,9 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                         diff.addedLocally.length > 0 ||
                         diff.deletedLocally.length > 0 ||
                         diff.deletedRemotely.length > 0 ||
-                        diff.remoteOnly.length > 0
+                        diff.remoteOnly.length > 0 ||
+                        diff.modifiedLocally.length > 0
                     );
-
-                    // If the only differences are modifiedLocally, skip reconciliation — just push
-                    const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
 
                     if (hasDiff) {
                         setSyncDiff(diff);
@@ -152,19 +154,15 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                         setBackupStatus('idle');
                         return;
                     }
-
-                    if (onlyModified) {
-                        // fall through
-                    }
                 }
 
                 setIsCloudEnabled(true);
                 CloudBackupService.setEnabled(true);
                 // performSync(user.id); // Removed automatic sync on toggle
-            } catch (error) {
+            } catch (error: any) {
                 console.error('[CloudBackup] Toggle error:', error);
                 setBackupStatus('error');
-                setStatusMessage('Failed to enable sync');
+                setStatusMessage(error?.message === 'Sync diff timeout' ? 'Sync timed out (Check connection)' : 'Failed to enable sync');
             }
         } else {
             setIsCloudEnabled(false);
@@ -179,11 +177,40 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         if (!user) return;
         setIsReconciling(false);
 
+        // Mark deselected items as is_synced: true so startBackup won't push them
+        if (syncDiff) {
+            const selectedIds = new Set(actions.map(a => a.id));
+
+            // Collect all unselected upload-type items that need skipping
+            const itemsToSkip: any[] = [];
+
+            // Deselected addedLocally: user chose NOT to push
+            syncDiff.addedLocally
+                .filter(item => !selectedIds.has(item.id))
+                .forEach(item => itemsToSkip.push(item));
+
+            // Deselected modifiedLocally: user chose NOT to push changes
+            syncDiff.modifiedLocally
+                .filter(pair => !selectedIds.has(pair.local.id))
+                .forEach(pair => itemsToSkip.push(pair.local));
+
+            // Deselected deletedLocally: user chose NOT to confirm delete
+            syncDiff.deletedLocally
+                .filter(item => !selectedIds.has(item.id))
+                .forEach(item => {
+                    const raw = LocalRepository.getRawExpenses()[item.id];
+                    if (raw) itemsToSkip.push(raw);
+                });
+
+            // Bulk mark all skipped items as synced (won't be picked up by startBackup)
+            if (itemsToSkip.length > 0) {
+                LocalRepository.bulkUpsert(itemsToSkip, 'expense', true);
+            }
+        }
+
         const success = await CloudBackupService.applyReconciliation(user.id, actions);
         if (success) {
-            // Refresh UI state first to show any restored/modified items
             if (onDataPulled) onDataPulled();
-
             setIsCloudEnabled(true);
             CloudBackupService.setEnabled(true);
             performSync(user.id);
@@ -203,6 +230,9 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
     const pullUpdates = useCallback(async () => {
         if (!user || !isCloudEnabled) return;
 
+        // Force-clear any stale sync guard from previous failed operations
+        CloudBackupService.resetSyncState();
+
         // Visual feedback immediately
         setBackupStatus('syncing');
         setStatusMessage('Checking for updates...');
@@ -219,11 +249,9 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                     diff.addedLocally.length > 0 ||
                     diff.deletedLocally.length > 0 ||
                     diff.deletedRemotely.length > 0 ||
-                    diff.remoteOnly.length > 0
+                    diff.remoteOnly.length > 0 ||
+                    diff.modifiedLocally.length > 0
                 );
-
-                // If the only differences are modifiedLocally, skip reconciliation — just push
-                const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
 
                 if (hasDiff) {
                     setSyncDiff(diff);
@@ -231,27 +259,21 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                     setBackupStatus('idle');
                     return;
                 }
-
-                // Modified-only: no user input needed, just push directly
-                if (onlyModified) {
-                    await CloudBackupService.startBackup(user.id);
-                    if (onDataPulled) onDataPulled();
-                    return;
-                }
             }
 
-            const success = await CloudBackupService.pullFromRemote(user.id);
-            if (success) {
-                if (onDataPulled) onDataPulled();
-                setBackupStatus('success');
-                setStatusMessage('Data is up to date');
-            } else {
-                // Status is handled inside pullFromRemote service
-            }
+            // No diffs found — data is already in sync
+            // Just push any pending local changes (non-destructive, no replaceAll)
+            const success = await CloudBackupService.startBackup(user.id);
+            if (onDataPulled) onDataPulled();
         } catch (error: any) {
             console.error('[CloudBackup] Sync Now failed:', error);
             setBackupStatus('error');
-            setStatusMessage(error.message === 'Sync timeout' ? 'Sync timed out' : 'An unexpected error occurred');
+
+            let errMsg = 'An unexpected error occurred';
+            if (error.message === 'Sync timeout') errMsg = 'Sync timed out';
+            else if (error.message?.includes('JWT')) errMsg = 'Session expired. Please sign in again.';
+
+            setStatusMessage(errMsg);
         }
     }, [user, isCloudEnabled, onDataPulled]);
 
