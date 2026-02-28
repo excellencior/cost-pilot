@@ -5,8 +5,8 @@ const LandingPage: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-brand-base-light dark:bg-brand-base-dark text-stone-900 dark:text-stone-100 flex flex-col items-center justify-center p-6 sm:p-10">
-            <div className="max-w-2xl w-full text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="min-h-screen bg-brand-base-light dark:bg-brand-base-dark text-stone-900 dark:text-stone-100 flex flex-col items-center p-6 sm:p-10">
+            <div className="flex-grow flex flex-col items-center justify-center w-full max-w-2xl text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                 {/* Brand Header */}
                 <div className="space-y-4">
@@ -66,7 +66,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             {/* Footer text */}
-            <div className="absolute bottom-6 text-[10px] text-stone-400 dark:text-stone-500 font-medium tracking-widest uppercase text-center">
+            <div className="w-full py-6 text-[10px] text-stone-400 dark:text-stone-500 font-medium tracking-widest uppercase text-center mt-auto">
                 &copy; {new Date().getFullYear()} CostPilot • Designed for visual clarity
             </div>
         </div>

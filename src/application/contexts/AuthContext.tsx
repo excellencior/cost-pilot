@@ -32,21 +32,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
         }
 
-        // Check active sessions
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        // Check active sessions immediately on mount
+        const initSession = async () => {
+            try {
+                setLoading(true);
+                console.log('[AuthContext] Restoring session...');
+                const { data: { session }, error } = await supabase.auth.getSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+                if (error) {
+                    console.error('[AuthContext] Session restoration error:', error);
+                }
+
+                if (session) {
+                    console.log('[AuthContext] Session restored for user:', session.user.id);
+                    setSession(session);
+                    setUser(session.user);
+                } else {
+                    console.log('[AuthContext] No active session found');
+                }
+            } catch (err) {
+                console.error('[AuthContext] Unexpected error during session restoration:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log(`[AuthContext] Auth state changed: ${event}`);
             setSession(session);
             const newUser = session?.user ?? null;
             setUser(newUser);
             setLoading(false);
 
             // Auto-recovery and Settings Sync logic
-            if (newUser) {
+            if (newUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
                 const profile = await ProfileService.getProfile(newUser.id);
                 if (profile) {
                     if (profile.currency) {

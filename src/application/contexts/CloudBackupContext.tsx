@@ -161,10 +161,10 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 setIsCloudEnabled(true);
                 CloudBackupService.setEnabled(true);
                 // performSync(user.id); // Removed automatic sync on toggle
-            } catch (error) {
+            } catch (error: any) {
                 console.error('[CloudBackup] Toggle error:', error);
                 setBackupStatus('error');
-                setStatusMessage('Failed to enable sync');
+                setStatusMessage(error?.message === 'Sync diff timeout' ? 'Sync timed out (Check connection)' : 'Failed to enable sync');
             }
         } else {
             setIsCloudEnabled(false);
@@ -251,7 +251,12 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         } catch (error: any) {
             console.error('[CloudBackup] Sync Now failed:', error);
             setBackupStatus('error');
-            setStatusMessage(error.message === 'Sync timeout' ? 'Sync timed out' : 'An unexpected error occurred');
+
+            let errMsg = 'An unexpected error occurred';
+            if (error.message === 'Sync timeout') errMsg = 'Sync timed out';
+            else if (error.message?.includes('JWT')) errMsg = 'Session expired. Please sign in again.';
+
+            setStatusMessage(errMsg);
         }
     }, [user, isCloudEnabled, onDataPulled]);
 
