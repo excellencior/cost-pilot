@@ -261,7 +261,7 @@ const Settings: React.FC<SettingsProps> = ({
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+		<div className="max-w-4xl mx-auto space-y-6 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div className="flex items-center justify-between px-1">
 				<div className="flex items-center gap-4">
 					<button
@@ -488,15 +488,15 @@ const Settings: React.FC<SettingsProps> = ({
 
 			{/* Danger Zone */}
 			{user && (
-				<div className="card-section p-4 border-rose-100 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/10">
+				<div className="card-section p-5 border-rose-300 dark:border-rose-800/60 bg-rose-100/50 dark:bg-rose-950/30">
 					<div>
-						<p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-1">Danger Zone</p>
-						<p className="text-[10px] text-stone-500 dark:text-stone-400 mb-4">Permanent actions. Be careful!</p>
+						<p className="text-sm font-bold text-rose-600 dark:text-rose-500 uppercase tracking-widest mb-1">Danger Zone</p>
+						<p className="text-xs text-rose-500/80 dark:text-rose-400/80 mb-3">Permanent actions. Be careful!</p>
 						<button
 							onClick={onDeleteAccount}
-							className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors flex items-center gap-2 group"
+							className="text-sm font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors flex items-center gap-2 group"
 						>
-							<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">delete_forever</span>
+							<span className="material-symbols-outlined text-base group-hover:rotate-12 transition-transform">delete_forever</span>
 							Delete Account
 						</button>
 					</div>

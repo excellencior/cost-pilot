@@ -22,6 +22,7 @@
     "@fontsource/outfit": "^5.2.8",
     "@google/genai": "^1.39.0",
     "@supabase/supabase-js": "^2.95.3",
+    "crypto-js": "^4.2.0",
     "firebase": "^12.9.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
@@ -34,6 +35,7 @@
     "recharts": "^3.7.0"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.24",

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MonthlyData, Transaction } from '../../entities/types';
 import { formatDate } from '../../entities/financial';
+import WelcomeModal from './WelcomeModal';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -25,8 +26,24 @@ const Dashboard: React.FC<DashboardProps> = ({
   const balance = currentMonth.income - currentMonth.expense;
   const recentTransactions = transactions.slice(0, 4);
 
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasVisitedDashboard');
+    if (!hasVisited) {
+      setIsWelcomeModalOpen(true);
+    }
+  }, []);
+
+  const handleCloseWelcome = () => {
+    localStorage.setItem('hasVisitedDashboard', 'true');
+    setIsWelcomeModalOpen(false);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <WelcomeModal isOpen={isWelcomeModalOpen} onClose={handleCloseWelcome} />
+
       {/* Hero Stats */}
       <section className="card p-4 md:p-4 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30 min-h-[100px] flex flex-col justify-center">
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">

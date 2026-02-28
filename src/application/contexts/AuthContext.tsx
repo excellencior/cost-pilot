@@ -45,23 +45,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(newUser);
             setLoading(false);
 
-            // Auto-recovery logic
+            // Auto-recovery and Settings Sync logic
             if (newUser) {
                 const profile = await ProfileService.getProfile(newUser.id);
-                if (profile?.deletion_scheduled_at) {
-                    const success = await ProfileService.cancelDeletion(newUser.id);
-                    if (success) {
-                        toast.success('Account deletion cancelled. Welcome back!', {
-                            duration: 6000,
-                            icon: '🎉',
-                            style: {
-                                borderRadius: '12px',
-                                background: '#1c1917',
-                                color: '#fff',
-                                fontWeight: 'bold',
-                                border: '1px solid #AF8F42'
+                if (profile) {
+                    if (profile.currency) {
+                        try {
+                            const { LocalRepository } = await import('../../infrastructure/local/local-repository');
+                            if (LocalRepository.getSettings().currency !== profile.currency) {
+                                LocalRepository.updateSettings({ currency: profile.currency });
                             }
-                        });
+                        } catch (e) {
+                            console.error('[AuthContext] Failed to sync currency on login', e);
+                        }
+                    }
+
+                    if (profile.deletion_scheduled_at) {
+                        const success = await ProfileService.cancelDeletion(newUser.id);
+                        if (success) {
+                            toast.success('Account deletion cancelled. Welcome back!', {
+                                duration: 6000,
+                                icon: '🎉',
+                                style: {
+                                    borderRadius: '12px',
+                                    background: '#1c1917',
+                                    color: '#fff',
+                                    fontWeight: 'bold',
+                                    border: '1px solid #AF8F42'
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -93,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: `${import.meta.env.VITE_SITE_URL}/auth`,
+                        redirectTo: `${window.location.origin}/auth`,
                         queryParams: {
                             access_type: 'offline',
                             prompt: 'consent',

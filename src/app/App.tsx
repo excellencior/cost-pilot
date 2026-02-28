@@ -14,6 +14,8 @@ import CategoryEditorModal from '../features/categories/CategoryEditorModal';
 import Support from '../features/static/Support';
 import TermsOfService from '../features/static/TermsOfService';
 import PrivacyPolicy from '../features/static/PrivacyPolicy';
+import AuthCallback from '../features/auth/AuthCallback';
+import LandingPage from '../features/static/LandingPage';
 import { useAuth } from '../application/contexts/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from '../application/contexts/CloudBackupContext';
 import { LocalRepository } from '../infrastructure/local/local-repository';
@@ -45,8 +47,8 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
     const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
 
-    // Apply theme on mount
-    useEffect(() => {
+    // Apply theme on mount and when changed
+    const applyTheme = useCallback(() => {
         const theme = LocalRepository.getSettings().theme;
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -54,6 +56,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             document.documentElement.classList.remove('dark');
         }
     }, []);
+
+    useEffect(() => {
+        applyTheme();
+    }, [applyTheme]);
 
     const loadData = useCallback(() => {
         const freshTransactions = LocalRepository.getAllExpenses();
@@ -73,7 +79,26 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             LocalRepository.bulkUpsert(CATEGORIES as any[], 'category', false);
             setCategories(CATEGORIES);
         }
-    }, []);
+    }, [currency]);
+
+    // Listen for cross-tab or cross-file local storage changes (e.g. AuthContext syncing currency)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const settings = LocalRepository.getSettings();
+            if (currency !== settings.currency) {
+                setCurrency(settings.currency);
+            }
+            applyTheme();
+        };
+
+        // Custom event for same-window updates
+        window.addEventListener('costpilot-settings-updated', handleStorageChange);
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('costpilot-settings-updated', handleStorageChange);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [currency, applyTheme]);
 
     // Expose loadData for cross-device pull refresh
     useEffect(() => {
@@ -100,13 +125,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         }
     }, [user, loadData]);
 
-    // When the app boots on '/', redirect to the last saved view
-    useEffect(() => {
-        if (location.pathname === '/') {
-            const lastView = LocalRepository.getSettings().lastView || 'dashboard';
-            navigate(`/${lastView}`, { replace: true });
-        }
-    }, [location.pathname, navigate]);
+    // Avoid redirecting '/' so LandingPage can be shown
 
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         const isEditing = 'id' in transaction;
@@ -229,164 +248,173 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     };
 
     return (
-        <Layout
-            currentView={currentView}
-            onNavigate={handleViewChange}
-            onAddEntry={() => {
-                setEditingTransaction(null);
-                setIsEntryModalOpen(true);
-            }}
-            userEmail={user?.email || undefined}
-        >
-            <div key={currentView} className="animate-slide-up h-full">
-                <Routes>
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <Dashboard
-                                monthlyData={monthlyHistory}
-                                transactions={transactions}
-                                onAddEntry={() => {
-                                    setEditingTransaction(null);
-                                    setIsEntryModalOpen(true);
-                                }}
-                                onViewAll={() => { setTypeFilter(null); navigate('/overview'); }}
-                                onTransactionClick={(t) => {
-                                    setEditingTransaction(t);
-                                    setIsEntryModalOpen(true);
-                                }}
-                                onTypeFilter={(type) => { setTypeFilter(type); navigate('/overview'); }}
-                                currencySymbol={getCurrencySymbol(currency)}
+        <Routes>
+            {/* Public layout-less routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<AuthCallback />} />
+            <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate(-1)} />} />
+            <Route path="/terms" element={<TermsOfService onBack={() => navigate(-1)} />} />
+
+            {/* App Layout Route block */}
+            <Route path="/*" element={
+                <Layout
+                    currentView={currentView}
+                    onNavigate={handleViewChange}
+                    onAddEntry={() => {
+                        setEditingTransaction(null);
+                        setIsEntryModalOpen(true);
+                    }}
+                    userEmail={user?.email || undefined}
+                >
+                    <div key={currentView} className="animate-slide-up w-full">
+                        <Routes>
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <Dashboard
+                                        monthlyData={monthlyHistory}
+                                        transactions={transactions}
+                                        onAddEntry={() => {
+                                            setEditingTransaction(null);
+                                            setIsEntryModalOpen(true);
+                                        }}
+                                        onViewAll={() => { setTypeFilter(null); navigate('/overview'); }}
+                                        onTransactionClick={(t) => {
+                                            setEditingTransaction(t);
+                                            setIsEntryModalOpen(true);
+                                        }}
+                                        onTypeFilter={(type) => { setTypeFilter(type); navigate('/overview'); }}
+                                        currencySymbol={getCurrencySymbol(currency)}
+                                    />
+                                }
                             />
-                        }
+
+                            <Route
+                                path="/overview"
+                                element={
+                                    <Overview
+                                        month={selectedMonth || monthlyHistory[0]}
+                                        transactions={getMonthTransactions(selectedMonth || monthlyHistory[0])}
+                                        onBack={() => { setTypeFilter(null); navigate('/dashboard'); }}
+                                        onTransactionClick={(t) => {
+                                            setEditingTransaction(t);
+                                            setIsEntryModalOpen(true);
+                                        }}
+                                        currency={currency}
+                                        typeFilter={typeFilter}
+                                        onClearFilter={() => setTypeFilter(null)}
+                                    />
+                                }
+                            />
+
+                            <Route
+                                path="/history"
+                                element={
+                                    <History
+                                        transactions={transactions}
+                                        onTransactionClick={(t) => {
+                                            setEditingTransaction(t);
+                                            setIsEntryModalOpen(true);
+                                        }}
+                                        onBack={() => navigate('/dashboard')}
+                                        currencySymbol={getCurrencySymbol(currency)}
+                                        categories={categories}
+                                    />
+                                }
+                            />
+
+                            <Route
+                                path="/analysis"
+                                element={
+                                    <Analysis
+                                        transactions={transactions}
+                                        categories={categories}
+                                        currency={currency}
+                                        onBack={() => navigate('/dashboard')}
+                                    />
+                                }
+                            />
+
+                            <Route
+                                path="/settings"
+                                element={
+                                    <Settings
+                                        onNavigate={(v) => navigate(`/${v}`)}
+                                        onBack={() => navigate('/dashboard')}
+                                        categoryCount={categories.length}
+                                        transactions={transactions}
+                                        currency={currency}
+                                        setCurrency={setCurrency}
+                                        onDeleteAccount={() => setIsDeletionModalOpen(true)}
+                                    />
+                                }
+                            />
+
+                            <Route
+                                path="/category-picker"
+                                element={
+                                    <CategoryManagement
+                                        categories={categories}
+                                        onBack={() => navigate('/settings')}
+                                        onAddCategory={(type) => {
+                                            setEditingCategory(null);
+                                            setDefaultCategoryType(type);
+                                            setIsCategoryModalOpen(true);
+                                        }}
+                                        onEditCategory={(cat) => {
+                                            setEditingCategory(cat);
+                                            setIsCategoryModalOpen(true);
+                                        }}
+                                    />
+                                }
+                            />
+
+                            <Route path="/support" element={<Support onBack={() => navigate('/settings')} />} />
+
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                    </div>
+
+                    <NewEntryModal
+                        isOpen={isEntryModalOpen}
+                        onClose={() => {
+                            setIsEntryModalOpen(false);
+                            setEditingTransaction(null);
+                        }}
+                        onSave={handleSaveTransaction}
+                        onDelete={handleDeleteTransaction}
+                        editingTransaction={editingTransaction}
+                        categories={categories}
                     />
 
-                    <Route
-                        path="/overview"
-                        element={
-                            <Overview
-                                month={selectedMonth || monthlyHistory[0]}
-                                transactions={getMonthTransactions(selectedMonth || monthlyHistory[0])}
-                                onBack={() => { setTypeFilter(null); navigate('/dashboard'); }}
-                                onTransactionClick={(t) => {
-                                    setEditingTransaction(t);
-                                    setIsEntryModalOpen(true);
-                                }}
-                                currency={currency}
-                                typeFilter={typeFilter}
-                                onClearFilter={() => setTypeFilter(null)}
-                            />
-                        }
+                    <CategoryEditorModal
+                        isOpen={isCategoryModalOpen}
+                        onClose={() => {
+                            setIsCategoryModalOpen(false);
+                            setEditingCategory(null);
+                            setDefaultCategoryType(undefined);
+                        }}
+                        onSave={handleSaveCategory}
+                        editingCategory={editingCategory}
+                        defaultType={defaultCategoryType}
                     />
 
-                    <Route
-                        path="/history"
-                        element={
-                            <History
-                                transactions={transactions}
-                                onTransactionClick={(t) => {
-                                    setEditingTransaction(t);
-                                    setIsEntryModalOpen(true);
-                                }}
-                                onBack={() => navigate('/dashboard')}
-                                currencySymbol={getCurrencySymbol(currency)}
-                                categories={categories}
-                            />
-                        }
+                    <Toaster position="top-center" />
+
+                    <AccountDeletionModal
+                        isOpen={isDeletionModalOpen}
+                        onClose={() => setIsDeletionModalOpen(false)}
+                        userEmail={user?.email || ''}
+                        onConfirm={async () => {
+                            if (user) {
+                                const success = await ProfileService.scheduleDeletion(user.id);
+                                if (!success) throw new Error('Failed to schedule deletion.');
+                            }
+                        }}
                     />
-
-                    <Route
-                        path="/analysis"
-                        element={
-                            <Analysis
-                                transactions={transactions}
-                                categories={categories}
-                                currency={currency}
-                                onBack={() => navigate('/dashboard')}
-                            />
-                        }
-                    />
-
-                    <Route
-                        path="/settings"
-                        element={
-                            <Settings
-                                onNavigate={(v) => navigate(`/${v}`)}
-                                onBack={() => navigate('/dashboard')}
-                                categoryCount={categories.length}
-                                transactions={transactions}
-                                currency={currency}
-                                setCurrency={setCurrency}
-                                onDeleteAccount={() => setIsDeletionModalOpen(true)}
-                            />
-                        }
-                    />
-
-                    <Route
-                        path="/category-picker"
-                        element={
-                            <CategoryManagement
-                                categories={categories}
-                                onBack={() => navigate('/settings')}
-                                onAddCategory={(type) => {
-                                    setEditingCategory(null);
-                                    setDefaultCategoryType(type);
-                                    setIsCategoryModalOpen(true);
-                                }}
-                                onEditCategory={(cat) => {
-                                    setEditingCategory(cat);
-                                    setIsCategoryModalOpen(true);
-                                }}
-                            />
-                        }
-                    />
-
-                    <Route path="/support" element={<Support onBack={() => navigate('/settings')} />} />
-                    <Route path="/terms" element={<TermsOfService onBack={() => navigate('/settings')} />} />
-                    <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate('/settings')} />} />
-
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-            </div>
-
-            <NewEntryModal
-                isOpen={isEntryModalOpen}
-                onClose={() => {
-                    setIsEntryModalOpen(false);
-                    setEditingTransaction(null);
-                }}
-                onSave={handleSaveTransaction}
-                onDelete={handleDeleteTransaction}
-                editingTransaction={editingTransaction}
-                categories={categories}
-            />
-
-            <CategoryEditorModal
-                isOpen={isCategoryModalOpen}
-                onClose={() => {
-                    setIsCategoryModalOpen(false);
-                    setEditingCategory(null);
-                    setDefaultCategoryType(undefined);
-                }}
-                onSave={handleSaveCategory}
-                editingCategory={editingCategory}
-                defaultType={defaultCategoryType}
-            />
-
-            <Toaster position="top-center" />
-
-            <AccountDeletionModal
-                isOpen={isDeletionModalOpen}
-                onClose={() => setIsDeletionModalOpen(false)}
-                userEmail={user?.email || ''}
-                onConfirm={async () => {
-                    if (user) {
-                        const success = await ProfileService.scheduleDeletion(user.id);
-                        if (!success) throw new Error('Failed to schedule deletion.');
-                    }
-                }}
-            />
-        </Layout>
+                </Layout>
+            } />
+        </Routes>
     );
 };
 

@@ -14,7 +14,7 @@ const AuthCallback: React.FC = () => {
 
     useEffect(() => {
         if (!loading && user) {
-            navigate('/', { replace: true });
+            navigate('/settings', { replace: true });
         }
     }, [loading, user, navigate]);
 

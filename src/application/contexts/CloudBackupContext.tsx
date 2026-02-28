@@ -123,35 +123,47 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                 return;
             }
 
-            // Web Only: reconciliation flow
-            if (!Capacitor.isNativePlatform() && !CloudBackupService.isLocalEmpty()) {
-                // ... rest of logic stays the same ...
-                const diff = await CloudBackupService.getSyncDiff(user.id);
-                const hasDiff = diff && (
-                    diff.addedLocally.length > 0 ||
-                    diff.deletedLocally.length > 0 ||
-                    diff.deletedRemotely.length > 0 ||
-                    diff.remoteOnly.length > 0
-                );
+            try {
+                // Web Only: reconciliation flow
+                if (!Capacitor.isNativePlatform() && !CloudBackupService.isLocalEmpty()) {
+                    setBackupStatus('syncing');
+                    setStatusMessage('Checking sync status...');
 
-                // If the only differences are modifiedLocally, skip reconciliation — just push
-                const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
+                    const diffPromise = CloudBackupService.getSyncDiff(user.id);
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync diff timeout')), 10000));
 
-                if (hasDiff) {
-                    setSyncDiff(diff);
-                    setIsReconciling(true);
-                    setBackupStatus('idle');
-                    return;
+                    const diff = await Promise.race([diffPromise, timeoutPromise]) as any;
+
+                    const hasDiff = diff && (
+                        diff.addedLocally.length > 0 ||
+                        diff.deletedLocally.length > 0 ||
+                        diff.deletedRemotely.length > 0 ||
+                        diff.remoteOnly.length > 0
+                    );
+
+                    // If the only differences are modifiedLocally, skip reconciliation — just push
+                    const onlyModified = diff && !hasDiff && diff.modifiedLocally.length > 0;
+
+                    if (hasDiff) {
+                        setSyncDiff(diff);
+                        setIsReconciling(true);
+                        setBackupStatus('idle');
+                        return;
+                    }
+
+                    if (onlyModified) {
+                        // fall through
+                    }
                 }
 
-                if (onlyModified) {
-                    // fall through
-                }
+                setIsCloudEnabled(true);
+                CloudBackupService.setEnabled(true);
+                performSync(user.id);
+            } catch (error) {
+                console.error('[CloudBackup] Toggle error:', error);
+                setBackupStatus('error');
+                setStatusMessage('Failed to enable sync');
             }
-
-            setIsCloudEnabled(true);
-            CloudBackupService.setEnabled(true);
-            performSync(user.id);
         } else {
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
