@@ -6,6 +6,7 @@ export interface Profile {
     full_name?: string;
     avatar_url?: string;
     currency?: string;
+    theme?: string;
     deletion_scheduled_at?: string | null;
     updated_at: string;
 }

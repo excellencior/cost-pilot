@@ -14,6 +14,7 @@ import CategoryEditorModal from '../features/categories/CategoryEditorModal';
 import Support from '../features/static/Support';
 import TermsOfService from '../features/static/TermsOfService';
 import PrivacyPolicy from '../features/static/PrivacyPolicy';
+import AuthCallback from '../features/auth/AuthCallback';
 import { useAuth } from '../application/contexts/AuthContext';
 import { useCloudBackup, CloudBackupProvider } from '../application/contexts/CloudBackupContext';
 import { LocalRepository } from '../infrastructure/local/local-repository';
@@ -45,8 +46,8 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
     const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
 
-    // Apply theme on mount
-    useEffect(() => {
+    // Apply theme on mount and when changed
+    const applyTheme = useCallback(() => {
         const theme = LocalRepository.getSettings().theme;
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -54,6 +55,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             document.documentElement.classList.remove('dark');
         }
     }, []);
+
+    useEffect(() => {
+        applyTheme();
+    }, [applyTheme]);
 
     const loadData = useCallback(() => {
         const freshTransactions = LocalRepository.getAllExpenses();
@@ -73,7 +78,26 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             LocalRepository.bulkUpsert(CATEGORIES as any[], 'category', false);
             setCategories(CATEGORIES);
         }
-    }, []);
+    }, [currency]);
+
+    // Listen for cross-tab or cross-file local storage changes (e.g. AuthContext syncing currency)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const settings = LocalRepository.getSettings();
+            if (currency !== settings.currency) {
+                setCurrency(settings.currency);
+            }
+            applyTheme();
+        };
+
+        // Custom event for same-window updates
+        window.addEventListener('costpilot-settings-updated', handleStorageChange);
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('costpilot-settings-updated', handleStorageChange);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [currency, applyTheme]);
 
     // Expose loadData for cross-device pull refresh
     useEffect(() => {
@@ -238,7 +262,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             }}
             userEmail={user?.email || undefined}
         >
-            <div key={currentView} className="animate-slide-up h-full">
+            <div key={currentView} className="animate-slide-up w-full">
                 <Routes>
                     <Route
                         path="/dashboard"
@@ -344,6 +368,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
                     <Route path="/support" element={<Support onBack={() => navigate('/settings')} />} />
                     <Route path="/terms" element={<TermsOfService onBack={() => navigate('/settings')} />} />
                     <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate('/settings')} />} />
+                    <Route path="/auth" element={<AuthCallback />} />
 
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

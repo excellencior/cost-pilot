@@ -142,6 +142,29 @@ export const CloudBackupService = {
 
             emitStatus('syncing', 'Downloading your data...');
 
+            // Pull profile settings (currency & theme)
+            const { data: remoteProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (remoteProfile) {
+                const settingsToUpdate: any = {};
+                if (remoteProfile.currency && remoteProfile.currency !== LocalRepository.getSettings().currency) {
+                    console.log(`[CloudBackup] Pulled currency: ${remoteProfile.currency}`);
+                    settingsToUpdate.currency = remoteProfile.currency;
+                }
+                if (remoteProfile.theme && remoteProfile.theme !== LocalRepository.getSettings().theme) {
+                    console.log(`[CloudBackup] Pulled theme: ${remoteProfile.theme}`);
+                    settingsToUpdate.theme = remoteProfile.theme;
+                }
+
+                if (Object.keys(settingsToUpdate).length > 0) {
+                    LocalRepository.updateSettings(settingsToUpdate);
+                }
+            }
+
             // Pull categories first (needed to reconstruct transaction.category)
             const { data: remoteCategories, error: catError } = await supabase
                 .from('categories')
@@ -346,7 +369,22 @@ export const CloudBackupService = {
                 }
             });
 
-            // --- 2. Push Categories ---
+            // --- 2. Push Profile Settings (Currency & Theme) ---
+            const currentSettings = LocalRepository.getSettings();
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({
+                    currency: currentSettings.currency,
+                    theme: currentSettings.theme,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', userId);
+
+            if (profileError) {
+                console.warn('[CloudBackup] Profile/Settings push error:', JSON.stringify(profileError));
+            }
+
+            // --- 3. Push Categories ---
             if (categoriesToEnsure.length > 0) {
                 const cleaned = categoriesToEnsure.map(c => localCatToRemote(c, userId));
 
