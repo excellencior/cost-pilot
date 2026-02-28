@@ -29,7 +29,8 @@ const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     const hasAcceptedTerms = localStorage.getItem('hasAcceptedTerms') === 'true';
     const location = useLocation();
 
-    if (!hasAcceptedTerms && location.pathname !== '/') {
+    // Allow the landing page itself, and the auth callback route which handles OAuth redirects
+    if (!hasAcceptedTerms && location.pathname !== '/' && location.pathname !== '/auth') {
         return <Navigate to="/" replace />;
     }
 
