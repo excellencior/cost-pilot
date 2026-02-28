@@ -32,15 +32,15 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ onBack }) => {
                 <section>
                     <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary-600">database</span>
-                        2. Use of Service & Data
+                        2. Use of Service & Data Syncing
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-4">
                         CostPilot is a personal finance tracking tool. It operates primarily as a local-first application, meaning your data is stored directly on your device.
                     </p>
                     <div className="bg-primary-500/5 dark:bg-primary-950/20 border-l-4 border-primary-500 p-4 rounded-r-xl">
-                        <p className="text-sm font-semibold text-stone-900 dark:text-white mb-2 underline">Data Storage Notice:</p>
+                        <p className="text-sm font-semibold text-stone-900 dark:text-white mb-2 underline">Manual Data Sync & Conflict Resolution:</p>
                         <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            For users who enable cloud backup features, your encrypted financial data is stored and synced using <strong>Supabase</strong> infrastructure. By using these features, you acknowledge and agree to the storage of your data on Supabase servers.
+                            CostPilot provides a <strong>manual</strong> Cloud Backup using Supabase infrastructure. By initiating a sync, you agree to the storage of your encrypted data on these servers. You remain fully responsible for resolving any data conflicts during the sync process using the provided reconciliation tools to ensure your data's integrity.
                         </p>
                     </div>
                 </section>

@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
+    const [accepted, setAccepted] = useState(false);
+
+    const handleContinue = () => {
+        if (accepted) {
+            localStorage.setItem('hasAcceptedTerms', 'true');
+            navigate('/dashboard');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-brand-base-light dark:bg-brand-base-dark text-stone-900 dark:text-stone-100 flex flex-col items-center p-6 sm:p-10">
@@ -40,7 +48,13 @@ const LandingPage: React.FC = () => {
                             <li className="flex gap-3 items-start">
                                 <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
                                 <span className="text-sm text-stone-600 dark:text-stone-300">
-                                    <strong className="text-stone-900 dark:text-white">Financial Data:</strong> Your transactions and categories are encrypted and securely synced to our cloud only if you explicitly enable Cloud Backup. By default, everything stays on your device.
+                                    <strong className="text-stone-900 dark:text-white">Financial Data:</strong> Your transactions and categories are encrypted and securely synced to our cloud only if you explicitly enable Cloud Backup. We use manual cloud syncing to ensure you are always in control of when your data leaves your device.
+                                </span>
+                            </li>
+                            <li className="flex gap-3 items-start">
+                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                                <span className="text-sm text-stone-600 dark:text-stone-300">
+                                    <strong className="text-stone-900 dark:text-white">Conflict Resolution:</strong> If syncing conflicts occur, CostPilot provides transparent reconciliation, giving you the final say on which data to keep.
                                 </span>
                             </li>
                         </ul>
@@ -48,10 +62,34 @@ const LandingPage: React.FC = () => {
                 </div>
 
                 {/* Call To Action */}
-                <div className="pt-6 space-y-6">
+                <div className="pt-6 space-y-6 w-full max-w-sm mx-auto">
+                    <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-stone-100 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors">
+                        <div className="relative flex items-center justify-center mt-0.5">
+                            <input
+                                type="checkbox"
+                                className="peer appearance-none size-5 border-2 border-stone-300 dark:border-stone-600 rounded checked:border-primary-500 checked:bg-primary-500 transition-all cursor-pointer"
+                                checked={accepted}
+                                onChange={(e) => setAccepted(e.target.checked)}
+                            />
+                            <span className="material-symbols-outlined absolute text-white text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-all">
+                                check
+                            </span>
+                        </div>
+                        <span className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed select-none">
+                            I understand and accept the{' '}
+                            <button onClick={(e) => { e.preventDefault(); navigate('/terms'); }} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Terms of Service</button>
+                            {' '}and{' '}
+                            <button onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Privacy Policy</button>.
+                        </span>
+                    </label>
+
                     <button
-                        onClick={() => navigate('/dashboard')}
-                        className="btn-primary w-full sm:w-auto px-10 py-4 text-lg shadow-xl shadow-primary-500/20 hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 mx-auto"
+                        onClick={handleContinue}
+                        disabled={!accepted}
+                        className={`w-full py-4 text-lg shadow-xl shadow-primary-500/20 flex items-center justify-center gap-3 transition-all ${accepted
+                                ? 'btn-primary hover:scale-[1.02] active:scale-[0.98]'
+                                : 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed border-none'
+                            }`}
                     >
                         <span>Continue to App</span>
                         <span className="material-symbols-outlined">arrow_forward</span>
