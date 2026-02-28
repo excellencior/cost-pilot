@@ -40,7 +40,7 @@ const Settings: React.FC<SettingsProps> = ({
 	onDeleteAccount
 }) => {
 	const { user, signIn, logOut } = useAuth();
-	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup } = useCloudBackup();
+	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup, pullUpdates } = useCloudBackup();
 	const [startDate, setStartDate] = useState('');
 	const [endDate, setEndDate] = useState('');
 
@@ -71,7 +71,7 @@ const Settings: React.FC<SettingsProps> = ({
 			case 'error':
 				return { text: statusMessage || 'Backup failed', color: 'text-rose-500', icon: 'cloud_off', spin: false };
 			default:
-				return { text: isCloudEnabled ? 'Cloud backup is active' : 'Cloud backup is off', color: 'text-stone-400', icon: isCloudEnabled ? 'cloud_done' : 'cloud_off', spin: false };
+				return { text: isCloudEnabled ? 'Ready to sync' : 'Cloud backup is off', color: 'text-stone-400', icon: isCloudEnabled ? 'cloud' : 'cloud_off', spin: false };
 		}
 	};
 
@@ -446,7 +446,7 @@ const Settings: React.FC<SettingsProps> = ({
 					<p className="text-stone-400 text-sm max-w-sm mb-3">
 						{!user
 							? 'Sign in to enable cloud backup and sync your data across devices.'
-							: 'Secure your financial history and access it across all your devices.'
+							: 'Backup your data manually to keep it safe and synced across devices.'
 						}
 					</p>
 
@@ -458,15 +458,30 @@ const Settings: React.FC<SettingsProps> = ({
 						)}
 					</div>
 
-					{/* Retry button on error */}
-					{backupStatus === 'error' && user && (
-						<button
-							onClick={retryBackup}
-							className="mt-4 bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
-						>
-							<span className="material-symbols-outlined text-sm">refresh</span>
-							Retry Sync
-						</button>
+					{/* Sync Now / Retry button */}
+					{isCloudEnabled && user && (
+						<div className="mt-4 flex gap-3">
+							<button
+								onClick={pullUpdates}
+								disabled={backupStatus === 'syncing'}
+								className="bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2 shadow-sm"
+							>
+								<span className={`material-symbols-outlined text-sm ${backupStatus === 'syncing' ? 'animate-spin' : ''}`}>
+									{backupStatus === 'syncing' ? 'sync' : 'cloud_sync'}
+								</span>
+								{backupStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
+							</button>
+
+							{backupStatus === 'error' && (
+								<button
+									onClick={retryBackup}
+									className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+								>
+									<span className="material-symbols-outlined text-sm">refresh</span>
+									Retry
+								</button>
+							)}
+						</div>
 					)}
 				</div>
 			</div>

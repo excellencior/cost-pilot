@@ -81,7 +81,8 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         }
     }, [user, authLoading, isCloudEnabled]);
 
-    // Cross-device sync: detect new device (empty local DB) on login
+    // Cross-device sync check disabled — manual sync only
+    /*
     useEffect(() => {
         if (!user || !isCloudEnabled || hasCheckedNewDevice.current) return;
         hasCheckedNewDevice.current = true;
@@ -95,6 +96,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
             });
         }
     }, [user, isCloudEnabled, onDataPulled]);
+    */
 
     const performSync = useCallback((userId: string) => {
         // Check if this is a new device (no local transactions)
@@ -158,7 +160,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
 
                 setIsCloudEnabled(true);
                 CloudBackupService.setEnabled(true);
-                performSync(user.id);
+                // performSync(user.id); // Removed automatic sync on toggle
             } catch (error) {
                 console.error('[CloudBackup] Toggle error:', error);
                 setBackupStatus('error');
