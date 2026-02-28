@@ -5,7 +5,9 @@ import { supabase } from '../../infrastructure/supabase/client';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { ProfileService } from '../../infrastructure/supabase/supabase-profile';
+import { Preferences } from '@capacitor/preferences';
 import { toast } from 'react-hot-toast';
+import { AgreementService } from '../../infrastructure/supabase/supabase-agreements';
 
 interface AuthContextType {
     user: User | null;
@@ -68,6 +70,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             // Auto-recovery and Settings Sync logic
             if (newUser && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                // Record the device agreement for this newly signed-in device
+                await AgreementService.recordAgreement(newUser.id);
+                // Sync the flag to local storage to bypass LandingPage on future visits
+                await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
+
                 const profile = await ProfileService.getProfile(newUser.id);
                 if (profile) {
                     if (profile.currency) {
@@ -157,10 +164,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (supabase) {
                 // We use a shorter timeout or just don't await indefinitely for signOut
                 // to ensure the UI updates and prevents the "stuck" feeling
-                await Promise.race([
-                    supabase.auth.signOut(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Sign out timeout')), 3000))
-                ]).catch(e => console.error('Supabase signOut error:', e));
+                try {
+                    await Promise.race([
+                        supabase.auth.signOut(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Sign out timeout')), 3000))
+                    ]);
+                } catch (e) {
+                    console.error('Supabase global signOut error/timeout:', e);
+                    // Force local cleanup if the network request hangs or fails
+                    await supabase.auth.signOut({ scope: 'local' }).catch(console.error);
+                }
             }
         } catch (error) {
             console.error('Sign out error:', error);
