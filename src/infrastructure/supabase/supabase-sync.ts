@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { LocalRepository, LocalExpense, LocalCategory } from '../local/local-repository';
+import { deriveUserKey, encryptPayload, decryptPayload } from '../crypto/encryption';
 
 export type BackupStatus = 'idle' | 'syncing' | 'success' | 'error';
 
@@ -46,58 +47,96 @@ const emitStatus = (status: BackupStatus, message?: string) => {
 
 /**
  * Transform a local category to the shape expected by the Supabase `categories` table.
- * Only include columns that exist in the schema.
+ * Encrypts sensitive fields into a single `payload` string.
  */
 const localCatToRemote = (cat: any, userId: string) => {
-    const remote: Record<string, any> = {
-        id: cat.id,
-        user_id: userId,
+    const key = deriveUserKey(userId);
+    const catPayload = {
         name: cat.name,
         icon: cat.icon,
         color: cat.color,
         type: cat.type,
         is_default: false,
     };
-    // Only include timestamps if they exist and are valid
+
+    const remote: Record<string, any> = {
+        id: cat.id,
+        user_id: userId,
+        payload: encryptPayload(catPayload, key)
+    };
+
+    // Timestamps remain unencrypted for sync resolution logic
     if (cat.created_at) remote.created_at = cat.created_at;
     if (cat.updated_at) remote.updated_at = cat.updated_at;
+
     return remote;
 };
 
 /**
  * Transform a local transaction (which has a nested `category` object)
- * to the flat shape expected by the Supabase `transactions` table.
- * Maps `category.id` → `category_id`.
+ * to the encrypted flat shape expected by the Supabase `transactions` table.
  */
 const localTxToRemote = (tx: any, userId: string) => {
-    const remote: Record<string, any> = {
-        id: tx.id,
-        user_id: userId,
+    const key = deriveUserKey(userId);
+    const txPayload = {
         category_id: tx.category?.id || tx.category_id || null,
         title: tx.title,
         amount: tx.amount,
         type: tx.type,
         date: tx.date,
+        location: tx.location,
+        notes: tx.notes
     };
-    if (tx.location) remote.location = tx.location;
-    if (tx.notes) remote.notes = tx.notes;
+
+    const remote: Record<string, any> = {
+        id: tx.id,
+        user_id: userId,
+        payload: encryptPayload(txPayload, key)
+    };
+
     if (tx.created_at) remote.created_at = tx.created_at;
     if (tx.updated_at) remote.updated_at = tx.updated_at;
+
     return remote;
 };
 
 /**
- * Transform a remote transaction (flat, with `category_id`) back to the local shape
+ * Transform a remote encrypted transaction back to the local shape
  * (nested `category` object) so the app can render it.
  */
-const remoteTxToLocal = (tx: any, categories: any[]) => {
-    const cat = categories.find((c: any) => c.id === tx.category_id);
+const remoteTxToLocal = (remoteTx: any, categories: any[], userId: string) => {
+    const key = deriveUserKey(userId);
+    const decryptedPayload = decryptPayload(remoteTx.payload, key) || {};
+
+    const catId = decryptedPayload.category_id;
+    const cat = categories.find((c: any) => c.id === catId);
+
     return {
-        ...tx,
+        id: remoteTx.id,
+        user_id: remoteTx.user_id,
+        ...decryptedPayload,
         category: cat
             ? { id: cat.id, name: cat.name, icon: cat.icon, color: cat.color, type: cat.type }
-            : { id: tx.category_id || '', name: 'Unknown', icon: 'help', color: 'bg-slate-100 text-slate-500', type: tx.type },
-        category_id: tx.category_id,
+            : { id: catId || '', name: 'Unknown', icon: 'help', color: 'bg-slate-100 text-slate-500', type: decryptedPayload.type },
+        category_id: catId,
+        created_at: remoteTx.created_at,
+        updated_at: remoteTx.updated_at
+    };
+};
+
+/**
+ * Transform a remote encrypted category back to the local shape.
+ */
+const remoteCatToLocal = (remoteCat: any, userId: string) => {
+    const key = deriveUserKey(userId);
+    const decryptedPayload = decryptPayload(remoteCat.payload, key) || {};
+
+    return {
+        id: remoteCat.id,
+        user_id: remoteCat.user_id,
+        ...decryptedPayload,
+        created_at: remoteCat.created_at,
+        updated_at: remoteCat.updated_at
     };
 };
 
@@ -136,18 +175,26 @@ export const CloudBackupService = {
             console.log('[CloudBackup] Starting pull from remote for user:', userId);
 
             if (!navigator.onLine) {
+                console.error('[CloudBackup:Pull] Offline - Sync aborted');
                 emitStatus('error', 'No internet connection');
                 return false;
             }
 
             emitStatus('syncing', 'Downloading your data...');
+            console.log('[CloudBackup:Pull] Fetching remote profile for:', userId);
 
             // Pull profile settings (currency & theme)
-            const { data: remoteProfile } = await supabase
+            const { data: remoteProfile, error: profilePullError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
+
+            // Code PGRST116 means no rows found, which is fine for new users
+            if (profilePullError && profilePullError.code !== 'PGRST116') {
+                console.error('[CloudBackup] Profile fetch error:', profilePullError);
+                throw profilePullError;
+            }
 
             if (remoteProfile) {
                 const settingsToUpdate: any = {};
@@ -175,7 +222,8 @@ export const CloudBackupService = {
 
             if (remoteCategories) {
                 console.log(`[CloudBackup] Pulled ${remoteCategories.length} categories`);
-                LocalRepository.replaceAll(remoteCategories as LocalCategory[], 'category');
+                const localizedCats = remoteCategories.map(c => remoteCatToLocal(c, userId));
+                LocalRepository.replaceAll(localizedCats as LocalCategory[], 'category');
             }
 
             // Pull transactions and re-attach category objects
@@ -188,8 +236,8 @@ export const CloudBackupService = {
 
             if (remoteTransactions) {
                 console.log(`[CloudBackup] Pulled ${remoteTransactions.length} transactions`);
-                const allCats = remoteCategories || LocalRepository.getAllCategories();
-                const localizedTxs = remoteTransactions.map(tx => remoteTxToLocal(tx, allCats));
+                const allCats = remoteCategories ? remoteCategories.map(c => remoteCatToLocal(c, userId)) : LocalRepository.getAllCategories();
+                const localizedTxs = remoteTransactions.map(tx => remoteTxToLocal(tx, allCats, userId));
                 LocalRepository.replaceAll(localizedTxs as LocalExpense[], 'expense');
             }
 
@@ -265,7 +313,8 @@ export const CloudBackupService = {
             // Analyze remote items for those missing locally
             for (const [id, remote] of remoteMap.entries()) {
                 if (!localMap.has(id)) {
-                    diff.remoteOnly.push(remoteTxToLocal(remote, remoteCats || []));
+                    const allCats = remoteCats ? remoteCats.map(c => remoteCatToLocal(c, userId)) : [];
+                    diff.remoteOnly.push(remoteTxToLocal(remote, allCats, userId));
                 }
             }
 
@@ -300,7 +349,7 @@ export const CloudBackupService = {
                         const { data: remote } = await supabase.from('transactions').select('*').eq('id', item.id).single();
                         if (remote) {
                             const cats = LocalRepository.getAllCategories();
-                            LocalRepository.bulkUpsert([remoteTxToLocal(remote, cats)], 'expense', true);
+                            LocalRepository.bulkUpsert([remoteTxToLocal(remote, cats, userId)], 'expense', true);
                         }
                         break;
 
@@ -336,8 +385,10 @@ export const CloudBackupService = {
 
         try {
             if (!navigator.onLine) {
+                console.error('[CloudBackup:Push] Offline - Sync aborted');
                 emitStatus('error', 'No internet connection');
                 const onlineHandler = () => {
+                    console.log('[CloudBackup:Push] Device back online, retrying sync...');
                     window.removeEventListener('online', onlineHandler);
                     CloudBackupService.startBackup(userId);
                 };
@@ -346,6 +397,7 @@ export const CloudBackupService = {
             }
 
             emitStatus('syncing', 'Backing up your data...');
+            console.log('[CloudBackup:Push] Starting sync sequence...');
 
             // --- 1. Ensure all referenced categories exist in Supabase ---
             const pendingExpenses = LocalRepository.getPendingSyncExpenses();
@@ -371,17 +423,19 @@ export const CloudBackupService = {
 
             // --- 2. Push Profile Settings (Currency & Theme) ---
             const currentSettings = LocalRepository.getSettings();
+            console.log('[CloudBackup:Push] Syncing profile settings...', currentSettings);
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update({
+                .upsert({
+                    id: userId,
                     currency: currentSettings.currency,
                     theme: currentSettings.theme,
                     updated_at: new Date().toISOString()
-                })
-                .eq('id', userId);
+                }, { onConflict: 'id' });
 
             if (profileError) {
-                console.warn('[CloudBackup] Profile/Settings push error:', JSON.stringify(profileError));
+                console.error('[CloudBackup:Push] Profile/Settings sync error:', profileError);
+                // We don't throw here as sync can still proceed for transactions
             }
 
             // --- 3. Push Categories ---
@@ -396,7 +450,7 @@ export const CloudBackupService = {
 
                 if (error) {
                     console.error('[CloudBackup] Category push error:', JSON.stringify(error));
-                    throw new Error('Some settings failed to sync. Tap to retry.');
+                    throw new Error(`Sync failed (Settings): ${error.message || 'Unknown error'}`);
                 }
 
                 // Mark as synced locally
@@ -414,21 +468,21 @@ export const CloudBackupService = {
 
                 if (toUpsert.length > 0) {
                     const cleaned = toUpsert.map(e => localTxToRemote(e, userId));
-
-                    console.log('[CloudBackup] Pushing transactions:', JSON.stringify(cleaned, null, 2));
+                    console.log(`[CloudBackup:Push] Uploading ${toUpsert.length} transactions...`);
 
                     const { error } = await supabase
                         .from('transactions')
                         .upsert(cleaned, { onConflict: 'id' });
 
                     if (error) {
-                        console.error('[CloudBackup] Transaction push error:', JSON.stringify(error));
-                        throw new Error('New data failed to sync. Tap to retry.');
+                        console.error('[CloudBackup:Push] Transaction upload error:', error);
+                        throw new Error(`Sync failed (Data): ${error.message || 'Unknown error'}`);
                     }
                 }
 
                 // Handle deletes on remote
                 if (toDelete.length > 0) {
+                    console.log(`[CloudBackup:Push] Deleting ${toDelete.length} transactions from cloud...`);
                     const deleteIds = toDelete.map(e => e.id);
                     const { error } = await supabase
                         .from('transactions')
@@ -436,7 +490,7 @@ export const CloudBackupService = {
                         .in('id', deleteIds);
 
                     if (error) {
-                        console.error('[CloudBackup] Transaction delete error:', JSON.stringify(error));
+                        console.error('[CloudBackup:Push] Transaction delete error:', error);
                     }
                 }
 
