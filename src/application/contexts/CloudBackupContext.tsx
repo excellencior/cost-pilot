@@ -158,7 +158,10 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
 
                 setIsCloudEnabled(true);
                 CloudBackupService.setEnabled(true);
-                // performSync(user.id); // Removed automatic sync on toggle
+                // If local is empty, pull regardless of platform.
+                if (CloudBackupService.isLocalEmpty()) {
+                    performSync(user.id);
+                }
             } catch (error: any) {
                 console.error('[CloudBackup] Toggle error:', error);
                 setBackupStatus('error');
@@ -238,27 +241,25 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         setStatusMessage('Checking for updates...');
 
         try {
-            // Web Only: reconciliation flow for "Sync Now"
-            if (!Capacitor.isNativePlatform()) {
-                // Add a timeout to diff check to prevent indefinite loading
-                const diffPromise = CloudBackupService.getSyncDiff(user.id);
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync timeout')), 15000));
+            // Apply reconciliation flow for "Sync Now" across ALL platforms
+            // Add a timeout to diff check to prevent indefinite loading
+            const diffPromise = CloudBackupService.getSyncDiff(user.id);
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync timeout')), 15000));
 
-                const diff = await Promise.race([diffPromise, timeoutPromise]) as any;
-                const hasDiff = diff && (
-                    diff.addedLocally.length > 0 ||
-                    diff.deletedLocally.length > 0 ||
-                    diff.deletedRemotely.length > 0 ||
-                    diff.remoteOnly.length > 0 ||
-                    diff.modifiedLocally.length > 0
-                );
+            const diff = await Promise.race([diffPromise, timeoutPromise]) as any;
+            const hasDiff = diff && (
+                diff.addedLocally.length > 0 ||
+                diff.deletedLocally.length > 0 ||
+                diff.deletedRemotely.length > 0 ||
+                diff.remoteOnly.length > 0 ||
+                diff.modifiedLocally.length > 0
+            );
 
-                if (hasDiff) {
-                    setSyncDiff(diff);
-                    setIsReconciling(true);
-                    setBackupStatus('idle');
-                    return;
-                }
+            if (hasDiff) {
+                setSyncDiff(diff);
+                setIsReconciling(true);
+                setBackupStatus('idle');
+                return;
             }
 
             // No diffs found — data is already in sync

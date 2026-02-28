@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Preferences } from '@capacitor/preferences';
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
     const [accepted, setAccepted] = useState(false);
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (accepted) {
-            localStorage.setItem('hasAcceptedTerms', 'true');
+            await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
             navigate('/dashboard');
         }
     };
@@ -87,8 +88,8 @@ const LandingPage: React.FC = () => {
                         onClick={handleContinue}
                         disabled={!accepted}
                         className={`w-full py-4 text-lg shadow-xl shadow-primary-500/20 flex items-center justify-center gap-3 transition-all ${accepted
-                                ? 'btn-primary hover:scale-[1.02] active:scale-[0.98]'
-                                : 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed border-none'
+                            ? 'btn-primary hover:scale-[1.02] active:scale-[0.98]'
+                            : 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed border-none'
                             }`}
                     >
                         <span>Continue to App</span>
