@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
 import { CATEGORIES } from '../constants';
@@ -27,8 +28,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const { triggerBackup } = useCloudBackup();
     const userId = user?.id;
 
-    const [currentView, setCurrentView] = useState<View>(() => LocalRepository.getSettings().lastView as View || 'dashboard');
-    const [previousView, setPreviousView] = useState<View>('dashboard');
+    const navigate = useNavigate();
+    const location = useLocation();
+    const currentView = (location.pathname.split('/')[1] as View) || 'dashboard';
+
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
@@ -82,7 +85,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         LocalRepository.updateSettings({ currency });
     }, [currency]);
 
-    // Persist current view whenever it changes
+    // Persist current view whenever it changes (optional but good for restoring state if doing full refresh)
     useEffect(() => {
         LocalRepository.updateSettings({ lastView: currentView });
     }, [currentView]);
@@ -96,6 +99,14 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             loadData();
         }
     }, [user, loadData]);
+
+    // When the app boots on '/', redirect to the last saved view
+    useEffect(() => {
+        if (location.pathname === '/') {
+            const lastView = LocalRepository.getSettings().lastView || 'dashboard';
+            navigate(`/${lastView}`, { replace: true });
+        }
+    }, [location.pathname, navigate]);
 
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         const isEditing = 'id' in transaction;
@@ -214,113 +225,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     };
 
     const handleViewChange = (newView: View) => {
-        setPreviousView(currentView);
-        setCurrentView(newView);
-    };
-
-    const handleMonthSelect = (month: MonthlyData) => {
-        setSelectedMonth(month);
-        handleViewChange('overview');
-    };
-
-    const renderView = () => {
-        switch (currentView) {
-            case 'dashboard':
-                return (
-                    <Dashboard
-                        monthlyData={monthlyHistory}
-                        transactions={transactions}
-                        onAddEntry={() => {
-                            setEditingTransaction(null);
-                            setIsEntryModalOpen(true);
-                        }}
-                        onViewAll={() => { setTypeFilter(null); setCurrentView('overview'); }}
-                        onTransactionClick={(t) => {
-                            setEditingTransaction(t);
-                            setIsEntryModalOpen(true);
-                        }}
-                        onTypeFilter={(type) => { setTypeFilter(type); setCurrentView('overview'); }}
-                        currencySymbol={getCurrencySymbol(currency)}
-                    />
-                );
-            case 'overview':
-                const displayMonth = selectedMonth || monthlyHistory[0];
-                return (
-                    <Overview
-                        month={displayMonth}
-                        transactions={getMonthTransactions(displayMonth)}
-                        onBack={() => { setTypeFilter(null); setCurrentView('dashboard'); }}
-                        onTransactionClick={(t) => {
-                            setEditingTransaction(t);
-                            setIsEntryModalOpen(true);
-                        }}
-                        currency={currency}
-                        typeFilter={typeFilter}
-                        onClearFilter={() => setTypeFilter(null)}
-                    />
-                );
-            case 'history':
-                return <History
-                    transactions={transactions}
-                    onTransactionClick={(t) => {
-                        setEditingTransaction(t);
-                        setIsEntryModalOpen(true);
-                    }}
-                    onBack={() => setCurrentView('dashboard')}
-                    currencySymbol={getCurrencySymbol(currency)}
-                    categories={categories}
-                />;
-            case 'analysis':
-                return <Analysis
-                    transactions={transactions}
-                    categories={categories}
-                    currency={currency}
-                    onBack={() => setCurrentView('dashboard')}
-                />;
-            case 'settings':
-                return <Settings
-                    onNavigate={setCurrentView}
-                    onBack={() => setCurrentView('dashboard')}
-                    categoryCount={categories.length}
-                    transactions={transactions}
-                    currency={currency}
-                    setCurrency={setCurrency}
-                    onDeleteAccount={() => setIsDeletionModalOpen(true)}
-                />;
-            case 'category-picker':
-                return <CategoryManagement
-                    categories={categories}
-                    onBack={() => setCurrentView('settings')}
-                    onAddCategory={(type) => {
-                        setEditingCategory(null);
-                        setDefaultCategoryType(type);
-                        setIsCategoryModalOpen(true);
-                    }}
-                    onEditCategory={(cat) => {
-                        setEditingCategory(cat);
-                        setIsCategoryModalOpen(true);
-                    }}
-                />;
-            case 'support':
-                return <Support onBack={() => setCurrentView(previousView)} />;
-            case 'terms':
-                return <TermsOfService onBack={() => setCurrentView(previousView)} />;
-            case 'privacy':
-                return <PrivacyPolicy onBack={() => setCurrentView(previousView)} />;
-            default:
-                return <Dashboard
-                    monthlyData={monthlyHistory}
-                    transactions={transactions}
-                    onAddEntry={() => setIsEntryModalOpen(true)}
-                    onViewAll={() => { setTypeFilter(null); setCurrentView('history'); }}
-                    onTransactionClick={(t) => {
-                        setEditingTransaction(t);
-                        setIsEntryModalOpen(true);
-                    }}
-                    onTypeFilter={(type) => { setTypeFilter(type); setCurrentView('overview'); }}
-                    currencySymbol={getCurrencySymbol(currency)}
-                />;
-        }
+        navigate(`/${newView}`);
     };
 
     return (
@@ -333,8 +238,115 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             }}
             userEmail={user?.email || undefined}
         >
-            <div key={currentView} className="animate-slide-up">
-                {renderView()}
+            <div key={currentView} className="animate-slide-up h-full">
+                <Routes>
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <Dashboard
+                                monthlyData={monthlyHistory}
+                                transactions={transactions}
+                                onAddEntry={() => {
+                                    setEditingTransaction(null);
+                                    setIsEntryModalOpen(true);
+                                }}
+                                onViewAll={() => { setTypeFilter(null); navigate('/overview'); }}
+                                onTransactionClick={(t) => {
+                                    setEditingTransaction(t);
+                                    setIsEntryModalOpen(true);
+                                }}
+                                onTypeFilter={(type) => { setTypeFilter(type); navigate('/overview'); }}
+                                currencySymbol={getCurrencySymbol(currency)}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/overview"
+                        element={
+                            <Overview
+                                month={selectedMonth || monthlyHistory[0]}
+                                transactions={getMonthTransactions(selectedMonth || monthlyHistory[0])}
+                                onBack={() => { setTypeFilter(null); navigate('/dashboard'); }}
+                                onTransactionClick={(t) => {
+                                    setEditingTransaction(t);
+                                    setIsEntryModalOpen(true);
+                                }}
+                                currency={currency}
+                                typeFilter={typeFilter}
+                                onClearFilter={() => setTypeFilter(null)}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/history"
+                        element={
+                            <History
+                                transactions={transactions}
+                                onTransactionClick={(t) => {
+                                    setEditingTransaction(t);
+                                    setIsEntryModalOpen(true);
+                                }}
+                                onBack={() => navigate('/dashboard')}
+                                currencySymbol={getCurrencySymbol(currency)}
+                                categories={categories}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/analysis"
+                        element={
+                            <Analysis
+                                transactions={transactions}
+                                categories={categories}
+                                currency={currency}
+                                onBack={() => navigate('/dashboard')}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/settings"
+                        element={
+                            <Settings
+                                onNavigate={(v) => navigate(`/${v}`)}
+                                onBack={() => navigate('/dashboard')}
+                                categoryCount={categories.length}
+                                transactions={transactions}
+                                currency={currency}
+                                setCurrency={setCurrency}
+                                onDeleteAccount={() => setIsDeletionModalOpen(true)}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/category-picker"
+                        element={
+                            <CategoryManagement
+                                categories={categories}
+                                onBack={() => navigate('/settings')}
+                                onAddCategory={(type) => {
+                                    setEditingCategory(null);
+                                    setDefaultCategoryType(type);
+                                    setIsCategoryModalOpen(true);
+                                }}
+                                onEditCategory={(cat) => {
+                                    setEditingCategory(cat);
+                                    setIsCategoryModalOpen(true);
+                                }}
+                            />
+                        }
+                    />
+
+                    <Route path="/support" element={<Support onBack={() => navigate('/settings')} />} />
+                    <Route path="/terms" element={<TermsOfService onBack={() => navigate('/settings')} />} />
+                    <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate('/settings')} />} />
+
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
             </div>
 
             <NewEntryModal

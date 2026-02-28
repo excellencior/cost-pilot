@@ -13,7 +13,7 @@ const Support: React.FC<SupportProps> = ({ onBack }) => {
                     onClick={onBack}
                     className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
                 >
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <span className="material-symbols-outlined">home</span>
                 </button>
                 <h1 className="text-3xl font-extrabold text-stone-900 dark:text-white tracking-tight">Get Help</h1>
             </div>
