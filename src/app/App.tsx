@@ -24,10 +24,22 @@ import { Toaster, toast } from 'react-hot-toast';
 import AccountDeletionModal from '../shared/ui/AccountDeletionModal';
 import { ProfileService } from '../infrastructure/supabase/supabase-profile';
 import { getCurrencySymbol } from '../entities/financial';
+import { Preferences } from '@capacitor/preferences';
 
 const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const hasAcceptedTerms = localStorage.getItem('hasAcceptedTerms') === 'true';
+    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
     const location = useLocation();
+
+    useEffect(() => {
+        const checkTerms = async () => {
+            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
+            setHasAcceptedTerms(value === 'true');
+        };
+        checkTerms();
+    }, []);
+
+    // While checking preferences, don't redirect yet to prevent flash
+    if (hasAcceptedTerms === null) return null;
 
     // Allow the landing page itself, and the auth callback route which handles OAuth redirects
     if (!hasAcceptedTerms && location.pathname !== '/' && location.pathname !== '/auth') {

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Preferences } from '@capacitor/preferences';
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
-    const [accepted, setAccepted] = useState(false);
 
-    const handleContinue = () => {
-        if (accepted) {
-            localStorage.setItem('hasAcceptedTerms', 'true');
-            navigate('/dashboard');
-        }
+    const handleContinue = async () => {
+        await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
+        navigate('/dashboard');
     };
 
     return (
@@ -29,67 +27,22 @@ const LandingPage: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Key Features / Data Policy */}
-                <div className="card-section p-8 text-left space-y-6 bg-brand-surface-light/50 dark:bg-brand-surface-dark/50 border border-stone-200 dark:border-stone-800">
-                    <div>
-                        <h2 className="text-sm font-bold uppercase tracking-widest text-[#AF8F42] mb-2">
-                            What Data We Collect
-                        </h2>
-                        <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                            CostPilot is built with privacy in mind. We only collect the minimal data necessary to provide you with seamless cloud syncing across your devices:
+                {/* Quote Section */}
+                <div className="card-section p-8 text-center space-y-6 bg-brand-surface-light/50 dark:bg-brand-surface-dark/50 border border-stone-200 dark:border-stone-800 relative overflow-hidden shadow-inner">
+                    <span className="material-symbols-outlined absolute -top-4 -left-2 text-[120px] text-[#AF8F42]/10 dark:text-[#AF8F42]/20 rotate-12 select-none pointer-events-none">format_quote</span>
+                    <div className="relative z-10 space-y-4">
+                        <p className="text-lg md:text-xl font-medium text-stone-700 dark:text-stone-300 leading-relaxed italic">
+                            "Built for simplicity and clarity. If by using this platform helps you in any way, that will be my greatest achievement. Toodle!"
                         </p>
-                        <ul className="mt-4 space-y-3">
-                            <li className="flex gap-3 items-start">
-                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
-                                <span className="text-sm text-stone-600 dark:text-stone-300">
-                                    <strong className="text-stone-900 dark:text-white">Google Profile Data:</strong> We use your Google account strictly for secure authentication. We store your basic profile info (email and name) to identify your account.
-                                </span>
-                            </li>
-                            <li className="flex gap-3 items-start">
-                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
-                                <span className="text-sm text-stone-600 dark:text-stone-300">
-                                    <strong className="text-stone-900 dark:text-white">Financial Data:</strong> Your transactions and categories are encrypted and securely synced to our cloud only if you explicitly enable Cloud Backup. We use manual cloud syncing to ensure you are always in control of when your data leaves your device.
-                                </span>
-                            </li>
-                            <li className="flex gap-3 items-start">
-                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
-                                <span className="text-sm text-stone-600 dark:text-stone-300">
-                                    <strong className="text-stone-900 dark:text-white">Conflict Resolution:</strong> If syncing conflicts occur, CostPilot provides transparent reconciliation, giving you the final say on which data to keep.
-                                </span>
-                            </li>
-                        </ul>
+                        <div className="h-1 w-12 bg-[#AF8F42] mx-auto rounded-full"></div>
                     </div>
                 </div>
 
                 {/* Call To Action */}
                 <div className="pt-6 space-y-6 w-full max-w-sm mx-auto">
-                    <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-stone-100 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors">
-                        <div className="relative flex items-center justify-center mt-0.5">
-                            <input
-                                type="checkbox"
-                                className="peer appearance-none size-5 border-2 border-stone-300 dark:border-stone-600 rounded checked:border-primary-500 checked:bg-primary-500 transition-all cursor-pointer"
-                                checked={accepted}
-                                onChange={(e) => setAccepted(e.target.checked)}
-                            />
-                            <span className="material-symbols-outlined absolute text-white text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-all">
-                                check
-                            </span>
-                        </div>
-                        <span className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed select-none">
-                            I understand and accept the{' '}
-                            <button onClick={(e) => { e.preventDefault(); navigate('/terms'); }} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Terms of Service</button>
-                            {' '}and{' '}
-                            <button onClick={(e) => { e.preventDefault(); navigate('/privacy'); }} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Privacy Policy</button>.
-                        </span>
-                    </label>
-
                     <button
                         onClick={handleContinue}
-                        disabled={!accepted}
-                        className={`w-full py-4 text-lg shadow-xl shadow-primary-500/20 flex items-center justify-center gap-3 transition-all ${accepted
-                                ? 'btn-primary hover:scale-[1.02] active:scale-[0.98]'
-                                : 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed border-none'
-                            }`}
+                        className="w-full py-1 text-lg shadow-xl shadow-primary-500/20 flex items-center justify-center gap-3 transition-all btn-primary hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <span>Continue to App</span>
                         <span className="material-symbols-outlined">arrow_forward</span>
