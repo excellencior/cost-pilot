@@ -1,0 +1,76 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const LandingPage: React.FC = () => {
+    const navigate = useNavigate();
+
+    return (
+        <div className="min-h-screen bg-brand-base-light dark:bg-brand-base-dark text-stone-900 dark:text-stone-100 flex flex-col items-center justify-center p-6 sm:p-10">
+            <div className="max-w-2xl w-full text-center space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+
+                {/* Brand Header */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-3">
+                        <span className="material-symbols-outlined text-4xl text-primary-600 dark:text-primary-500">
+                            account_balance_wallet
+                        </span>
+                        <h1 className="text-5xl font-black tracking-tight">CostPilot</h1>
+                    </div>
+                    <p className="text-lg text-stone-500 dark:text-stone-400 max-w-lg mx-auto leading-relaxed">
+                        A privacy-first personal finance platform for tracking expenses, managing budgets, and analyzing your financial history with clarity.
+                    </p>
+                </div>
+
+                {/* Key Features / Data Policy */}
+                <div className="card-section p-8 text-left space-y-6 bg-brand-surface-light/50 dark:bg-brand-surface-dark/50 border border-stone-200 dark:border-stone-800">
+                    <div>
+                        <h2 className="text-sm font-bold uppercase tracking-widest text-[#AF8F42] mb-2">
+                            What Data We Collect
+                        </h2>
+                        <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+                            CostPilot is built with privacy in mind. We only collect the minimal data necessary to provide you with seamless cloud syncing across your devices:
+                        </p>
+                        <ul className="mt-4 space-y-3">
+                            <li className="flex gap-3 items-start">
+                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                                <span className="text-sm text-stone-600 dark:text-stone-300">
+                                    <strong className="text-stone-900 dark:text-white">Google Profile Data:</strong> We use your Google account strictly for secure authentication. We store your basic profile info (email and name) to identify your account.
+                                </span>
+                            </li>
+                            <li className="flex gap-3 items-start">
+                                <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                                <span className="text-sm text-stone-600 dark:text-stone-300">
+                                    <strong className="text-stone-900 dark:text-white">Financial Data:</strong> Your transactions and categories are encrypted and securely synced to our cloud only if you explicitly enable Cloud Backup. By default, everything stays on your device.
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Call To Action */}
+                <div className="pt-6 space-y-6">
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="btn-primary w-full sm:w-auto px-10 py-4 text-lg shadow-xl shadow-primary-500/20 hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 mx-auto"
+                    >
+                        <span>Continue to App</span>
+                        <span className="material-symbols-outlined">arrow_forward</span>
+                    </button>
+
+                    <div className="flex items-center justify-center gap-4 text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
+                        <button onClick={() => navigate('/privacy')} className="hover:text-[#AF8F42] transition-colors">Privacy Policy</button>
+                        <span className="size-1 rounded-full bg-stone-300 dark:bg-stone-700"></span>
+                        <button onClick={() => navigate('/terms')} className="hover:text-[#AF8F42] transition-colors">Terms of Service</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer text */}
+            <div className="absolute bottom-6 text-[10px] text-stone-400 dark:text-stone-500 font-medium tracking-widest uppercase text-center">
+                &copy; {new Date().getFullYear()} CostPilot • Designed for visual clarity
+            </div>
+        </div>
+    );
+};
+
+export default LandingPage;
