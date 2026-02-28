@@ -17,6 +17,7 @@ const SYNC_TIMEOUT_MS = 30000; // 30 second safety net
 const startSyncGuard = (): boolean => {
     if (isSyncing) {
         console.warn('[CloudBackup] Sync already in progress, skipping');
+        emitStatus('error', 'A sync is already in progress. Please wait.');
         return false;
     }
     isSyncing = true;

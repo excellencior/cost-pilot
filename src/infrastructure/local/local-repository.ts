@@ -76,7 +76,7 @@ export const LocalRepository = {
             created_at: existing?.created_at || now,
             updated_at: now,
             deleted: expense.deleted ?? false,
-            is_synced: false,
+            is_synced: expense.is_synced ?? false,
         } as LocalExpense;
 
         data[expense.id] = record;
