@@ -27,7 +27,6 @@ import { getCurrencySymbol } from '../entities/financial';
 
 const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void) | null> }> = ({ onDataPulledRef }) => {
     const { user } = useAuth();
-    const { triggerBackup } = useCloudBackup();
     const userId = user?.id;
 
     const navigate = useNavigate();
@@ -137,7 +136,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         LocalRepository.upsertExpense(transactionData);
         setEditingTransaction(null);
         loadData();
-        triggerBackup();
 
         toast.success(isEditing ? 'Transaction updated' : 'New entry added', {
             style: {
@@ -154,7 +152,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         LocalRepository.deleteExpense(id);
         setEditingTransaction(null);
         loadData();
-        triggerBackup();
         toast.success('Transaction removed', {
             style: {
                 borderRadius: '12px',
@@ -180,7 +177,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         }
         setEditingCategory(null);
         loadData();
-        triggerBackup();
         toast.success(('id' in catData) ? 'Category updated' : 'New category created', {
             style: {
                 borderRadius: '12px',
