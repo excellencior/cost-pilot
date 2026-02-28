@@ -2,31 +2,30 @@
 description: Prompt for Architectural Decomposition Agent
 ---
 
-# CostPilot — Architectural Decomposition Prompt
+# CostPilot — Full System Architectural Decomposition Prompt
 
 ## Role
 
 You are a senior full-stack systems architect.
 
-Your task is to analyze and properly decompose the CostPilot web application into clean architectural layers, enforce strict separation of concerns, and propose a production-ready structure.
+Your task is to decompose the CostPilot system (Web + Android + Backend) into clean architectural layers with strict separation of concerns.
 
 Design for:
 
-- Scalability (1–5k users initially)
-- Maintainability
+- 1–5k users (lean but production-safe)
+- Clean separation of frontend and backend
 - Web + Android parity
 - Secure authentication flows
-- Clear service boundaries
-- Future backend extensibility
+- AI isolation (Gemini)
+- Maintainable folder structure
+- No unnecessary enterprise overengineering
 
-Do not give generic explanations.  
-Provide structured outputs, diagrams (ASCII if needed), and folder architecture trees.
+Do NOT give generic explanations.
+Provide diagrams, folder trees, and concrete interface examples.
 
 ---
 
 # Project Context
-
-CostPilot stack:
 
 ## Frontend
 - React 19
@@ -34,16 +33,15 @@ CostPilot stack:
 - TypeScript
 - Tailwind CSS 3
 - Material Symbols
-- Outfit + JetBrains Mono fonts
+- Outfit + JetBrains Mono
+- Hosted on Vercel
 
 ## Mobile
-- Capacitor 8 (Android)
+- Capacitor 8 (Android WebView wrapper)
 
-## Backend & Infrastructure
+## Backend & Infra
 - Supabase (PostgreSQL + Auth + Realtime)
 - Firebase Authentication (Android native Google One Tap only)
-- Google Gemini AI (financial insights)
-- Vercel (web hosting)
 
 Current structure:
 
@@ -57,125 +55,164 @@ App.tsx
 
 ```
 
-The app works but is not properly layered.
+The app works but lacks proper layering.
 
 ---
 
-# Objectives
+# Your Objectives
 
-Break the application into clearly defined architectural domains:
+Decompose into 5 architectural domains:
 
-1. Presentation Layer  
-2. Application Layer  
-3. Domain Layer  
-4. Infrastructure Layer  
-5. Mobile Integration Layer  
+1. Presentation Layer
+2. Application Layer
+3. Domain Layer
+4. Infrastructure Layer
+5. Mobile Integration Layer
 
-For each layer:
+For each layer define:
 
-- Define its responsibility
-- Define what it must NOT do
-- Define dependency direction
-- Show folder structure
-- Provide example TypeScript interfaces
+- Responsibility
+- What it must NOT do
+- Dependency direction
+- Folder structure
+- Example TypeScript interfaces
+
+Use clean architecture principles but keep it practical.
 
 ---
 
-# 1️⃣ Proper Frontend Decomposition
+# 1️⃣ Frontend Architecture Decomposition
 
-Propose a structure such as:
+Propose a production-ready structure such as:
 
 ```
 
 /src
-/app
-/features
-/entities
-/shared
-/infrastructure
-/mobile
+/app            # App bootstrap, routing, providers
+/features       # Feature modules (transactions, budgets, auth)
+/entities       # Domain models and types
+/application    # Use cases and orchestration logic
+/infrastructure # Supabase, API clients, adapters
+/shared         # UI primitives, utilities
+/mobile         # Capacitor adapters
 
 ```
 
-Improve it if necessary.
+Improve it if needed.
 
-Explain:
+Explain clearly:
 
-- How Supabase client should be abstracted
-- Where Gemini AI calls should live
-- Where Auth state should be handled
+- How Supabase client is abstracted
+- Why UI must never call Supabase directly
+- Where business logic lives
+- Where Gemini calls should live
 - How Firebase native auth integrates without polluting domain logic
-- How to prevent UI components from calling Supabase directly
+
+Provide dependency rule:
+
+```
+
+Presentation → Application → Domain → Infrastructure
+↑
+Mobile Adapter
+
+````
 
 ---
 
-# 2️⃣ API & Service Boundaries
+# 2️⃣ Backend & API Boundary Clarification
 
-Clarify:
+Clarify architecture:
 
-- Should Gemini be called directly from frontend?
-- Should a serverless API layer exist?
+- Should Gemini be called directly from frontend? (Yes/No and why)
 - Should Supabase RPC be used?
-- How to avoid exposing business logic client-side?
+- Should a serverless API layer exist for AI?
+- Where must business logic live?
 
-Provide recommendations with justification.
+Provide a recommendation for:
+
+- Supabase-only architecture
+- OR Supabase + minimal serverless AI endpoint
+
+Explain risks of exposing Gemini key.
 
 ---
 
 # 3️⃣ Mobile vs Web Separation
 
-Explain:
+Define:
 
-- What belongs inside `/mobile`
-- What must stay platform-agnostic
-- How to use Capacitor plugins without leaking into core logic
-- How to isolate platform adapters
+What belongs in `/mobile`:
+- Firebase native auth adapter
+- Capacitor plugin wrappers
+- Platform detection
 
-Provide a dependency diagram such as:
+What must remain platform-agnostic:
+- Domain models
+- Use cases
+- Validation logic
+- Financial calculations
 
-```
+Provide adapter pattern example:
 
-UI → Application → Domain → Infrastructure
-↑
-Mobile Adapter
+```ts
+interface AuthProvider {
+  signIn(): Promise<AuthSession>;
+}
+````
 
-```
-
-Improve if necessary.
+Show WebAuthProvider vs AndroidAuthProvider.
 
 ---
 
 # 4️⃣ Authentication Architecture
 
-Design:
+Design unified authentication:
 
-- Unified Auth Context
-- Google OAuth (Web)
-- Firebase Native Google Sign-In (Android)
-- Branded `/auth` redirect
-- Secure token handoff between Firebase and Supabase
+Web:
+Google OAuth → Through my app -> Supabase
+
+Android:
+Firebase Google Sign-In → ID Token → Supabase session
 
 Explain:
 
-- Token exchange flow
-- Proper ownership layer
-- How to prevent duplication
+* Where token exchange happens
+* Where AuthContext lives
+* How session is stored
+* How duplication is avoided
 
-Provide an authentication flow diagram.
+Provide authentication flow diagram.
 
 ---
 
 # 5️⃣ State & Sync Strategy
 
-Define:
+Design local-first model:
 
-- Local-first data model
-- Sync queue architecture
-- Offline mutation handling
-- Realtime listeners
-- Conflict resolution strategy
+* Local state store (Zustand or equivalent)
+* Optimistic UI updates
+* Sync queue
+* Supabase realtime listeners
+* Conflict resolution using `updated_at`
 
-Provide conceptual data flow diagrams.
+Provide flow diagram:
+
+```
+User Action
+  ↓
+Local Update
+  ↓
+Sync Queue
+  ↓
+Supabase
+  ↓
+Realtime Listener
+  ↓
+State Reconciliation
+```
+
+Keep simple but robust.
 
 ---
 
@@ -183,44 +220,49 @@ Provide conceptual data flow diagrams.
 
 Given:
 
-- Vite manual chunking
-- Android WebView constraints
+* Vite manual chunking
+* Android WebView startup constraints
 
 Explain:
 
-- What should be lazily loaded
-- How to split feature modules
-- How to reduce initial JS payload
-- How to optimize for WebView startup
+* What should be lazy-loaded
+* Feature-based code splitting
+* Avoiding large initial vendor bundle
+* Route-level dynamic imports
+* Minimizing WebView cold start
 
 ---
 
 # 7️⃣ Security Review
 
-Audit the pipeline for:
+Audit:
 
-- Exposed API keys
-- Supabase anon key risks
-- Gemini API exposure risk
-- Firebase client risks
-- Where secrets must live
+* Supabase anon key exposure
+* Gemini API key exposure
+* Firebase config exposure
+* Replay attack risk
+* RLS enforcement
+* CORS configuration
+* XSS surface in WebView
 
-Provide corrective recommendations.
+Provide concrete corrections.
 
 ---
 
-# Final Deliverables Format
+# Final Deliverables
 
 Your response must include:
 
-1. Clean layered architecture diagram
-2. Folder tree structure
+1. Layered architecture diagram
+2. Final folder structure tree
 3. Example TypeScript interface boundaries
 4. Authentication flow diagram
 5. Sync lifecycle flow
 6. Security checklist
-7. Build optimization plan
+7. Build optimization strategy
 
-No filler content.  
-Be concrete.  
-Assume the developer is technically strong and wants industry-grade architecture without unnecessary overengineering.
+No filler.
+Be concrete.
+Assume strong technical literacy.
+Do not overengineer.
+Focus on clarity and separation of concerns.
