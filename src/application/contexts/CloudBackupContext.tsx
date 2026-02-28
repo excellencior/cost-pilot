@@ -154,6 +154,10 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                         setBackupStatus('idle');
                         return;
                     }
+
+                    // Reset if no diffs were found (so the spinner doesn't run forever)
+                    setBackupStatus('idle');
+                    setStatusMessage('');
                 }
 
                 setIsCloudEnabled(true);
