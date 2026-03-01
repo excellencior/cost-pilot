@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { CloudBackupService, BackupStatus } from '../../infrastructure/supabase/supabase-sync';
+import { CloudBackupService, BackupStatus, errorMask } from '../../infrastructure/supabase/supabase-sync';
 import { LocalRepository } from '../../infrastructure/local/local-repository';
 import { Capacitor } from '@capacitor/core';
 import SyncReconciliationModal, { SyncDiff, ReconciliationAction } from '../../shared/ui/SyncReconciliationModal';
@@ -163,7 +163,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
             } catch (error: any) {
                 console.error('[CloudBackup] Toggle error:', error);
                 setBackupStatus('error');
-                setStatusMessage(error?.message === 'Sync diff timeout' ? 'Sync timed out (Check connection)' : 'Failed to enable sync');
+                setStatusMessage(errorMask(error));
             }
         } else {
             setIsCloudEnabled(false);
@@ -267,12 +267,7 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         } catch (error: any) {
             console.error('[CloudBackup] Sync Now failed:', error);
             setBackupStatus('error');
-
-            let errMsg = 'An unexpected error occurred';
-            if (error.message === 'Sync timeout') errMsg = 'Sync timed out';
-            else if (error.message?.includes('JWT')) errMsg = 'Session expired. Please sign in again.';
-
-            setStatusMessage(errMsg);
+            setStatusMessage(errorMask(error));
         }
     }, [user, isCloudEnabled, onDataPulled]);
 

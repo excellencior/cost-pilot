@@ -40,8 +40,38 @@ const endSyncGuard = () => {
     }
 };
 
+export const errorMask = (error: any): string => {
+    if (!error) return 'An unexpected error occurred';
+    const msg = typeof error === 'string' ? error : error.message || JSON.stringify(error);
+
+    if (msg.includes('row-level security policy') || msg.includes('RLS')) {
+        return 'Cloud storage conflict detected. This usually happens if multiple accounts attempt to modify the same data.';
+    }
+    if (msg.includes('network') || msg.includes('fetch') || msg.includes('offline')) {
+        return 'Connection error. Please check your internet connection.';
+    }
+    if (msg.includes('JWT') || msg.includes('session')) {
+        return 'Your session has expired. Please sign in again.';
+    }
+    if (msg.includes('foreign key') || msg.includes('violates constraint')) {
+        return 'Data integrity error. Please try syncing again in a moment.';
+    }
+
+    // If it's already a relatively clean message (no technical jargon), return it.
+    // Technical errors usually have specific database-y words.
+    const technicalKeywords = ['violates', 'policy', 'constraint', 'postgres', 'query', 'execution', 'statement'];
+    const isTechnical = technicalKeywords.some(kw => msg.toLowerCase().includes(kw));
+
+    if (isTechnical) {
+        return 'Sync failed due to a server-side conflict. Please try again later.';
+    }
+
+    return msg;
+};
+
 const emitStatus = (status: BackupStatus, message?: string) => {
-    statusListeners.forEach(cb => cb(status, message));
+    const finalMessage = status === 'error' ? errorMask(message) : message;
+    statusListeners.forEach(cb => cb(status, finalMessage));
 };
 
 // --- Data Transformers ---
