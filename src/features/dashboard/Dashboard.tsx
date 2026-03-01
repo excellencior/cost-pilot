@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MonthlyData, Transaction } from '../../entities/types';
 import { formatDate } from '../../entities/financial';
 import WelcomeModal from './WelcomeModal';
+import { INSPIRATIONAL_QUOTES } from '../../quotes';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -24,7 +25,20 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const currentMonth = monthlyData[0] || { month: 'Unknown', year: new Date().getFullYear(), income: 0, expense: 0 };
   const balance = currentMonth.income - currentMonth.expense;
-  const recentTransactions = transactions.slice(0, 4);
+
+  // Filter transactions for the current focused month only
+  const currentMonthTransactions = transactions.filter(t => {
+    const d = new Date(t.date);
+    return d.toLocaleString('default', { month: 'long' }) === currentMonth.month &&
+      d.getFullYear() === currentMonth.year;
+  });
+
+  const recentTransactions = currentMonthTransactions.slice(0, 4);
+  const hasEntries = currentMonthTransactions.length > 0;
+
+  // Pick a random quote index once per layout cycle when empty
+  const quoteIndex = useMemo(() => Math.floor(Math.random() * INSPIRATIONAL_QUOTES.length), [hasEntries]);
+  const quote = INSPIRATIONAL_QUOTES[quoteIndex];
 
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
@@ -45,61 +59,86 @@ const Dashboard: React.FC<DashboardProps> = ({
       <WelcomeModal isOpen={isWelcomeModalOpen} onClose={handleCloseWelcome} />
 
       {/* Hero Stats */}
-      <section className="card p-4 md:p-4 bg-primary-600 border-none text-white overflow-hidden relative shadow-2xl shadow-primary-600/30 min-h-[100px] flex flex-col justify-center">
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="flex flex-col justify-center">
-            <p className="text-primary-100 text-[10px] font-bold uppercase tracking-widest mb-1 opacity-90 flex items-center gap-2">
-              Balance ・ {currentMonth.month}
+      <section className={`card p-6 md:p-10 border-none text-white overflow-hidden relative shadow-2xl transition-all duration-700 ${hasEntries ? 'bg-primary-600 shadow-primary-600/30' : 'bg-stone-900 shadow-stone-900/40'
+        }`}>
+        {/* Artistic Decorative Elements */}
+        {!hasEntries && (
+          <>
+            <div className="absolute -top-24 -right-24 size-64 bg-primary-500/10 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
+            <div className="absolute -bottom-24 -left-24 size-64 bg-white/5 rounded-full blur-[100px] pointer-events-none"></div>
+          </>
+        )}
+
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="flex flex-col justify-center flex-1">
+            <p className="text-primary-200/60 text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-100 flex items-center gap-2">
+              {hasEntries ? `Active Portfolio ・ ${currentMonth.month}` : 'START YOUR JOURNEY FOR THIS MONTH'}
             </p>
-            <h3 className="text-3xl md:text-5xl font-black">{currencySymbol}{balance.toLocaleString()}</h3>
+
+            {hasEntries ? (
+              <h3 className="text-4xl md:text-6xl font-black tracking-tight">{currencySymbol}{balance.toLocaleString()}</h3>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-3xl md:text-5xl font-light tracking-tight leading-tight">
+                  {quote.line1} <span className="font-black text-white">{quote.highlight}</span>
+                </h3>
+                <h3 className="text-3xl md:text-5xl font-light tracking-tight leading-tight italic opacity-90">
+                  {quote.line2} <span className="font-black text-primary-200 not-italic">{quote.highlightSuffix}</span>
+                </h3>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-row sm:flex-row items-center gap-2 md:gap-4 w-full sm:w-auto">
-            <button
-              onClick={() => onTypeFilter('income')}
-              className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
-            >
-              <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
-              </div>
-              <div className="text-left">
-                <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Income</p>
-                <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
-                  {currencySymbol}{currentMonth.income.toLocaleString()}
-                </p>
-              </div>
-            </button>
+          {hasEntries && (
+            <div className="flex flex-row sm:flex-row items-center gap-2 md:gap-4 w-full sm:w-auto">
+              <button
+                onClick={() => onTypeFilter('income')}
+                className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
+              >
+                <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Inflow</p>
+                  <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
+                    {currencySymbol}{currentMonth.income.toLocaleString()}
+                  </p>
+                </div>
+              </button>
 
-            <button
-              onClick={() => onTypeFilter('expense')}
-              className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
-            >
-              <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
-              </div>
-              <div className="text-left">
-                <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Expense</p>
-                <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
-                  {currencySymbol}{currentMonth.expense.toLocaleString()}
-                </p>
-              </div>
-            </button>
-          </div>
+              <button
+                onClick={() => onTypeFilter('expense')}
+                className="flex-1 sm:flex-none flex items-center gap-3 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 hover:border-white/25 transition-all active:scale-95 cursor-pointer"
+              >
+                <div className="size-6 rounded-lg bg-white/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-[9px] font-black text-white/50 uppercase tracking-widest leading-none mb-1">Outflow</p>
+                  <p className="text-sm md:text-base font-bold font-mono text-white leading-none">
+                    {currencySymbol}{currentMonth.expense.toLocaleString()}
+                  </p>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Mini Progress Bar */}
-        <div className="mt-4 relative z-10 space-y-1.5">
-          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
-            <span>Expense Progress</span>
-            <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
+        {/* Mini Progress Bar - Only shown with data */}
+        {hasEntries && (
+          <div className="mt-6 relative z-10 space-y-1.5">
+            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
+              <span>Capital Velocity</span>
+              <span>{Math.min(100, (currentMonth.income > 0 ? Math.round((currentMonth.expense / currentMonth.income) * 100) : 0))}%</span>
+            </div>
+            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white transition-all duration-1000"
+                style={{ width: `${Math.min(100, (currentMonth.income > 0 ? (currentMonth.expense / currentMonth.income) * 100 : 0))}%` }}
+              ></div>
+            </div>
           </div>
-          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-white transition-all duration-1000"
-              style={{ width: `${Math.min(100, (currentMonth.income > 0 ? (currentMonth.expense / currentMonth.income) * 100 : 0))}%` }}
-            ></div>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* Recent & Health */}
@@ -108,12 +147,14 @@ const Dashboard: React.FC<DashboardProps> = ({
         <section className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="font-bold text-stone-900 dark:text-white">Recent Transactions</h3>
-            <button
-              onClick={onViewAll}
-              className="text-primary-600 dark:text-primary-400 text-xs font-bold hover:underline"
-            >
-              View All
-            </button>
+            {hasEntries && (
+              <button
+                onClick={onViewAll}
+                className="text-primary-600 dark:text-primary-400 text-xs font-bold hover:underline"
+              >
+                View All
+              </button>
+            )}
           </div>
 
           <div className="space-y-2">

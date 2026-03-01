@@ -243,14 +243,26 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
             });
         });
 
-        if (history.length === 0) {
-            const now = new Date();
-            history.push({
-                month: now.toLocaleString('default', { month: 'long' }),
-                year: now.getFullYear(),
+        // Always ensure current month is present and at the top if no future entries exist
+        const now = new Date();
+        const currentMonthName = now.toLocaleString('default', { month: 'long' });
+        const currentYear = now.getFullYear();
+
+        const currentMonthIdx = history.findIndex(h => h.month === currentMonthName && h.year === currentYear);
+
+        if (currentMonthIdx === -1) {
+            // Add current month if missing
+            const currentMonthObj = {
+                month: currentMonthName,
+                year: currentYear,
                 income: 0,
                 expense: 0
-            });
+            };
+
+            // Insert at appropriate position (usually index 0)
+            const insertIdx = history.findIndex(h => h.year < currentYear || (h.year === currentYear && new Date(`${h.month} 1, ${h.year}`).getMonth() < now.getMonth()));
+            if (insertIdx === -1) history.push(currentMonthObj);
+            else history.splice(insertIdx, 0, currentMonthObj);
         }
 
         return history;
