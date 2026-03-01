@@ -33,7 +33,6 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
     const [lastBackupTime, setLastBackupTime] = useState<string | null>(() => CloudBackupService.getLastBackupTime());
     const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasCheckedNewDevice = useRef(false);
-    const isInitialAuthCheck = useRef(true);
 
     // Reconciliation state
     const [isReconciling, setIsReconciling] = useState(false);
@@ -63,18 +62,13 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
         };
     }, []);
 
-    // Reset cloud status when user logs out (but only AFTER auth has finished loading and initial check)
+    // Reset cloud status when user logs out (synchronize with auth state)
     useEffect(() => {
         if (authLoading) return;
 
-        // After auth is no longer loading for the first time, we consider it initialized
-        if (isInitialAuthCheck.current) {
-            isInitialAuthCheck.current = false;
-            return;
-        }
-
+        // If auth is loaded and there's no user, cloud MUST be disabled
         if (!user && isCloudEnabled) {
-            console.log('[CloudBackup] User logged out, disabling cloud backup toggle');
+            console.log('[CloudBackup] No user session found, disabling cloud backup state');
             setIsCloudEnabled(false);
             CloudBackupService.setEnabled(false);
             setBackupStatus('idle');

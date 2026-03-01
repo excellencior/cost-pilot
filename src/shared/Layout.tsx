@@ -84,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     }, [showPopover]);
 
     const cloudIcon = () => {
-        if (!isCloudEnabled) return { icon: 'cloud_off', color: 'text-stone-400 opacity-50', spin: false };
+        if (!isCloudEnabled || !userEmail) return { icon: 'cloud_off', color: 'text-stone-400 opacity-50', spin: false };
         switch (backupStatus) {
             case 'syncing': return { icon: 'cloud_sync', color: 'text-amber-500', spin: true };
             case 'success': return { icon: 'cloud_done', color: 'text-green-500', spin: false };
@@ -108,6 +108,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
     };
 
     const getPopoverStatusText = () => {
+        if (!userEmail) return 'Sign in to enable cloud backup';
         if (!isCloudEnabled) return 'Syncing is turned off';
         switch (backupStatus) {
             case 'syncing': return statusMessage || 'Syncing your data...';
