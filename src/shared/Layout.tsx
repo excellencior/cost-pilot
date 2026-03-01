@@ -288,7 +288,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col min-w-0 relative h-full">
-                        <header className="flex lg:hidden items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors">
+                        <header className="flex lg:hidden items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
                             <div className="flex items-center gap-3">
                                 {/* Brand show only on mobile (when sidebar is hidden) */}
                                 <div className="flex sm:hidden items-center gap-2">
@@ -317,7 +317,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         )}
 
                         {/* Bottom Nav (Mobile Only) */}
-                        <nav className="sm:hidden fixed bottom-0 left-0 right-0 h-14 bg-brand-surface-light dark:bg-brand-surface-dark border-t border-stone-200/60 dark:border-stone-800/60 z-30 flex items-center justify-around px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] transition-colors">
+                        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-brand-surface-light dark:bg-brand-surface-dark border-t border-stone-200/60 dark:border-stone-800/60 z-30 flex items-center justify-around px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] transition-colors" style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
                             {navItems.map((item) => (
                                 <button
                                     key={item.view}
