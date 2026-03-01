@@ -19,6 +19,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const [viewMode, setViewMode] = useState<'days' | 'months' | 'years'>('days');
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
+    const minSwipeDistance = 50;
+
     // Parse initial date with safety
     const parseDate = (val: string) => {
         if (!val) return new Date();
@@ -56,17 +61,39 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     const handlePrevMonth = () => {
         if (viewMode === 'days') {
+            setAnimationDirection('left');
             setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
-        } else if (viewMode === 'years') {
-            setViewDate(new Date(viewDate.getFullYear() - 12, viewDate.getMonth(), 1));
         }
     };
 
     const handleNextMonth = () => {
         if (viewMode === 'days') {
+            setAnimationDirection('right');
             setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
-        } else if (viewMode === 'years') {
-            setViewDate(new Date(viewDate.getFullYear() + 12, viewDate.getMonth(), 1));
+        }
+    };
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        if (viewMode !== 'days') return;
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        if (viewMode !== 'days') return;
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (viewMode !== 'days' || !touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            handleNextMonth();
+        } else if (isRightSwipe) {
+            handlePrevMonth();
         }
     };
 
@@ -199,10 +226,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
             {/* Modal - truly screen centered */}
             <div className="relative bg-brand-surface-light dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-3xl shadow-2xl p-6 w-full max-w-[320px] animate-scale-in">
-                <div className="flex items-center justify-between mb-6">
-                    <button onClick={handlePrevMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
-                        <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                    </button>
+                <div className="flex items-center justify-between mb-6 h-10">
+                    {viewMode === 'days' ? (
+                        <button onClick={handlePrevMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
+                            <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                        </button>
+                    ) : (
+                        <div className="w-10" />
+                    )}
 
                     <div className="flex items-center gap-1">
                         <button
@@ -227,12 +258,24 @@ const DatePicker: React.FC<DatePickerProps> = ({
                         </button>
                     </div>
 
-                    <button onClick={handleNextMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
-                        <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                    </button>
+                    {viewMode === 'days' ? (
+                        <button onClick={handleNextMonth} className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition-colors text-stone-400">
+                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                        </button>
+                    ) : (
+                        <div className="w-10" />
+                    )}
                 </div>
 
-                <div className="min-h-[220px] flex flex-col justify-center">
+                <div
+                    className={`min-h-[220px] flex flex-col justify-center transition-all duration-300 ${animationDirection === 'right' ? 'animate-slide-in-right' :
+                        animationDirection === 'left' ? 'animate-slide-in-left' : ''
+                        }`}
+                    key={`${viewDate.getFullYear()}-${viewDate.getMonth()}-${viewMode}`}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
                     {viewMode === 'days' && renderDays()}
                     {viewMode === 'months' && renderMonths()}
                     {viewMode === 'years' && renderYears()}

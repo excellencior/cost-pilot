@@ -126,6 +126,8 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
     return Array.from(years).sort((a, b) => b - a);
   }, [transactions]);
 
+  const hasData = filteredTransactions.length > 0;
+
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-500">
       {/* Header with Back Button */}
@@ -226,31 +228,57 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
             </div>
           </div>
 
-          <div className="h-64 relative">
-            <ResponsiveContainer width="100%" height="100%">
-              {activeTab === 'pie' ? (
-                <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={6} dataKey="value" stroke="none">
-                    {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
-                </PieChart>
-              ) : (
-                <AreaChart data={trendData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8C7851" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#8C7851" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" hide />
-                  <YAxis hide />
-                  <Area type="monotone" dataKey="value" stroke="#8C7851" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
-                  <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
-                </AreaChart>
-              )}
-            </ResponsiveContainer>
-            {activeTab === 'pie' && totalExpense > 0 && (
+          <div className="h-64 relative flex items-center justify-center">
+            {hasData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                {activeTab === 'pie' ? (
+                  <PieChart>
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={6} dataKey="value" stroke="none">
+                      {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
+                  </PieChart>
+                ) : (
+                  <AreaChart data={trendData}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8C7851" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#8C7851" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="name" hide />
+                    <YAxis hide />
+                    <Area type="monotone" dataKey="value" stroke="#8C7851" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
+                  </AreaChart>
+                )}
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center px-10 animate-in fade-in duration-700">
+                {activeTab === 'pie' ? (
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">Category Distribution</p>
+                    <h3 className="text-2xl font-light tracking-tight leading-snug opacity-40 dark:text-white">
+                      Visualizing your <span className="font-black">{filterMode === 'month' ? 'Monthly' : 'Range'} Anatomy</span>.
+                    </h3>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.1em] leading-relaxed max-w-[280px] mx-auto">
+                      This chart maps your spending into logical buckets, revealing exactly what percentage of your wealth is allocated to different lifestyle needs.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">Spending Patterns</p>
+                    <h3 className="text-2xl font-light tracking-tight leading-snug opacity-40 dark:text-white">
+                      Mapping your <span className="font-black italic">{filterMode === 'month' ? 'Monthly' : 'Range'} Rhythm</span>.
+                    </h3>
+                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.1em] leading-relaxed max-w-[280px] mx-auto">
+                      Daily plotting reveals the 'heartbeat' of your finances—showing the peaks and valleys of your spending to help you identify recurring habits.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'pie' && totalExpense > 0 && hasData && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Total Exp</span>
                 <span className="text-2xl font-black text-stone-900 dark:text-white">

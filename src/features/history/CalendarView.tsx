@@ -50,7 +50,37 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         return days;
     }, [currentDate, transactions, typeFilter]);
 
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
+
+    // Minimum distance for a swipe to be recognized
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            changeMonth(1);
+        } else if (isRightSwipe) {
+            changeMonth(-1);
+        }
+    };
+
     const changeMonth = (offset: number) => {
+        setAnimationDirection(offset > 0 ? 'right' : 'left');
         const nextDate = new Date(currentDate);
         nextDate.setMonth(currentDate.getMonth() + offset);
         setCurrentDate(nextDate);
@@ -66,8 +96,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between bg-brand-surface-light dark:bg-brand-surface-dark p-1 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+        <div
+            className="space-y-4 animate-in fade-in duration-500 overflow-hidden"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
+            <div className="flex items-center justify-between bg-brand-surface-light dark:bg-brand-surface-dark p-1 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm relative z-10">
                 <button
                     onClick={() => changeMonth(-1)}
                     className="size-9 flex items-center justify-center rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400 transition-colors"
@@ -86,7 +121,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-0.5 md:gap-1.5">
+            <div
+                key={`${year}-${monthName}`}
+                className={`grid grid-cols-7 gap-0.5 md:gap-1.5 transition-all duration-300 ${animationDirection === 'right' ? 'animate-slide-in-right' :
+                        animationDirection === 'left' ? 'animate-slide-in-left' : ''
+                    }`}
+            >
 
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
                     <div key={d} className="text-center py-2 text-[15px] font-black text-stone-400 tracking-widest">{d}</div>

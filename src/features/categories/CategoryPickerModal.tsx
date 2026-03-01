@@ -68,12 +68,6 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                         ))}
                     </div>
                 </div>
-
-                <div className="p-5 bg-stone-50 dark:bg-stone-800/30 border-t border-stone-100 dark:border-stone-800 text-center">
-                    <p className="text-xs text-stone-500 font-medium">
-                        Manage your categories in <span className="text-primary-600 font-bold">Settings</span>
-                    </p>
-                </div>
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Category } from '../../entities/types';
 
 interface CategoryEditorModalProps {
@@ -21,6 +22,9 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('category');
   const [color, setColor] = useState('text-primary-600');
+  const [tooltipIcon, setTooltipIcon] = useState<string | null>(null);
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
+  const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (editingCategory) {
@@ -59,6 +63,33 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
   };
 
   const icons = ['restaurant', 'directions_bus', 'shopping_cart', 'movie', 'health_and_safety', 'shopping_bag', 'payments', 'trending_up', 'flight', 'home', 'fitness_center', 'work', 'savings', 'account_balance', 'bolt', 'water_drop', 'wifi'];
+
+  const handlePointerDown = (e: React.PointerEvent, iconName: string) => {
+    // Clear any existing timer
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    pressTimerRef.current = setTimeout(() => {
+      setTooltipIcon(iconName);
+      setTooltipRect(rect);
+    }, 500); // 0.5s delay
+  };
+
+  const handlePointerUp = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+    setTooltipIcon(null);
+    setTooltipRect(null);
+  };
+
+  const formatIconLabel = (name: string) => {
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -117,21 +148,40 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
                 <label className="label-text">Select Icon</label>
                 <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
                   {icons.map(i => (
-                    <button
-                      key={i}
-                      onClick={() => setIcon(i)}
-                      className={`size-10 rounded-lg flex items-center justify-center transition-all ${icon === i
-                        ? 'bg-primary-600 text-white shadow-lg'
-                        : 'bg-stone-50 dark:bg-stone-800 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700'
-                        }`}
-                    >
-                      <span className="material-symbols-outlined text-xl">{i}</span>
-                    </button>
+                    <div key={i} className="relative group">
+                      <button
+                        onPointerDown={(e) => handlePointerDown(e, i)}
+                        onPointerUp={handlePointerUp}
+                        onPointerLeave={handlePointerUp}
+                        onClick={() => setIcon(i)}
+                        className={`size-10 rounded-lg flex items-center justify-center transition-all ${icon === i
+                          ? 'bg-primary-600 text-white shadow-lg'
+                          : 'bg-stone-50 dark:bg-stone-800 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700'
+                          }`}
+                      >
+                        <span className="material-symbols-outlined text-xl">{i}</span>
+                      </button>
+
+                      {tooltipIcon === i && tooltipRect && createPortal(
+                        <div
+                          className="fixed z-[100] px-2 py-1 bg-stone-900 border border-stone-800 text-white text-[10px] font-bold uppercase tracking-wider rounded-md whitespace-nowrap shadow-xl animate-in fade-in zoom-in-95 duration-200 pointer-events-none"
+                          style={{
+                            left: tooltipRect.left + tooltipRect.width / 2,
+                            top: tooltipRect.top - 8,
+                            transform: 'translate(-50%, -100%)'
+                          }}
+                        >
+                          {formatIconLabel(i)}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-stone-900" />
+                        </div>,
+                        document.body
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-2 flex gap-3">
+              <div className="pt-1 flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
@@ -144,7 +194,7 @@ const CategoryEditorModal: React.FC<CategoryEditorModalProps> = ({
                   onClick={handleSave}
                   className="btn-primary flex-1"
                 >
-                  Save Category
+                  Save
                 </button>
               </div>
             </div>
