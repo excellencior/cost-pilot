@@ -78,25 +78,19 @@ const emitStatus = (status: BackupStatus, message?: string) => {
 
 /**
  * Transform a local category to the shape expected by the Supabase `categories` table.
- * Encrypts sensitive fields into a single `payload` string.
+ * Categories are stored as plain columns (not encrypted).
  */
 const localCatToRemote = (cat: any, userId: string) => {
-    const key = deriveUserKey(userId);
-    const catPayload = {
+    const remote: Record<string, any> = {
+        id: cat.id,
+        user_id: userId,
         name: cat.name,
         icon: cat.icon,
         color: cat.color,
         type: cat.type,
-        is_default: false,
+        is_default: cat.is_default ?? false,
     };
 
-    const remote: Record<string, any> = {
-        id: cat.id,
-        user_id: userId,
-        payload: encryptPayload(catPayload, key)
-    };
-
-    // Timestamps remain unencrypted for sync resolution logic
     if (cat.created_at) remote.created_at = cat.created_at;
     if (cat.updated_at) remote.updated_at = cat.updated_at;
 
@@ -156,16 +150,17 @@ const remoteTxToLocal = (remoteTx: any, categories: any[], userId: string) => {
 };
 
 /**
- * Transform a remote encrypted category back to the local shape.
+ * Transform a remote category (plain columns) back to the local shape.
  */
-const remoteCatToLocal = (remoteCat: any, userId: string) => {
-    const key = deriveUserKey(userId);
-    const decryptedPayload = decryptPayload(remoteCat.payload, key) || {};
-
+const remoteCatToLocal = (remoteCat: any, _userId: string) => {
     return {
         id: remoteCat.id,
         user_id: remoteCat.user_id,
-        ...decryptedPayload,
+        name: remoteCat.name,
+        icon: remoteCat.icon,
+        color: remoteCat.color,
+        type: remoteCat.type,
+        is_default: remoteCat.is_default ?? false,
         created_at: remoteCat.created_at,
         updated_at: remoteCat.updated_at
     };
@@ -244,10 +239,11 @@ export const CloudBackupService = {
             }
 
             // Pull categories first (needed to reconstruct transaction.category)
+            // Fetch user's own categories AND the system default categories
             const { data: remoteCategories, error: catError } = await supabase
                 .from('categories')
                 .select('*')
-                .eq('user_id', userId);
+                .or(`user_id.eq.${userId},is_default.eq.true`);
 
             if (catError) throw catError;
 
@@ -294,17 +290,30 @@ export const CloudBackupService = {
 
         try {
             // Fetch remote data
+            console.log('[CloudBackup] getSyncDiff: Fetching remote transactions...');
+
+            // Auto timeout fetch after 5 seconds to bypass indefinite hangs and log the *actual* issue
+            const txAbortController = new AbortController();
+            const txTimeout = setTimeout(() => txAbortController.abort(), 5000);
+
             const { data: remoteTxs, error: txError } = await supabase
                 .from('transactions')
                 .select('*')
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .abortSignal(txAbortController.signal);
 
-            if (txError) throw txError;
+            clearTimeout(txTimeout);
 
+            if (txError) {
+                console.error('[CloudBackup] getSyncDiff: Transaction query error:', txError);
+                throw txError;
+            }
+
+            console.log('[CloudBackup] getSyncDiff: Fetching remote categories...');
             const { data: remoteCats, error: catError } = await supabase
                 .from('categories')
                 .select('*')
-                .eq('user_id', userId);
+                .or(`user_id.eq.${userId},is_default.eq.true`);
 
             if (catError) throw catError;
 
@@ -442,12 +451,15 @@ export const CloudBackupService = {
             });
 
             // Find categories we need to ensure exist remotely
-            const categoriesToEnsure = allLocalCategories.filter(c => referencedCatIds.has(c.id));
+            // Skip default/seed categories (is_default=true, user_id=null) — they already exist in DB
+            const categoriesToEnsure = allLocalCategories
+                .filter(c => referencedCatIds.has(c.id))
+                .filter(c => !c.is_default);
 
-            // Also add any explicitly pending categories
+            // Also add any explicitly pending categories (excluding defaults)
             const pendingCategories = LocalRepository.getPendingSyncCategories();
             pendingCategories.forEach(c => {
-                if (!categoriesToEnsure.find(existing => existing.id === c.id)) {
+                if (!c.is_default && !categoriesToEnsure.find(existing => existing.id === c.id)) {
                     categoriesToEnsure.push(c);
                 }
             });
@@ -469,7 +481,7 @@ export const CloudBackupService = {
                 // We don't throw here as sync can still proceed for transactions
             }
 
-            // --- 3. Push Categories ---
+            // --- 3. Push Categories (user-created only, not defaults) ---
             if (categoriesToEnsure.length > 0) {
                 const cleaned = categoriesToEnsure.map(c => localCatToRemote(c, userId));
 
@@ -481,7 +493,7 @@ export const CloudBackupService = {
 
                 if (error) {
                     console.error('[CloudBackup] Category push error:', JSON.stringify(error));
-                    throw new Error(`Sync failed (Settings): ${error.message || 'Unknown error'}`);
+                    throw new Error(`Sync failed (Categories): ${error.message || 'Unknown error'}`);
                 }
 
                 // Mark as synced locally

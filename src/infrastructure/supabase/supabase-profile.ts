@@ -2,9 +2,6 @@ import { supabase } from './client';
 
 export interface Profile {
     id: string;
-    email: string;
-    full_name?: string;
-    avatar_url?: string;
     currency?: string;
     theme?: string;
     deletion_scheduled_at?: string | null;
@@ -14,6 +11,7 @@ export interface Profile {
 export const ProfileService = {
     /**
      * Fetch the user's profile, including deletion status.
+     * If the profile doesn't exist (e.g. wiped during DB rebuild), it automatically creates one.
      */
     getProfile: async (userId: string): Promise<Profile | null> => {
         if (!supabase) return null;
@@ -24,7 +22,21 @@ export const ProfileService = {
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
+            // PGRST116 means zero rows returned from a single() call
+            if (error && error.code === 'PGRST116') {
+                console.log('[ProfileService] Profile missing for existing user, creating now...');
+                const { data: newProfile, error: upsertError } = await supabase
+                    .from('profiles')
+                    .upsert({ id: userId, updated_at: new Date().toISOString() })
+                    .select('*')
+                    .single();
+
+                if (upsertError) throw upsertError;
+                return newProfile as Profile;
+            } else if (error) {
+                throw error;
+            }
+
             return data as Profile;
         } catch (error) {
             console.error('[ProfileService] Error fetching profile:', error);

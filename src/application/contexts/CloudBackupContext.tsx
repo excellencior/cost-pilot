@@ -130,9 +130,18 @@ export const CloudBackupProvider: React.FC<CloudBackupProviderProps> = ({ childr
                     setStatusMessage('Checking sync status...');
 
                     const diffPromise = CloudBackupService.getSyncDiff(user.id);
-                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync diff timeout')), 10000));
 
-                    const diff = await Promise.race([diffPromise, timeoutPromise]) as any;
+                    let timeoutId: any;
+                    const timeoutPromise = new Promise((_, reject) => {
+                        timeoutId = setTimeout(() => reject(new Error('Sync diff timeout')), 10000);
+                    });
+
+                    let diff: any;
+                    try {
+                        diff = await Promise.race([diffPromise, timeoutPromise]);
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
 
                     const hasDiff = diff && (
                         diff.addedLocally.length > 0 ||

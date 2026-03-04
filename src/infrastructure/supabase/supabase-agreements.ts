@@ -1,5 +1,36 @@
 import { supabase } from './client';
 import { Device } from '@capacitor/device';
+import { Capacitor } from '@capacitor/core';
+
+// Helper to generate a stable device ID, especially for web where localStorage clears change the Capacitor UUID
+const getStableDeviceId = async (): Promise<string> => {
+    const info = await Device.getId();
+    let deviceId = info.identifier;
+
+    // For web, clearing local storage clears the Capacitor UUID. 
+    // We create a deterministic fingerprint to avoid duplicate agreement rows on every sign-in.
+    if (Capacitor.getPlatform() === 'web') {
+        try {
+            const nav = window.navigator;
+            const screen = window.screen;
+            const rawId = `${nav.userAgent}-${screen.width}x${screen.height}-${nav.language}`;
+
+            // Simple fast string hash
+            let hash = 0;
+            for (let i = 0; i < rawId.length; i++) {
+                const char = rawId.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit int
+            }
+            deviceId = `web-fp-${Math.abs(hash).toString(16)}`;
+        } catch (e) {
+            // Fallback to the Capacitor generated one if something fails
+            console.warn('[AgreementService] Failed to generate web fingerprint, using default.', e);
+        }
+    }
+
+    return deviceId;
+};
 
 export const AgreementService = {
     /**
@@ -9,8 +40,7 @@ export const AgreementService = {
     checkDeviceAgreement: async (): Promise<boolean> => {
         if (!supabase) return false;
         try {
-            const info = await Device.getId();
-            const deviceId = info.identifier;
+            const deviceId = await getStableDeviceId();
 
             const { data, error } = await supabase
                 .from('device_agreements')
@@ -36,8 +66,7 @@ export const AgreementService = {
     recordAgreement: async (userId: string): Promise<boolean> => {
         if (!supabase) return false;
         try {
-            const info = await Device.getId();
-            const deviceId = info.identifier;
+            const deviceId = await getStableDeviceId();
 
             const { error } = await supabase
                 .from('device_agreements')
