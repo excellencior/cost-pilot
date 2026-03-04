@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
 import { CATEGORIES } from '../constants';
@@ -36,6 +38,12 @@ const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             setHasAcceptedTerms(value === 'true');
         };
         checkTerms();
+
+        // Android/iOS: Set status bar theme
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
+            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
+        }
     }, []);
 
     // While checking preferences, don't redirect yet to prevent flash
