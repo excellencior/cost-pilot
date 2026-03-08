@@ -31,27 +31,26 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
 
                 <section>
                     <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary-600">cloud_done</span>
-                        2. Data Storage & Supabase
+                        <span className="material-symbols-outlined text-primary-600">save</span>
+                        2. 100% Local Storage & Backups
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-4">
-                        By default, your transactions and financial data are stored solely on your local device. We offer a manual Cloud Backup feature:
+                        Your transactions and financial data are stored solely on your local device. We offer a Local Auto-Backup feature for data safety:
                     </p>
                     <ul className="list-disc list-inside space-y-3 pl-2 text-sm text-stone-600 dark:text-stone-300">
-                        <li>Data is synced to <strong>Supabase</strong> only when you explicitly press the "Sync Now" button. We do not automatically upload your data.</li>
-                        <li>This enables secure synchronization across your devices and protects against data loss on your terms.</li>
-                        <li>Data is handled according to Supabase's industry-standard security protocols.</li>
-                        <li>In the event of sync conflicts between your local and cloud data, CostPilot provides a reconciliation screen where you choose exactly which data to keep.</li>
+                        <li>Data is saved locally to a folder of your explicit choosing on your device. We do not automatically upload any financial data to any cloud providers.</li>
+                        <li>Automated daily backups run in the background (or foreground on web) to keep a rolling 30-day history of your financial data on your own hard drive.</li>
+                        <li>You retain absolute governance over where these backup files live and how they are handled.</li>
                     </ul>
                 </section>
 
                 <section>
                     <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary-600">lock</span>
-                        3. Zero Access Policy
+                        3. Zero Access & Zero Telemetry
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                        The developer (Apurbo) and any third-party providers (like Supabase) do not monitor, read, or analyze your individual financial transactions. CostPilot does not sell your data to advertisers or third parties.
+                        There are no servers, no telemetry, and no accounts. The developer (Apurbo) and any third-party providers do not monitor, read, or analyze your individual financial transactions. CostPilot operates strictly offline after the initial load.
                     </p>
                 </section>
 
@@ -61,13 +60,13 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
                         4. Your Rights
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                        You have full control over your data. You can delete your transactions or entire account at any time, which will remove your data from both your local device and the Supabase cloud infrastructure.
+                        You have full control over your data. You can delete your transactions or clear your app storage at any time, which permanently removes your data from your local device repository.
                     </p>
                 </section>
 
                 <div className="pt-10 border-t border-stone-100 dark:border-stone-800 text-center">
                     <p className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-widest">
-                        Last Updated: February 23, 2026
+                        Last Updated: March 8, 2026
                     </p>
                 </div>
             </div>

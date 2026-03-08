@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
 import { CATEGORIES } from '../constants';
@@ -14,15 +16,11 @@ import CategoryEditorModal from '../features/categories/CategoryEditorModal';
 import Support from '../features/static/Support';
 import TermsOfService from '../features/static/TermsOfService';
 import PrivacyPolicy from '../features/static/PrivacyPolicy';
-import AuthCallback from '../features/auth/AuthCallback';
 import LandingPage from '../features/static/LandingPage';
-import { useAuth } from '../application/contexts/AuthContext';
-import { useCloudBackup, CloudBackupProvider } from '../application/contexts/CloudBackupContext';
 import { LocalRepository } from '../infrastructure/local/local-repository';
+import { LocalBackupProvider } from '../application/contexts/LocalBackupContext';
 import Layout from '../shared/Layout';
 import { Toaster, toast } from 'react-hot-toast';
-import AccountDeletionModal from '../shared/ui/AccountDeletionModal';
-import { ProfileService } from '../infrastructure/supabase/supabase-profile';
 import { getCurrencySymbol } from '../entities/financial';
 import { Preferences } from '@capacitor/preferences';
 
@@ -36,30 +34,32 @@ const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             setHasAcceptedTerms(value === 'true');
         };
         checkTerms();
+
+        // Android/iOS: Set status bar theme
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
+            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
+        }
     }, []);
 
     // While checking preferences, don't redirect yet to prevent flash
     if (hasAcceptedTerms === null) return null;
 
-    // Allow the landing page itself, and the auth callback route which handles OAuth redirects
-    if (!hasAcceptedTerms && location.pathname !== '/' && location.pathname !== '/auth') {
+    // Allow the landing page itself
+    if (!hasAcceptedTerms && location.pathname !== '/') {
         return <Navigate to="/" replace />;
     }
 
     return <>{children}</>;
 };
 
-const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void) | null> }> = ({ onDataPulledRef }) => {
-    const { user } = useAuth();
-    const userId = user?.id;
-
+const AppContent: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const currentView = (location.pathname.split('/')[1] as View) || 'dashboard';
 
     const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-    const [isDeletionModalOpen, setIsDeletionModalOpen] = useState(false);
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [categories, setCategories] = useState<Category[]>(CATEGORIES);
@@ -88,12 +88,11 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         const freshTransactions = LocalRepository.getAllExpenses();
         setTransactions(freshTransactions);
         const settings = LocalRepository.getSettings();
-        // Currency is already handled by state initialization, but we can sync it here if needed
         if (currency !== settings.currency) {
             setCurrency(settings.currency);
         }
 
-        // Categories logic...
+        // Categories logic
         const localCats = LocalRepository.getAllCategories();
         if (localCats.length > 0) {
             setCategories(localCats);
@@ -104,7 +103,7 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         }
     }, [currency]);
 
-    // Listen for cross-tab or cross-file local storage changes (e.g. AuthContext syncing currency)
+    // Listen for cross-tab or cross-file local storage changes
     useEffect(() => {
         const handleStorageChange = () => {
             const settings = LocalRepository.getSettings();
@@ -123,17 +122,12 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         };
     }, [currency, applyTheme]);
 
-    // Expose loadData for cross-device pull refresh
-    useEffect(() => {
-        onDataPulledRef.current = loadData;
-    }, [loadData, onDataPulledRef]);
-
     // Persist currency whenever it changes
     useEffect(() => {
         LocalRepository.updateSettings({ currency });
     }, [currency]);
 
-    // Persist current view whenever it changes (optional but good for restoring state if doing full refresh)
+    // Persist current view whenever it changes
     useEffect(() => {
         LocalRepository.updateSettings({ lastView: currentView });
     }, [currentView]);
@@ -142,20 +136,12 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         loadData();
     }, [loadData]);
 
-    useEffect(() => {
-        if (user) {
-            loadData();
-        }
-    }, [user, loadData]);
-
-    // Avoid redirecting '/' so LandingPage can be shown
-
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         const isEditing = 'id' in transaction;
         const transactionData: any = {
             ...transaction,
             id: isEditing ? (transaction as Transaction).id : crypto.randomUUID(),
-            user_id: userId || null,
+            user_id: null,
         };
         LocalRepository.upsertExpense(transactionData);
         setEditingTransaction(null);
@@ -190,12 +176,12 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
     const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
         if ('id' in catData) {
             const { id, ...updates } = catData as Category;
-            LocalRepository.upsertCategory({ id, ...updates, user_id: userId || null });
+            LocalRepository.upsertCategory({ id, ...updates, user_id: null });
         } else {
             const newCat: any = {
                 ...catData,
                 id: crypto.randomUUID(),
-                user_id: userId || null
+                user_id: null
             };
             LocalRepository.upsertCategory(newCat);
         }
@@ -251,7 +237,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         const currentMonthIdx = history.findIndex(h => h.month === currentMonthName && h.year === currentYear);
 
         if (currentMonthIdx === -1) {
-            // Add current month if missing
             const currentMonthObj = {
                 month: currentMonthName,
                 year: currentYear,
@@ -259,7 +244,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
                 expense: 0
             };
 
-            // Insert at appropriate position (usually index 0)
             const insertIdx = history.findIndex(h => h.year < currentYear || (h.year === currentYear && new Date(`${h.month} 1, ${h.year}`).getMonth() < now.getMonth()));
             if (insertIdx === -1) history.push(currentMonthObj);
             else history.splice(insertIdx, 0, currentMonthObj);
@@ -283,7 +267,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
         <Routes>
             {/* Public layout-less routes */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<AuthCallback />} />
             <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate(-1)} />} />
             <Route path="/terms" element={<TermsOfService onBack={() => navigate(-1)} />} />
 
@@ -297,7 +280,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
                             setEditingTransaction(null);
                             setIsEntryModalOpen(true);
                         }}
-                        userEmail={user?.email || undefined}
                     >
                         <div key={currentView} className="animate-slide-up w-full">
                             <Routes>
@@ -378,7 +360,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
                                             transactions={transactions}
                                             currency={currency}
                                             setCurrency={setCurrency}
-                                            onDeleteAccount={() => setIsDeletionModalOpen(true)}
                                         />
                                     }
                                 />
@@ -433,18 +414,6 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
                         />
 
                         <Toaster position="top-center" />
-
-                        <AccountDeletionModal
-                            isOpen={isDeletionModalOpen}
-                            onClose={() => setIsDeletionModalOpen(false)}
-                            userEmail={user?.email || ''}
-                            onConfirm={async () => {
-                                if (user) {
-                                    const success = await ProfileService.scheduleDeletion(user.id);
-                                    if (!success) throw new Error('Failed to schedule deletion.');
-                                }
-                            }}
-                        />
                     </Layout>
                 </RequireTerms>
             } />
@@ -453,18 +422,10 @@ const AppContent: React.FC<{ onDataPulledRef: React.MutableRefObject<(() => void
 };
 
 const App: React.FC = () => {
-    const onDataPulledRef = React.useRef<(() => void) | null>(null);
-
-    const handleDataPulled = useCallback(() => {
-        if (onDataPulledRef.current) {
-            onDataPulledRef.current();
-        }
-    }, []);
-
     return (
-        <CloudBackupProvider onDataPulled={handleDataPulled}>
-            <AppContent onDataPulledRef={onDataPulledRef} />
-        </CloudBackupProvider>
+        <LocalBackupProvider>
+            <AppContent />
+        </LocalBackupProvider>
     );
 };
 

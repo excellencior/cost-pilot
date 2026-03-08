@@ -17,6 +17,7 @@ export interface Category {
     icon: string;
     color: string;
     type: 'expense' | 'income';
+    is_default?: boolean;
 }
 
 export interface MonthlyData {

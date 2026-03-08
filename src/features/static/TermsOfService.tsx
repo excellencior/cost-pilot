@@ -32,15 +32,15 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ onBack }) => {
                 <section>
                     <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-4 flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary-600">database</span>
-                        2. Use of Service & Data Syncing
+                        2. Use of Service & Data Storage
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-4">
-                        CostPilot is a personal finance tracking tool. It operates primarily as a local-first application, meaning your data is stored directly on your device.
+                        CostPilot is a personal finance tracking tool. It operates exclusively as a local-first application, meaning your data is stored directly on your device.
                     </p>
                     <div className="bg-primary-500/5 dark:bg-primary-950/20 border-l-4 border-primary-500 p-4 rounded-r-xl">
-                        <p className="text-sm font-semibold text-stone-900 dark:text-white mb-2 underline">Manual Data Sync & Conflict Resolution:</p>
+                        <p className="text-sm font-semibold text-stone-900 dark:text-white mb-2 underline">Local Auto-Backup & Data Responsibility:</p>
                         <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            CostPilot provides a <strong>manual</strong> Cloud Backup using Supabase infrastructure. By initiating a sync, you agree to the storage of your encrypted data on these servers. You remain fully responsible for resolving any data conflicts during the sync process using the provided reconciliation tools to ensure your data's integrity.
+                            CostPilot provides a <strong>Local Data Backup</strong> utility. By initiating a backup, you agree to grant CostPilot permission to read and write backup files to a directory of your choosing on your device. You remain fully responsible for the raw storage and safety of these backup files.
                         </p>
                     </div>
                 </section>
@@ -51,7 +51,7 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ onBack }) => {
                         3. User Responsibility
                     </h2>
                     <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
-                        You are responsible for maintaining the security of your account and your device. You are solely responsible for the accuracy of the financial information you enter into the application. CostPilot does not provide financial or tax advice.
+                        You are responsible for maintaining the physical and digital security of your device. Since CostPilot does not utilize cloud synchronization or accounts, lost devices or deleted app data cannot be recovered by us. CostPilot does not provide financial or tax advice.
                     </p>
                 </section>
 
@@ -67,7 +67,7 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ onBack }) => {
 
                 <div className="pt-10 border-t border-stone-100 dark:border-stone-800 text-center">
                     <p className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-widest">
-                        Last Updated: February 23, 2026
+                        Last Updated: March 8, 2026
                     </p>
                 </div>
             </div>

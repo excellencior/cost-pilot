@@ -12,10 +12,19 @@ const config: CapacitorConfig = {
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
     },
-    FirebaseAuthentication: {
-      providers: ['google.com'],
-      skipNativeAuth: false,
+    StatusBar: {
+      style: "DARK",
+      backgroundColor: "#0c0a09",
+      overlaysWebView: false,
     },
+    BackgroundRunner: {
+      label: 'com.costpilot.background.backup',
+      src: 'runners/backup-runner.js',
+      event: 'backupSync',
+      repeat: true,
+      interval: 15,
+      autoStart: true,
+    }
   },
 };
 
