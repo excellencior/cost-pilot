@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View } from '../entities/types';
 import Footer from './Footer';
+import { useLocalBackup } from '../application/contexts/LocalBackupContext';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -11,6 +12,14 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Backup Context for Nav Action
+    const {
+        isEnabled: isBackupEnabled,
+        backupStatus,
+        lastBackupDate,
+        performManualBackup
+    } = useLocalBackup();
 
     // Close sidebar on navigation (for mobile/tablet)
     const handleNavigate = (view: View) => {
@@ -60,6 +69,27 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                                 <img src="/costpilot_logo.png" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
                                 <h1 className="hidden lg:block text-xl font-bold tracking-tight text-stone-900 dark:text-white">CostPilot</h1>
                             </div>
+
+                            {/* Desktop Sync Button */}
+                            {isBackupEnabled && (
+                                <button
+                                    onClick={performManualBackup}
+                                    disabled={backupStatus === 'syncing'}
+                                    className={`hidden lg:flex size-9 rounded-xl border flex-shrink-0 items-center justify-center transition-all duration-300 ${backupStatus === 'syncing'
+                                            ? 'bg-[#AF8F42]/10 border-[#AF8F42]/30 text-[#AF8F42]'
+                                            : backupStatus === 'success'
+                                                ? 'bg-green-500/10 border-green-500/30 text-green-500'
+                                                : backupStatus === 'error'
+                                                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
+                                                    : 'bg-brand-surface-light dark:bg-brand-surface-dark border-[#AF8F42]/30 text-stone-600 dark:text-stone-400 hover:border-[#AF8F42] hover:text-[#AF8F42] hover:bg-[#AF8F42]/5'
+                                        }`}
+                                    title={`Last backup: ${lastBackupDate ? new Date(lastBackupDate).toLocaleDateString() : 'Never'}`}
+                                >
+                                    <span className={`material-symbols-outlined text-[20px] ${backupStatus === 'syncing' ? 'animate-spin' : ''}`}>
+                                        {backupStatus === 'success' ? 'check_circle' : backupStatus === 'error' ? 'error' : 'sync'}
+                                    </span>
+                                </button>
+                            )}
                         </div>
 
                         <nav className="flex-1 space-y-2">
@@ -138,13 +168,36 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col min-w-0 relative h-full">
-                        <header className="flex lg:hidden items-center py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
+                        <header className="flex lg:hidden items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
                             <div className="flex items-center gap-3">
                                 {/* Brand show only on mobile (when sidebar is hidden) */}
                                 <div className="flex sm:hidden items-center gap-2">
                                     <img src="/costpilot_logo.png" alt="CostPilot" className="size-8 rounded-md object-cover" />
                                     <span className="font-bold text-stone-900 dark:text-white">CostPilot</span>
                                 </div>
+                            </div>
+
+                            {/* Mobile Nav Actions (Right side) */}
+                            <div className="flex items-center gap-2">
+                                {/* Sync/Backup Status Icon */}
+                                {isBackupEnabled && (
+                                    <button
+                                        onClick={performManualBackup}
+                                        disabled={backupStatus === 'syncing'}
+                                        className={`size-9 rounded-xl border flex items-center justify-center transition-all duration-300 ${backupStatus === 'syncing'
+                                                ? 'bg-[#AF8F42]/10 border-[#AF8F42]/30 text-[#AF8F42]'
+                                                : backupStatus === 'success'
+                                                    ? 'bg-green-500/10 border-green-500/30 text-green-500'
+                                                    : backupStatus === 'error'
+                                                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
+                                                        : 'bg-brand-surface-light dark:bg-brand-surface-dark border-[#AF8F42]/30 text-stone-600 dark:text-stone-400 active:scale-95'
+                                            }`}
+                                    >
+                                        <span className={`material-symbols-outlined text-[20px] ${backupStatus === 'syncing' ? 'animate-spin' : ''}`}>
+                                            {backupStatus === 'success' ? 'check_circle' : backupStatus === 'error' ? 'error' : 'sync'}
+                                        </span>
+                                    </button>
+                                )}
                             </div>
                         </header>
 
