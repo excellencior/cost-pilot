@@ -10,11 +10,9 @@ import '@fontsource/jetbrains-mono/700.css';
 import 'material-symbols';
 import React, { useState, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import App from './app/App';
 import './index.css';
-import { AuthProvider } from './application/contexts/AuthContext';
-import AuthCallback from './features/auth/AuthCallback';
 import SplashScreen from './shared/SplashScreen';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
@@ -50,12 +48,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
     <React.StrictMode>
         <BrowserRouter>
-            <AuthProvider>
-                <Routes>
-                    <Route path="/auth" element={<AuthCallback />} />
-                    <Route path="*" element={<Root />} />
-                </Routes>
-            </AuthProvider>
+            <Root />
         </BrowserRouter>
     </React.StrictMode>
 );

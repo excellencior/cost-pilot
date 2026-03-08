@@ -1,20 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Transaction, View } from '../../entities/types';
-import { useAuth } from '../../application/contexts/AuthContext';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
-import { useCloudBackup } from '../../application/contexts/CloudBackupContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { LocalRepository } from '../../infrastructure/local/local-repository';
 import { formatDate } from '../../entities/financial';
 import Dropdown from '../../shared/ui/Dropdown';
 import DatePicker from '../../shared/ui/DatePicker';
+import TimePicker from '../../shared/ui/TimePicker';
 import ConfirmModal from '../../shared/ui/ConfirmModal';
-import { ProfileService } from '../../infrastructure/supabase/supabase-profile';
-import AuthAgreementModal from '../../shared/ui/AuthAgreementModal';
-import { AgreementService } from '../../infrastructure/supabase/supabase-agreements';
+import { useLocalBackup } from '../../application/contexts/LocalBackupContext';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -23,7 +20,6 @@ interface SettingsProps {
 	transactions: Transaction[];
 	currency: string;
 	setCurrency: (c: string) => void;
-	onDeleteAccount: () => void;
 }
 
 const CURRENCIES = [
@@ -38,38 +34,17 @@ const Settings: React.FC<SettingsProps> = ({
 	categoryCount,
 	transactions,
 	currency,
-	setCurrency,
-	onDeleteAccount
+	setCurrency
 }) => {
-	const { user, signIn, logOut } = useAuth();
-	const { isCloudEnabled, backupStatus, statusMessage, lastBackupTime, toggleCloudBackup, retryBackup, pullUpdates } = useCloudBackup();
+	const backupService = useLocalBackup();
+	const { isEnabled, backupTime, enableBackup, disableBackup, setBackupTime, performManualBackup, restoreFromBackup, hasDirectoryAccess, requestDirectoryAccess, getDirectoryName, backupStatus, statusMessage, lastBackupTime, getMostRecentBackup } = backupService;
+
 	const [startDate, setStartDate] = useState('');
 	const [endDate, setEndDate] = useState('');
-	const [isAgreementOpen, setIsAgreementOpen] = useState(false);
-	const [isCheckingAgreement, setIsCheckingAgreement] = useState(false);
 
-	const handleSignInClick = async () => {
-		setIsCheckingAgreement(true);
-		try {
-			const hasAgreed = await AgreementService.checkDeviceAgreement();
-			if (hasAgreed) {
-				await signIn();
-			} else {
-				setIsAgreementOpen(true);
-			}
-		} catch (error) {
-			console.error('Failed to check agreement:', error);
-			// Show modal as fallback
-			setIsAgreementOpen(true);
-		} finally {
-			setIsCheckingAgreement(false);
-		}
-	};
-
-	const handleAgreementContinue = async () => {
-		setIsAgreementOpen(false);
-		await signIn();
-	};
+	// Restore on toggle state
+	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+	const [recentBackupFile, setRecentBackupFile] = useState<File | null>(null);
 
 	const toggleDarkMode = () => {
 		const isDark = document.documentElement.classList.toggle('dark');
@@ -92,13 +67,13 @@ const Settings: React.FC<SettingsProps> = ({
 	const getStatusConfig = () => {
 		switch (backupStatus) {
 			case 'syncing':
-				return { text: statusMessage || 'Backing up...', color: 'text-amber-500', icon: 'cloud_sync', spin: true };
+				return { text: statusMessage || 'Backing up...', color: 'text-amber-500', icon: 'sync', spin: true };
 			case 'success':
-				return { text: statusMessage || 'All data backed up', color: 'text-green-500', icon: 'cloud_done', spin: false };
+				return { text: statusMessage || 'Backup successful', color: 'text-green-500', icon: 'check_circle', spin: false };
 			case 'error':
-				return { text: statusMessage || 'Backup failed', color: 'text-rose-500', icon: 'cloud_off', spin: false };
+				return { text: statusMessage || 'Backup failed', color: 'text-rose-500', icon: 'error', spin: false };
 			default:
-				return { text: isCloudEnabled ? 'Ready to sync' : 'Cloud backup is off', color: 'text-stone-400', icon: isCloudEnabled ? 'cloud' : 'cloud_off', spin: false };
+				return { text: isEnabled ? 'Auto backup is on' : 'Auto backup is off', color: 'text-stone-400', icon: isEnabled ? 'folder_special' : 'folder_off', spin: false };
 		}
 	};
 
@@ -110,7 +85,6 @@ const Settings: React.FC<SettingsProps> = ({
 			const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
 			const currencyCode = currency;
 
-			// Title
 			doc.setFontSize(22);
 			doc.setTextColor(28, 25, 23); // stone-900
 			doc.text('CostPilot Financial Report', 14, 22);
@@ -152,7 +126,6 @@ const Settings: React.FC<SettingsProps> = ({
 				}
 			});
 
-			// Transactions Table
 			const tableData = filteredTransactions.map(t => {
 				const categoryName = t.category && typeof t.category === 'object' ? t.category.name : (t.category || '-');
 				return [
@@ -271,11 +244,9 @@ const Settings: React.FC<SettingsProps> = ({
 				link.href = url;
 				link.download = `CostPilot_Export_${new Date().toISOString().split('T')[0]}.csv`;
 
-				// Append to body to ensure it works in all browsers
 				document.body.appendChild(link);
 				link.click();
 
-				// Cleanup
 				setTimeout(() => {
 					document.body.removeChild(link);
 					URL.revokeObjectURL(url);
@@ -286,6 +257,47 @@ const Settings: React.FC<SettingsProps> = ({
 			alert('Failed to generate CSV. Please check console for details.');
 		}
 	};
+
+	// Auto backup handlers
+	const handleToggleBackup = async () => {
+		if (isEnabled) {
+			disableBackup();
+		} else {
+			// Always request explicitly on toggle-on to ensure they choose exactly where they want it to go
+			const granted = await requestDirectoryAccess();
+			if (!granted) return;
+
+			// Check if there is already a backup in this newly designated folder
+			const existingFile = await getMostRecentBackup();
+			if (existingFile) {
+				setRecentBackupFile(existingFile);
+				setShowRestoreConfirm(true);
+			} else {
+				enableBackup();
+			}
+		}
+	};
+
+	const onRestoreClick = async () => {
+		// Trigger manual file selection via an invisible input element on Web
+		if (!Capacitor.isNativePlatform()) {
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = '.json';
+			input.onchange = async (e: any) => {
+				const file = e.target.files?.[0];
+				if (file) {
+					await restoreFromBackup(file);
+				}
+			};
+			input.click();
+			return;
+		}
+
+		// Future addition for Android/iOS:
+		alert('File selection for restore on native apps is coming soon!');
+	};
+
 
 	return (
 		<div className="max-w-4xl mx-auto space-y-6 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -314,75 +326,6 @@ const Settings: React.FC<SettingsProps> = ({
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-				{/* Profile / Account */}
-				<div className="card-section p-4 space-y-5">
-					<div className="flex items-center gap-4">
-						<div className="size-16 rounded-xl bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 overflow-hidden border border-[#AF8F42]/50 dark:border-[#AF8F42]/60 relative">
-							{user?.user_metadata?.avatar_url ? (
-								<img
-									src={user.user_metadata.avatar_url}
-									alt="Profile"
-									className="w-full h-full object-cover"
-									onError={(e) => {
-										(e.target as HTMLImageElement).style.display = 'none';
-										const parent = (e.target as HTMLImageElement).parentElement;
-										if (parent) {
-											const span = document.createElement('span');
-											span.className = 'text-xl font-bold uppercase';
-											span.innerText = (user?.user_metadata?.full_name || user?.email || 'Z')[0];
-											parent.appendChild(span);
-										}
-									}}
-								/>
-							) : (
-								<span className="text-xl font-bold uppercase">
-									{(user?.user_metadata?.full_name || user?.email || 'Z')[0]}
-								</span>
-							)}
-						</div>
-						<div className="min-w-0">
-							<p className="font-bold text-stone-900 dark:text-white truncate">{user?.user_metadata?.full_name || 'CostPilot User'}</p>
-							<p className="text-xs text-stone-500 truncate">{user?.email || 'Local Mode'}</p>
-						</div>
-					</div>
-					{user ? (
-						<button onClick={() => logOut()} className="btn-secondary w-full text-xs py-2 text-rose-600 dark:text-rose-400">Sign Out</button>
-					) : (
-						<div className="space-y-3">
-							<div className="bg-stone-50 dark:bg-stone-800/50 rounded-lg p-3 space-y-2">
-								<div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-									<span className="material-symbols-outlined text-base text-primary-500">cloud_upload</span>
-									<span className="text-xs font-bold">Cloud Backup</span>
-								</div>
-								<div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-									<span className="material-symbols-outlined text-base text-primary-500">devices</span>
-									<span className="text-xs font-bold">Cross-Device Sync</span>
-								</div>
-								<div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-									<span className="material-symbols-outlined text-base text-primary-500">lock</span>
-									<span className="text-xs font-bold">Secure & Private</span>
-								</div>
-							</div>
-							<button
-								onClick={handleSignInClick}
-								disabled={isCheckingAgreement}
-								className="w-full text-sm flex items-center justify-center gap-2 px-4 py-1 rounded-xl font-bold transition-all active:scale-95 border border-primary-500/50 bg-emerald-500/5 text-stone-900 dark:border-primary-500/40 dark:bg-emerald-900/20 dark:text-white hover:bg-emerald-500/10 dark:hover:bg-emerald-900/30 shadow-sm disabled:opacity-50 disabled:cursor-wait"
-							>
-								{isCheckingAgreement ? (
-									<span className="material-symbols-outlined animate-spin text-sm">rotate_right</span>
-								) : (
-									<svg className="size-4" viewBox="0 0 24 24">
-										<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-										<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-										<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-										<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-									</svg>
-								)}
-								{isCheckingAgreement ? 'Checking...' : 'Sign In with Google'}
-							</button>
-						</div>
-					)}
-				</div>
 
 				{/* Categories Shortcut */}
 				<button
@@ -421,7 +364,7 @@ const Settings: React.FC<SettingsProps> = ({
 				</div>
 
 				{/* Data Exports */}
-				<div className="card-section p-4 space-y-4">
+				<div className="card-section p-4 space-y-4 md:col-span-2">
 					<div>
 						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Data Management</p>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -450,72 +393,101 @@ const Settings: React.FC<SettingsProps> = ({
 				</div>
 			</div>
 
-			{/* Cloud Backup Card */}
+			{/* Local Rolling Backup Card */}
 			<div className="card-section p-6 bg-stone-900 text-white dark:bg-brand-surface-dark relative overflow-hidden group">
-				<div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-primary-500/20 transition-all"></div>
+				<div className="absolute bottom-0 right-0 w-64 h-64 bg-[#AF8F42]/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-[#AF8F42]/20 transition-all"></div>
 				<div className="relative z-10">
-					<div className="flex items-center justify-between mb-4">
+					<div className="flex items-start justify-between mb-4">
 						<div className="flex items-center gap-3">
 							<span className={`material-symbols-outlined text-2xl ${statusConfig.color} ${statusConfig.spin ? 'animate-spin' : ''}`}>
 								{statusConfig.icon}
 							</span>
-							<h3 className="text-2xl font-bold">Cloud Backup</h3>
+							<div>
+								<h3 className="text-xl font-bold">Rolling Local Backup</h3>
+								<p className="text-stone-400 text-xs mt-1">Daily backups, 30 days retention.</p>
+							</div>
 						</div>
 
 						{/* Toggle Switch */}
 						<button
-							onClick={user ? toggleCloudBackup : undefined}
-							disabled={!user}
-							className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${!user ? 'bg-stone-700 cursor-not-allowed opacity-50' :
-								isCloudEnabled ? 'bg-primary-500' : 'bg-stone-600'
+							onClick={handleToggleBackup}
+							className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${isEnabled ? 'bg-[#AF8F42]' : 'bg-stone-600'
 								}`}
-							title={!user ? 'Sign in to enable cloud backup' : (isCloudEnabled ? 'Disable cloud backup' : 'Enable cloud backup')}
+							title={isEnabled ? 'Disable auto backup' : 'Enable auto backup'}
 						>
 							<span
-								className={`inline-block size-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${isCloudEnabled && user ? 'translate-x-6' : 'translate-x-1'
+								className={`inline-block size-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${isEnabled ? 'translate-x-6' : 'translate-x-1'
 									}`}
 							/>
 						</button>
 					</div>
 
-					<p className="text-stone-400 text-sm max-w-sm mb-3">
-						{!user
-							? 'Sign in to enable cloud backup and sync your data across devices.'
-							: 'Backup your data manually to keep it safe and synced across devices.'
-						}
-					</p>
+					{!Capacitor.isNativePlatform() && !window.showDirectoryPicker && (
+						<div className="mb-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs p-3 rounded-xl">
+							<span className="material-symbols-outlined text-sm inline-block align-text-bottom mr-1">warning</span>
+							Scheduled auto-backup is only supported in Chromium browsers (Chrome, Edge). On this browser, you must backup manually.
+						</div>
+					)}
 
-					{/* Status Line */}
-					<div className="flex items-center gap-3 text-sm">
-						<span className={`${statusConfig.color} font-medium`}>{statusConfig.text}</span>
-						{isCloudEnabled && lastBackupTime && backupStatus !== 'syncing' && (
-							<span className="text-stone-500 text-xs">• Last backup: {formatLastBackup(lastBackupTime)}</span>
-						)}
-					</div>
+					{isEnabled && (
+						<div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+							<div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+								<div className="flex items-center gap-3 text-sm flex-1">
+									<span className={`${statusConfig.color} font-medium`}>{statusConfig.text}</span>
+									{lastBackupTime && backupStatus !== 'syncing' && (
+										<span className="text-stone-400 text-xs truncate">• Last: {formatLastBackup(lastBackupTime)}</span>
+									)}
+								</div>
 
-					{/* Sync Now / Retry button */}
-					{isCloudEnabled && user && (
-						<div className="mt-4 flex gap-3">
-							<button
-								onClick={pullUpdates}
-								disabled={backupStatus === 'syncing'}
-								className="bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2 shadow-sm"
-							>
-								<span className={`material-symbols-outlined text-sm ${backupStatus === 'syncing' ? 'animate-spin' : ''}`}>
-									{backupStatus === 'syncing' ? 'sync' : 'cloud_sync'}
-								</span>
-								{backupStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}
-							</button>
+								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700">
+									<button
+										onClick={() => requestDirectoryAccess()}
+										className="p-2 bg-stone-700 hover:bg-[#AF8F42] hover:text-white rounded-md transition-colors text-stone-300 flex items-center justify-center shrink-0 disabled:opacity-50"
+										title="Change Backup Location"
+									>
+										<span className="material-symbols-outlined text-lg">folder_open</span>
+									</button>
+									<div className="flex flex-col min-w-0 flex-1">
+										<span className="text-[10px] uppercase text-stone-500 font-bold tracking-widest leading-none">Location</span>
+										<span className="text-xs text-stone-300 truncate font-mono">
+											{getDirectoryName() || 'Not selected'}
+										</span>
+									</div>
+								</div>
+							</div>
 
-							{backupStatus === 'error' && (
+							{isEnabled && (
+								<div className="flex items-center justify-between gap-3 text-sm bg-stone-800/50 p-3 rounded-xl border border-stone-700/50">
+									<div className="flex items-center gap-3">
+										<span className="material-symbols-outlined text-stone-400">schedule</span>
+										<span className="text-stone-300 font-medium">Daily Backup Time</span>
+									</div>
+									<TimePicker
+										value={backupTime}
+										onChange={setBackupTime}
+									/>
+								</div>
+							)}
+
+							<div className="flex flex-wrap gap-3 mt-4">
 								<button
-									onClick={retryBackup}
+									onClick={performManualBackup}
+									disabled={backupStatus === 'syncing' || !hasDirectoryAccess || transactions.length === 0}
+									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2 shadow-sm disabled:cursor-not-allowed"
+									title={transactions.length === 0 ? "No data to backup" : ""}
+								>
+									<span className="material-symbols-outlined text-sm">save</span>
+									Backup Now
+								</button>
+
+								<button
+									onClick={onRestoreClick}
 									className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
 								>
-									<span className="material-symbols-outlined text-sm">refresh</span>
-									Retry
+									<span className="material-symbols-outlined text-sm">restore</span>
+									Restore Data
 								</button>
-							)}
+							</div>
 						</div>
 					)}
 				</div>
@@ -528,7 +500,7 @@ const Settings: React.FC<SettingsProps> = ({
 						href="https://cost-pilot-xi.vercel.app"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-[10px] font-bold text-stone-400 hover:text-primary-600 dark:hover:text-primary-400 uppercase tracking-widest transition-colors flex items-center gap-1.5 group"
+						className="text-[10px] font-bold text-stone-400 hover:text-[#AF8F42] dark:hover:text-[#AF8F42] uppercase tracking-widest transition-colors flex items-center gap-1.5 group"
 					>
 						<span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">language</span>
 						Go to Web Version
@@ -536,26 +508,26 @@ const Settings: React.FC<SettingsProps> = ({
 				</div>
 			)}
 
-			{/* Danger Zone */}
-			{user && (
-				<div className="card-section p-5 border-rose-300 dark:border-rose-800/60 bg-rose-100/50 dark:bg-rose-950/30">
-					<div>
-						<p className="text-sm font-bold text-rose-600 dark:text-rose-500 uppercase tracking-widest mb-1">Danger Zone</p>
-						<p className="text-xs text-rose-500/80 dark:text-rose-400/80 mb-3">Permanent actions. Be careful!</p>
-						<button
-							onClick={onDeleteAccount}
-							className="text-sm font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors flex items-center gap-2 group"
-						>
-							<span className="material-symbols-outlined text-base group-hover:rotate-12 transition-transform">delete_forever</span>
-							Delete Account
-						</button>
-					</div>
-				</div>
-			)}
-			<AuthAgreementModal
-				isOpen={isAgreementOpen}
-				onClose={() => setIsAgreementOpen(false)}
-				onContinue={handleAgreementContinue}
+			<ConfirmModal
+				isOpen={showRestoreConfirm}
+				onClose={() => {
+					setShowRestoreConfirm(false);
+					setRecentBackupFile(null);
+					// User declined restore, so activate the daily backup schedule they requested when they toggled it on
+					enableBackup();
+				}}
+				onConfirm={async () => {
+					if (recentBackupFile) {
+						await restoreFromBackup(recentBackupFile);
+					}
+					setShowRestoreConfirm(false);
+					setRecentBackupFile(null);
+				}}
+				title="Existing Backup Found"
+				message="We found an existing CostPilot backup file in this location. Would you like to restore your data from it right now? Doing so will overwrite your current local data."
+				confirmLabel="Restore Data"
+				cancelLabel="Not Now"
+				variant="danger"
 			/>
 		</div>
 	);
