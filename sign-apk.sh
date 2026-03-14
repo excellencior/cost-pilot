@@ -114,13 +114,18 @@ if [ -z "$APKSIGNER" ]; then
     exit 1
 fi
 
+RELEASE_DIR="android/release"
+mkdir -p "$RELEASE_DIR"
+
 "$APKSIGNER" sign --ks "$KEYSTORE_FILE" --ks-pass "pass:password123" --out "$FINAL_APK" "$ALIGNED_APK"
 
 if [ $? -eq 0 ]; then
+    mv "$FINAL_APK" "$RELEASE_DIR/$FINAL_APK"
     echo "------------------------------------------------"
-    echo "SUCCESS: Signed APK created: $FINAL_APK"
+    echo "SUCCESS: Signed APK created and moved to: $RELEASE_DIR/$FINAL_APK"
     echo "------------------------------------------------"
     rm "$ALIGNED_APK"
+    rm -f "$FINAL_APK.idsig"
 else
     echo "Error: Signing failed."
     exit 1
