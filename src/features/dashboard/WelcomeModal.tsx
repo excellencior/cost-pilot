@@ -30,8 +30,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
             <div className="relative w-full max-w-md bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-3xl shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-400 flex flex-col items-center text-center">
 
                 {/* Decorative Icon */}
-                <div className="size-20 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                    <span className="material-symbols-outlined text-4xl font-light">waving_hand</span>
+                <div className="size-20 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center mb-6 shadow-inner overflow-hidden">
+                    <img src="/costpilot_logo.svg" alt="CostPilot" className="size-full object-cover" />
                 </div>
 
                 <h2 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight mb-3">

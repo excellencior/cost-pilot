@@ -26,10 +26,12 @@ const LandingPage: React.FC = () => {
 
                 {/* Brand Header */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-center gap-3">
-                        <span className="material-symbols-outlined text-4xl text-primary-600 dark:text-primary-500">
-                            account_balance_wallet
-                        </span>
+                    <div className="flex items-center justify-center gap-4">
+                        <img
+                            src="/costpilot_logo.svg"
+                            alt="CostPilot"
+                            className="w-14 h-14 rounded-2xl shadow-2xl shadow-primary-500/20"
+                        />
                         <h1 className="text-5xl font-black tracking-tight">CostPilot</h1>
                     </div>
                     <p className="text-lg text-stone-500 dark:text-stone-400 max-w-lg mx-auto leading-relaxed">
