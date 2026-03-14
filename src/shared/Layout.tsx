@@ -8,9 +8,10 @@ interface LayoutProps {
     currentView: View;
     onNavigate: (view: View) => void;
     onAddEntry: () => void;
+    hideFAB?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, hideFAB = false }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Backup Context for Nav Action
@@ -201,13 +202,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                             </div>
                         </header>
 
-                        <div className="flex-1 px-5 py-4 md:px-6 md:py-6 lg:px-14 pb-32 lg:pb-6 overflow-y-auto w-full max-w-5xl mx-auto">
+                        <div className="flex-1 px-5 py-4 md:px-6 md:py-6 lg:px-14 pb-24 lg:pb-6 overflow-y-auto w-full max-w-5xl mx-auto">
                             {children}
                             {currentView === 'settings' && <Footer onNavigate={handleNavigate} />}
                         </div>
 
                         {/* Floating Action Button (FAB) */}
-                        {(['dashboard', 'history'] as View[]).includes(currentView) && (
+                        {(['dashboard', 'history'] as View[]).includes(currentView) && !hideFAB && (
                             <button
                                 onClick={onAddEntry}
                                 className="fixed bottom-24 sm:bottom-10 right-6 md:right-10 size-14 bg-[#AF8F42] text-white rounded-full shadow-2xl shadow-[#AF8F42]/30 flex items-center justify-center hover:scale-110 hover:bg-[#917536] active:scale-95 transition-all z-40 group animate-bounce-in"

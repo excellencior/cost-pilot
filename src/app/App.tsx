@@ -69,6 +69,9 @@ const AppContent: React.FC = () => {
     const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
     const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
     const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
+    const [historyViewMode, setHistoryViewMode] = useState<'summary' | 'calendar'>('summary');
+
+    const hideFAB = currentView === 'history' && historyViewMode === 'calendar';
 
     // Apply theme on mount and when changed
     const applyTheme = useCallback(() => {
@@ -280,6 +283,7 @@ const AppContent: React.FC = () => {
                             setEditingTransaction(null);
                             setIsEntryModalOpen(true);
                         }}
+                        hideFAB={hideFAB}
                     >
                         <div key={currentView} className="animate-slide-up w-full">
                             <Routes>
@@ -334,6 +338,8 @@ const AppContent: React.FC = () => {
                                             onBack={() => navigate('/dashboard')}
                                             currencySymbol={getCurrencySymbol(currency)}
                                             categories={categories}
+                                            viewMode={historyViewMode}
+                                            onViewModeChange={setHistoryViewMode}
                                         />
                                     }
                                 />
