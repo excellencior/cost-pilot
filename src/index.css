@@ -5,7 +5,7 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Almendra SC', sans-serif;
   }
 
   body {
@@ -133,6 +133,14 @@
 
   .animate-slide-in-left {
     animation: slideInLeft 0.3s ease-out forwards;
+  }
+
+  .font-brand-title {
+    font-family: 'Almendra SC', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-brand-accent {
+    font-family: 'Almendra SC', system-ui, -apple-system, sans-serif;
   }
 }
 

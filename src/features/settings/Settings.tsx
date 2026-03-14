@@ -311,7 +311,7 @@ const Settings: React.FC<SettingsProps> = ({
 					</button>
 					<div>
 						<h2 className="text-3xl font-bold text-stone-900 dark:text-white">Settings</h2>
-						<p className="text-stone-500 text-sm mt-1">Manage your preferences and data.</p>
+						<p className="text-stone-400 text-xs">Manage your preferences and data.</p>
 					</div>
 				</div>
 				<button

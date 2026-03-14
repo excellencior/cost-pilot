@@ -66,9 +66,12 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                     sm:w-20 lg:w-64
                 `}>
                         <div className="flex items-center justify-center lg:justify-between mb-8 lg:px-2">
-                            <div className="flex items-center gap-3">
-                                <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-10 rounded-lg shadow-lg shadow-primary-500/20 object-cover" />
-                                <h1 className="hidden lg:block text-xl font-bold tracking-tight text-stone-900 dark:text-white">CostPilot</h1>
+                            <div className="flex items-center gap-2">
+                                <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-10 object-contain" />
+                                <h1 className="hidden lg:block text-xl font-bold tracking-tight font-brand-title">
+                                    <span className="text-[#8c7851]">Cost</span>
+                                    <span className="text-[#8c7851]/70">Pilot</span>
+                                </h1>
                             </div>
 
                             {/* Desktop Sync Button */}
@@ -173,8 +176,11 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                             <div className="flex items-center gap-3">
                                 {/* Brand show only on mobile (when sidebar is hidden) */}
                                 <div className="flex sm:hidden items-center gap-2">
-                                    <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-8 rounded-md object-cover" />
-                                    <span className="font-bold text-stone-900 dark:text-white">CostPilot</span>
+                                    <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-8 object-contain" />
+                                    <span className="font-bold font-brand-title">
+                                        <span className="text-[#8c7851]">Cost</span>
+                                        <span className="text-[#8c7851]/70">Pilot</span>
+                                    </span>
                                 </div>
                             </div>
 

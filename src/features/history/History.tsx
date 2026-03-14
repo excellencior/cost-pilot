@@ -174,7 +174,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
                                                     <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                                                     <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
                                                 </div>
@@ -327,7 +327,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
                                                 <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                                                 <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
                                             </div>

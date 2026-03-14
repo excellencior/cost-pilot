@@ -30,12 +30,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
             <div className="relative w-full max-w-md bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-3xl shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-400 flex flex-col items-center text-center">
 
                 {/* Decorative Icon */}
-                <div className="size-20 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center mb-6 shadow-inner overflow-hidden">
-                    <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-full object-cover" />
-                </div>
+                <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-20 mb-6 object-contain" />
 
-                <h2 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight mb-3">
-                    Welcome to CostPilot!
+                <h2 className="text-2xl font-black tracking-tight mb-3 font-brand-title">
+                    <span className="text-[#8c7851]">Welcome to Cost</span>
+                    <span className="text-[#8c7851]/70">Pilot!</span>
                 </h2>
 
                 <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed mb-8 max-w-sm">
