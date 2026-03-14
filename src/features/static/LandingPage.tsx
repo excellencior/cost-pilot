@@ -5,6 +5,16 @@ import { Preferences } from '@capacitor/preferences';
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
 
+    React.useEffect(() => {
+        const checkTerms = async () => {
+            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
+            if (value === 'true') {
+                navigate('/dashboard', { replace: true });
+            }
+        };
+        checkTerms();
+    }, [navigate]);
+
     const handleContinue = async () => {
         await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
         navigate('/dashboard');

@@ -13,13 +13,9 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './app/App';
 import './index.css';
-import SplashScreen from './shared/SplashScreen';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
-
 const Root: React.FC = () => {
-    const [showSplash, setShowSplash] = useState(true);
-
     // Dismiss native Capacitor splash once React app mounts
     useEffect(() => {
         if (Capacitor.isNativePlatform()) {
@@ -27,16 +23,7 @@ const Root: React.FC = () => {
         }
     }, []);
 
-    const handleSplashFinished = useCallback(() => {
-        setShowSplash(false);
-    }, []);
-
-    return (
-        <>
-            {showSplash && <SplashScreen onFinished={handleSplashFinished} />}
-            <App />
-        </>
-    );
+    return <App />;
 };
 
 const rootElement = document.getElementById('root');
