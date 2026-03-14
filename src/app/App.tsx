@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
 import { CATEGORIES } from '../constants';
@@ -45,8 +46,13 @@ const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     // While checking preferences, don't redirect yet to prevent flash
     if (hasAcceptedTerms === null) return null;
 
-    // Allow the landing page itself
-    if (!hasAcceptedTerms && location.pathname !== '/') {
+    // Root path logic: decide whether to show LandingPage or Dashboard
+    if (location.pathname === '/') {
+        return hasAcceptedTerms ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+    }
+
+    // Guard other paths
+    if (!hasAcceptedTerms) {
         return <Navigate to="/" replace />;
     }
 
@@ -138,6 +144,52 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    // Double back button to exit logic
+    useEffect(() => {
+        let backButtonListener: any;
+
+        const setupBackButton = async () => {
+            if (!Capacitor.isNativePlatform()) return;
+
+            backButtonListener = await CapApp.addListener('backButton', (data) => {
+                const whiteList = ['/dashboard', '/'];
+                if (whiteList.includes(location.pathname)) {
+                    // Logic for double-tap to exit
+                    const now = Date.now();
+                    const lastPress = (window as any).lastBackPress || 0;
+                    
+                    if (now - lastPress < 2000) {
+                        CapApp.exitApp();
+                    } else {
+                        (window as any).lastBackPress = now;
+                        toast('Press back again to exit', {
+                            duration: 2000,
+                            position: 'bottom-center',
+                            style: {
+                                borderRadius: '12px',
+                                background: '#1c1917',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                border: '1px solid #AF8F42'
+                            }
+                        });
+                    }
+                } else {
+                    // Go back if not on dashboard/root
+                    navigate(-1);
+                }
+            });
+        };
+
+        setupBackButton();
+
+        return () => {
+            if (backButtonListener) {
+                backButtonListener.remove();
+            }
+        };
+    }, [location.pathname, navigate]);
 
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         const isEditing = 'id' in transaction;
@@ -269,7 +321,11 @@ const AppContent: React.FC = () => {
     return (
         <Routes>
             {/* Public layout-less routes */}
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={
+                <RequireTerms>
+                    <LandingPage />
+                </RequireTerms>
+            } />
             <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate(-1)} />} />
             <Route path="/terms" element={<TermsOfService onBack={() => navigate(-1)} />} />
 
