@@ -144,6 +144,7 @@ const AppContent: React.FC = () => {
                 setCurrency(settings.currency);
             }
             applyTheme();
+            loadData();
         };
 
         // Custom event for same-window updates
