@@ -62,6 +62,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Building Android release APK..."
+# Force remove any splash screens that might have slipped in
+find android/app/src/main/res -name "splash.png" -delete
 cd android
 ./gradlew assembleRelease
 cd ..
