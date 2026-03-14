@@ -31,7 +31,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Decorative Icon */}
                 <div className="size-20 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center mb-6 shadow-inner overflow-hidden">
-                    <img src="/costpilot_logo.svg" alt="CostPilot" className="size-full object-cover" />
+                    <img src="/costpilot_logo_suite.svg" alt="CostPilot" className="size-full object-cover" />
                 </div>
 
                 <h2 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight mb-3">

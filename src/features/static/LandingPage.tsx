@@ -28,7 +28,7 @@ const LandingPage: React.FC = () => {
                 <div className="space-y-4">
                     <div className="flex items-center justify-center gap-4">
                         <img
-                            src="/costpilot_logo.svg"
+                            src="/costpilot_logo_suite.svg"
                             alt="CostPilot"
                             className="w-14 h-14 rounded-2xl shadow-2xl shadow-primary-500/20"
                         />
