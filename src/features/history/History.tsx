@@ -10,14 +10,15 @@ interface HistoryProps {
     onBack: () => void;
     currencySymbol: string;
     categories: Category[];
+    viewMode: 'summary' | 'calendar';
+    onViewModeChange: (mode: 'summary' | 'calendar') => void;
 }
 
-const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onBack, currencySymbol, categories }) => {
+const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onBack, currencySymbol, categories, viewMode, onViewModeChange }) => {
     const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
     const [sortBy, setSortBy] = useState<'date' | 'amount' | 'title'>('date');
-    const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
     const [calendarTypeFilter, setCalendarTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
 
     const isFiltering = searchQuery.length > 0 || selectedCategoryId !== 'all';
@@ -173,7 +174,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
                                                     <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                                                     <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
                                                 </div>
@@ -203,20 +204,20 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">History</h2>
+                    <h2 className="text-2xl font-bold leading-tight font-brand-title brand-gradient">History</h2>
                     <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Transaction Ledger</p>
                 </div>
                 <div className="flex-1"></div>
                 <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl">
                     <button
-                        onClick={() => setViewMode('summary')}
+                        onClick={() => onViewModeChange('summary')}
                         className={`size-9 rounded-lg flex items-center justify-center transition-all ${viewMode === 'summary' ? 'bg-white dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                         title="List View"
                     >
                         <span className="material-symbols-outlined">list</span>
                     </button>
                     <button
-                        onClick={() => setViewMode('calendar')}
+                        onClick={() => onViewModeChange('calendar')}
                         className={`size-9 rounded-lg flex items-center justify-center transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-stone-700 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300'}`}
                         title="Calendar View"
                     >
@@ -326,7 +327,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium uppercase tracking-wider">{t.category.name}</span>
+                                                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
                                                 <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                                                 <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
                                             </div>

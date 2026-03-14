@@ -10,6 +10,7 @@ interface ConfirmModalProps {
     confirmLabel?: string;
     cancelLabel?: string;
     variant?: 'danger' | 'primary';
+    extraContent?: React.ReactNode;
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -20,7 +21,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     message,
     confirmLabel = 'Confirm',
     cancelLabel = 'Cancel',
-    variant = 'primary'
+    variant = 'primary',
+    extraContent
 }) => {
     useEffect(() => {
         if (isOpen) {
@@ -51,6 +53,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     <div className="space-y-1">
                         <h3 className="text-lg font-bold text-stone-900 dark:text-white">{title}</h3>
                         <p className="text-sm text-stone-500 dark:text-stone-400">{message}</p>
+                        {extraContent && (
+                            <div className="pt-2">
+                                {extraContent}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-3 pt-2">

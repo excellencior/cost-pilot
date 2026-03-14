@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
 import { CATEGORIES } from '../constants';
@@ -24,29 +25,29 @@ import { Toaster, toast } from 'react-hot-toast';
 import { getCurrencySymbol } from '../entities/financial';
 import { Preferences } from '@capacitor/preferences';
 
-const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
+const RequireTerms: React.FC<{ hasAcceptedTerms: boolean | null, children: React.ReactNode }> = ({ hasAcceptedTerms, children }) => {
     const location = useLocation();
-
-    useEffect(() => {
-        const checkTerms = async () => {
-            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
-            setHasAcceptedTerms(value === 'true');
-        };
-        checkTerms();
-
-        // Android/iOS: Set status bar theme
-        if (Capacitor.isNativePlatform()) {
-            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
-            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
-        }
-    }, []);
 
     // While checking preferences, don't redirect yet to prevent flash
     if (hasAcceptedTerms === null) return null;
 
-    // Allow the landing page itself
-    if (!hasAcceptedTerms && location.pathname !== '/') {
+    // Root path logic: decide whether to show LandingPage or Dashboard
+    if (location.pathname === '/') {
+        return hasAcceptedTerms ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+    }
+
+    // Guard other paths
+    if (!hasAcceptedTerms) {
         return <Navigate to="/" replace />;
     }
 
@@ -69,6 +70,25 @@ const AppContent: React.FC = () => {
     const [currency, setCurrency] = useState(() => LocalRepository.getSettings().currency);
     const [defaultCategoryType, setDefaultCategoryType] = useState<'income' | 'expense' | undefined>(undefined);
     const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
+    const [historyViewMode, setHistoryViewMode] = useState<'summary' | 'calendar'>('summary');
+
+    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const checkTerms = async () => {
+            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
+            setHasAcceptedTerms(value === 'true');
+        };
+        checkTerms();
+
+        // Android/iOS: Set status bar theme
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
+            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
+        }
+    }, []);
+
+    const hideFAB = currentView === 'history' && historyViewMode === 'calendar';
 
     // Apply theme on mount and when changed
     const applyTheme = useCallback(() => {
@@ -84,24 +104,37 @@ const AppContent: React.FC = () => {
         applyTheme();
     }, [applyTheme]);
 
+    // Simplified loadData: just fetch what's in repo
     const loadData = useCallback(() => {
         const freshTransactions = LocalRepository.getAllExpenses();
         setTransactions(freshTransactions);
+        
         const settings = LocalRepository.getSettings();
         if (currency !== settings.currency) {
             setCurrency(settings.currency);
         }
 
-        // Categories logic
         const localCats = LocalRepository.getAllCategories();
-        if (localCats.length > 0) {
-            setCategories(localCats);
-        } else {
-            // Persist default categories to localStorage so the backup service can find them
-            LocalRepository.bulkUpsert(CATEGORIES as any[], 'category', false);
-            setCategories(CATEGORIES);
-        }
+        setCategories(localCats);
     }, [currency]);
+
+    // One-time category initialization on mount
+    useEffect(() => {
+        const localCats = LocalRepository.getAllCategories();
+        
+        // Ensure default categories are present in storage
+        const missingDefaults = CATEGORIES.filter(
+            defaultCat => !localCats.some(lc => lc.id === defaultCat.id)
+        ).map(cat => ({ ...cat, name: cat.name.toUpperCase() }));
+
+        if (missingDefaults.length > 0) {
+            LocalRepository.bulkUpsert(missingDefaults as any[], 'category', false);
+            // Refresh categories from storage to include defaults
+            setCategories(LocalRepository.getAllCategories());
+        } else {
+            setCategories(localCats);
+        }
+    }, []);
 
     // Listen for cross-tab or cross-file local storage changes
     useEffect(() => {
@@ -111,6 +144,7 @@ const AppContent: React.FC = () => {
                 setCurrency(settings.currency);
             }
             applyTheme();
+            loadData();
         };
 
         // Custom event for same-window updates
@@ -136,11 +170,57 @@ const AppContent: React.FC = () => {
         loadData();
     }, [loadData]);
 
+    // Double back button to exit logic
+    useEffect(() => {
+        let backButtonListener: any;
+
+        const setupBackButton = async () => {
+            if (!Capacitor.isNativePlatform()) return;
+
+            backButtonListener = await CapApp.addListener('backButton', (data) => {
+                const whiteList = ['/dashboard', '/'];
+                if (whiteList.includes(location.pathname)) {
+                    // Logic for double-tap to exit
+                    const now = Date.now();
+                    const lastPress = (window as any).lastBackPress || 0;
+                    
+                    if (now - lastPress < 2000) {
+                        CapApp.exitApp();
+                    } else {
+                        (window as any).lastBackPress = now;
+                        toast('Press back again to exit', {
+                            duration: 2000,
+                            position: 'bottom-center',
+                            style: {
+                                borderRadius: '12px',
+                                background: '#1c1917',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                border: '1px solid #AF8F42'
+                            }
+                        });
+                    }
+                } else {
+                    // Go back if not on dashboard/root
+                    navigate(-1);
+                }
+            });
+        };
+
+        setupBackButton();
+
+        return () => {
+            if (backButtonListener) {
+                backButtonListener.remove();
+            }
+        };
+    }, [location.pathname, navigate]);
+
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         const isEditing = 'id' in transaction;
         const transactionData: any = {
             ...transaction,
-            id: isEditing ? (transaction as Transaction).id : crypto.randomUUID(),
+            id: isEditing ? (transaction as Transaction).id : generateId(),
             user_id: null,
         };
         LocalRepository.upsertExpense(transactionData);
@@ -174,13 +254,18 @@ const AppContent: React.FC = () => {
     };
 
     const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
-        if ('id' in catData) {
-            const { id, ...updates } = catData as Category;
+        const formattedCat = {
+            ...catData,
+            name: catData.name.toUpperCase()
+        };
+
+        if ('id' in formattedCat) {
+            const { id, ...updates } = formattedCat as Category;
             LocalRepository.upsertCategory({ id, ...updates, user_id: null });
         } else {
             const newCat: any = {
-                ...catData,
-                id: crypto.randomUUID(),
+                ...formattedCat,
+                id: generateId(),
                 user_id: null
             };
             LocalRepository.upsertCategory(newCat);
@@ -266,13 +351,17 @@ const AppContent: React.FC = () => {
     return (
         <Routes>
             {/* Public layout-less routes */}
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={
+                <RequireTerms hasAcceptedTerms={hasAcceptedTerms}>
+                    <LandingPage onAccepted={() => setHasAcceptedTerms(true)} />
+                </RequireTerms>
+            } />
             <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate(-1)} />} />
             <Route path="/terms" element={<TermsOfService onBack={() => navigate(-1)} />} />
 
             {/* App Layout Route block */}
             <Route path="/*" element={
-                <RequireTerms>
+                <RequireTerms hasAcceptedTerms={hasAcceptedTerms}>
                     <Layout
                         currentView={currentView}
                         onNavigate={handleViewChange}
@@ -280,6 +369,7 @@ const AppContent: React.FC = () => {
                             setEditingTransaction(null);
                             setIsEntryModalOpen(true);
                         }}
+                        hideFAB={hideFAB}
                     >
                         <div key={currentView} className="animate-slide-up w-full">
                             <Routes>
@@ -334,6 +424,8 @@ const AppContent: React.FC = () => {
                                             onBack={() => navigate('/dashboard')}
                                             currencySymbol={getCurrencySymbol(currency)}
                                             categories={categories}
+                                            viewMode={historyViewMode}
+                                            onViewModeChange={setHistoryViewMode}
                                         />
                                     }
                                 />
@@ -370,9 +462,11 @@ const AppContent: React.FC = () => {
                                         <CategoryManagement
                                             categories={categories}
                                             onBack={() => navigate('/settings')}
-                                            onAddCategory={(type) => {
+                                            onAddCategory={(typeArg) => {
                                                 setEditingCategory(null);
-                                                setDefaultCategoryType(type);
+                                                // Handle case where typeArg might be a MouseEvent
+                                                const actualType = typeof typeArg === 'string' ? typeArg : undefined;
+                                                setDefaultCategoryType(actualType);
                                                 setIsCategoryModalOpen(true);
                                             }}
                                             onEditCategory={(cat) => {

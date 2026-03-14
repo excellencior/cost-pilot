@@ -12,6 +12,7 @@ import DatePicker from '../../shared/ui/DatePicker';
 import TimePicker from '../../shared/ui/TimePicker';
 import ConfirmModal from '../../shared/ui/ConfirmModal';
 import { useLocalBackup } from '../../application/contexts/LocalBackupContext';
+import { toast } from 'react-hot-toast';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
@@ -37,14 +38,19 @@ const Settings: React.FC<SettingsProps> = ({
 	setCurrency
 }) => {
 	const backupService = useLocalBackup();
-	const { isEnabled, backupTime, enableBackup, disableBackup, setBackupTime, performManualBackup, restoreFromBackup, hasDirectoryAccess, requestDirectoryAccess, getDirectoryName, backupStatus, statusMessage, lastBackupTime, getMostRecentBackup } = backupService;
+	const { isEnabled, backupTime, enableBackup, disableBackup, setBackupTime, performManualBackup, restoreFromBackup, hasDirectoryAccess, requestDirectoryAccess, directoryName, backupStatus, statusMessage, lastBackupTime, getMostRecentBackup, parseBackupFile } = backupService;
 
 	const [startDate, setStartDate] = useState('');
 	const [endDate, setEndDate] = useState('');
 
 	// Restore on toggle state
 	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+	const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+	const [showManual, setShowManual] = useState(false);
+	const [showMergedModal, setShowMergedModal] = useState(false);
 	const [recentBackupFile, setRecentBackupFile] = useState<File | null>(null);
+	const [backupMetadata, setBackupMetadata] = useState<{ transactions?: number, categories?: number } | null>(null);
+	const [mergedEntries, setMergedEntries] = useState<any[]>([]);
 
 	const toggleDarkMode = () => {
 		const isDark = document.documentElement.classList.toggle('dark');
@@ -259,22 +265,55 @@ const Settings: React.FC<SettingsProps> = ({
 	};
 
 	// Auto backup handlers
-	const handleToggleBackup = async () => {
-		if (isEnabled) {
-			disableBackup();
-		} else {
-			// Always request explicitly on toggle-on to ensure they choose exactly where they want it to go
-			const granted = await requestDirectoryAccess();
-			if (!granted) return;
+	const checkForTodayBackupConflict = async () => {
+		try {
+			const file = await getMostRecentBackup();
+			if (file) {
+				const filename = file.name;
+				// Use local date for matching filename
+				const now = new Date();
+				const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+				
+				if (filename.includes(today)) {
+					const metadata = await parseBackupFile(file);
+					setBackupMetadata({
+						transactions: metadata.transactions?.length,
+						categories: metadata.categories?.length
+					});
+					setShowOverwriteConfirm(true);
+					return true;
+				}
+			}
+		} catch (e) {
+			console.error('Failed to check for backup conflict:', e);
+		}
+		return false;
+	};
 
-			// Check if there is already a backup in this newly designated folder
-			const existingFile = await getMostRecentBackup();
-			if (existingFile) {
-				setRecentBackupFile(existingFile);
-				setShowRestoreConfirm(true);
-			} else {
+	const handleToggleBackup = async () => {
+		if (!isEnabled) {
+			// Turning ON
+			if (!hasDirectoryAccess) {
+				const granted = await requestDirectoryAccess();
+				if (!granted) return;
+			}
+
+			// Check for conflict before final enable
+			const hasConflict = await checkForTodayBackupConflict();
+			if (!hasConflict) {
 				enableBackup();
 			}
+		} else {
+			// Turning OFF
+			disableBackup();
+		}
+	};
+
+	const onLocationClick = async () => {
+		const granted = await requestDirectoryAccess();
+		if (granted && isEnabled) {
+			// If already enabled, check if the new location has a conflict
+			await checkForTodayBackupConflict();
 		}
 	};
 
@@ -287,7 +326,11 @@ const Settings: React.FC<SettingsProps> = ({
 			input.onchange = async (e: any) => {
 				const file = e.target.files?.[0];
 				if (file) {
-					await restoreFromBackup(file);
+					const stats = await restoreFromBackup(file);
+					if (stats && typeof stats === 'object') {
+						setMergedEntries(stats.newTransactions || []);
+						setShowMergedModal(true);
+					}
 				}
 			};
 			input.click();
@@ -296,6 +339,104 @@ const Settings: React.FC<SettingsProps> = ({
 
 		// Future addition for Android/iOS:
 		alert('File selection for restore on native apps is coming soon!');
+	};
+
+	const ManualModal = () => (
+		<ConfirmModal
+			isOpen={showManual}
+			onClose={() => setShowManual(false)}
+			onConfirm={() => setShowManual(false)}
+			title="Backup Guidance"
+			message="Choose the right way to manage your data."
+			confirmLabel="Got it"
+			variant="primary"
+			extraContent={
+				<div className="space-y-4 mt-6 text-left">
+					{/* Merging Card */}
+					<div className="card-section p-4 bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-100 dark:border-emerald-500/10 text-left">
+						<div className="flex gap-4">
+							<div className="size-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+								<span className="material-symbols-outlined">call_merge</span>
+							</div>
+							<div className="text-left">
+								<h4 className="font-bold text-stone-800 dark:text-stone-100 text-sm text-left">Merging Data</h4>
+								<p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed text-left">
+									Click <span className="font-bold text-emerald-600 dark:text-emerald-400">Restore</span> and select a file to combine backup data with your device data.
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Overwriting Card */}
+					<div className="card-section p-4 bg-amber-50/50 dark:bg-amber-500/5 border-amber-100 dark:border-amber-500/10 text-left">
+						<div className="flex gap-4">
+							<div className="size-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+								<span className="material-symbols-outlined">swap_horiz</span>
+							</div>
+							<div className="text-left">
+								<h4 className="font-bold text-stone-800 dark:text-stone-100 text-sm text-left">Overwriting Data</h4>
+								<p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed text-left">
+									Enabling auto-backup overwrites today's file. To avoid data loss, <span className="font-bold text-amber-600 dark:text-amber-400">move/rename</span> the existing file first, then use <span className="font-bold text-amber-600 dark:text-amber-400">Restore</span> to merge it later if needed.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		/>
+	);
+
+	const MergedResultsModal = () => {
+		const symbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
+
+		return (
+			<ConfirmModal
+				isOpen={showMergedModal}
+				onClose={() => { setShowMergedModal(false); window.dispatchEvent(new Event('costpilot-settings-updated')); }}
+				onConfirm={() => { setShowMergedModal(false); window.dispatchEvent(new Event('costpilot-settings-updated')); }}
+				title="Sync Complete"
+				message={`Found ${mergedEntries.length} new items in your backup.`}
+				confirmLabel="Done"
+				variant="primary"
+				extraContent={
+					<div className="max-h-96 overflow-y-auto space-y-2 mt-6 px-1 custom-scrollbar">
+						{mergedEntries.map((t, i) => (
+							<div
+								key={i}
+								className="w-full card p-3 md:p-4 flex items-center gap-3 md:gap-4 border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 transition-all duration-500 ease-out text-left"
+							>
+								<div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+									}`}>
+									<span className="material-symbols-outlined text-2xl">{t.category?.icon || (t.type === 'income' ? 'add_box' : 'payments')}</span>
+								</div>
+								<div className="flex-1 text-left min-w-0">
+									<p className="font-bold text-stone-900 dark:text-white truncate tracking-tight">{t.title || 'Untitled'}</p>
+									<div className="flex flex-col mt-0.5">
+										<span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">
+											{t.category?.name || 'Category'}
+										</span>
+										<span className="text-[9px] font-medium text-stone-400 dark:text-stone-500 uppercase tracking-wider leading-none mt-0.5">
+											{formatDate(t.date)}
+										</span>
+									</div>
+								</div>
+								<div className={`font-bold text-base md:text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
+									{t.type === 'income' ? '+' : '-'}{symbol}{t.amount.toLocaleString()}
+								</div>
+							</div>
+						))}
+						{mergedEntries.length === 0 && (
+							<div className="text-center py-12 card border-dashed border-stone-200 dark:border-stone-800">
+								<div className="size-16 bg-stone-50 dark:bg-stone-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+									<span className="material-symbols-outlined text-stone-300 text-3xl">cloud_done</span>
+								</div>
+								<p className="text-stone-400 text-sm font-medium">All items were already synced!</p>
+							</div>
+						)}
+					</div>
+				}
+			/>
+		);
 	};
 
 
@@ -310,8 +451,8 @@ const Settings: React.FC<SettingsProps> = ({
 						<span className="material-symbols-outlined">arrow_back</span>
 					</button>
 					<div>
-						<h2 className="text-3xl font-bold text-stone-900 dark:text-white">Settings</h2>
-						<p className="text-stone-500 text-sm mt-1">Manage your preferences and data.</p>
+						<h2 className="text-2xl font-bold font-brand-title brand-gradient">Settings</h2>
+						<p className="text-stone-400 text-xs">Manage your preferences and data.</p>
 					</div>
 				</div>
 				<button
@@ -441,7 +582,7 @@ const Settings: React.FC<SettingsProps> = ({
 
 								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700">
 									<button
-										onClick={() => requestDirectoryAccess()}
+										onClick={onLocationClick}
 										className="p-2 bg-stone-700 hover:bg-[#AF8F42] hover:text-white rounded-md transition-colors text-stone-300 flex items-center justify-center shrink-0 disabled:opacity-50"
 										title="Change Backup Location"
 									>
@@ -450,7 +591,7 @@ const Settings: React.FC<SettingsProps> = ({
 									<div className="flex flex-col min-w-0 flex-1">
 										<span className="text-[10px] uppercase text-stone-500 font-bold tracking-widest leading-none">Location</span>
 										<span className="text-xs text-stone-300 truncate font-mono">
-											{getDirectoryName() || 'Not selected'}
+											{directoryName || 'Not selected'}
 										</span>
 									</div>
 								</div>
@@ -469,23 +610,23 @@ const Settings: React.FC<SettingsProps> = ({
 								</div>
 							)}
 
-							<div className="flex flex-wrap gap-3 mt-4">
+							<div className="flex gap-2 mt-4">
 								<button
 									onClick={performManualBackup}
 									disabled={backupStatus === 'syncing' || !hasDirectoryAccess || transactions.length === 0}
-									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2 shadow-sm disabled:cursor-not-allowed"
+									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed flex-1"
 									title={transactions.length === 0 ? "No data to backup" : ""}
 								>
 									<span className="material-symbols-outlined text-sm">save</span>
-									Backup Now
+									Backup
 								</button>
 
 								<button
 									onClick={onRestoreClick}
-									className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+									className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-1"
 								>
 									<span className="material-symbols-outlined text-sm">restore</span>
-									Restore Data
+									Restore
 								</button>
 							</div>
 						</div>
@@ -509,26 +650,65 @@ const Settings: React.FC<SettingsProps> = ({
 			)}
 
 			<ConfirmModal
+				isOpen={showOverwriteConfirm}
+				onClose={() => {
+					setShowOverwriteConfirm(false);
+					setBackupMetadata(null);
+				}}
+				onConfirm={async () => {
+					enableBackup();
+					setShowOverwriteConfirm(false);
+					setBackupMetadata(null);
+				}}
+				title="Today's Backup Will Be Overwritten"
+				message={`A backup from today already exists in this folder. Enabling auto-backup will overwrite it with your current device data.`}
+				confirmLabel="Overwrite & Enable"
+				cancelLabel="Cancel"
+				variant="danger"
+				extraContent={
+					<button 
+						onClick={(e) => { e.stopPropagation(); setShowManual(true); }}
+						className="text-xs font-bold text-rose-600 hover:underline"
+					>
+						How to merge or avoid overwriting?
+					</button>
+				}
+			/>
+
+			<ConfirmModal
 				isOpen={showRestoreConfirm}
 				onClose={() => {
 					setShowRestoreConfirm(false);
 					setRecentBackupFile(null);
-					// User declined restore, so activate the daily backup schedule they requested when they toggled it on
 					enableBackup();
 				}}
 				onConfirm={async () => {
 					if (recentBackupFile) {
-						await restoreFromBackup(recentBackupFile);
+						const stats = await restoreFromBackup(recentBackupFile);
+						if (stats && typeof stats === 'object') {
+							setMergedEntries(stats.newTransactions || []);
+							setShowMergedModal(true);
+						}
 					}
 					setShowRestoreConfirm(false);
 					setRecentBackupFile(null);
 				}}
 				title="Existing Backup Found"
-				message="We found an existing CostPilot backup file in this location. Would you like to restore your data from it right now? Doing so will overwrite your current local data."
-				confirmLabel="Restore Data"
+				message="We found an existing CostPilot backup file. To combine its contents with your current data, choose 'Merge & Restore'. This will not overwrite your local updates."
+				confirmLabel="Merge & Restore"
 				cancelLabel="Not Now"
-				variant="danger"
+				variant="primary"
+				extraContent={
+					<button 
+						onClick={(e) => { e.stopPropagation(); setShowManual(true); }}
+						className="text-xs font-bold text-primary-600 hover:underline"
+					>
+						How backup merging works?
+					</button>
+				}
 			/>
+			<ManualModal />
+			<MergedResultsModal />
 		</div>
 	);
 };

@@ -11,15 +11,17 @@ interface LocalBackupContextType {
     backupStatus: 'idle' | 'syncing' | 'success' | 'error';
     statusMessage: string | null;
     hasDirectoryAccess: boolean;
+    directoryName: string | null;
 
     enableBackup: () => void;
     disableBackup: () => void;
     setBackupTime: (time: string) => void;
     performManualBackup: () => Promise<void>;
-    restoreFromBackup: (file: File) => Promise<void>;
+    restoreFromBackup: (file: File) => Promise<{ newTransactions: any[], newCategoriesCount: number } | void>;
     requestDirectoryAccess: () => Promise<boolean>;
     getDirectoryName: () => string | null;
     getMostRecentBackup: () => Promise<File | null>;
+    parseBackupFile: (file: File) => Promise<any>;
 }
 
 const LocalBackupContext = createContext<LocalBackupContextType | undefined>(undefined);
@@ -31,6 +33,7 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
     const [backupStatus, setBackupStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [hasDirectoryAccess, setHasDirectoryAccess] = useState(false);
+    const [directoryName, setDirectoryName] = useState<string | null>(null);
 
     // Load initial settings
     useEffect(() => {
@@ -42,6 +45,7 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
         // Check if we already have access to a directory (on web)
         localBackupService.hasAccess().then(hasAccess => {
             setHasDirectoryAccess(hasAccess);
+            setDirectoryName(localBackupService.getDirectoryName());
         });
     }, []);
 
@@ -67,6 +71,7 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
         const granted = await localBackupService.requestAccess();
         setHasDirectoryAccess(granted);
         if (granted) {
+            setDirectoryName(localBackupService.getDirectoryName());
             toast.success('Backup location saved');
         } else {
             toast.error('Failed to access location');
@@ -82,13 +87,14 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
 
         // Check if a backup is actually needed
         const settings = LocalRepository.getSettings();
-        const rawExpenses = localStorage.getItem('costpilot_expenses');
-        const rawCategories = localStorage.getItem('costpilot_categories');
-        const expenses = rawExpenses ? JSON.parse(rawExpenses) : [];
-        const categories = rawCategories ? JSON.parse(rawCategories) : [];
+        const rawExpenses = localStorage.getItem('costpilot_local_db');
+        const rawCategories = localStorage.getItem('costpilot_local_categories');
+        const expenses = rawExpenses ? JSON.parse(rawExpenses) : {};
+        const categoriesArray = rawCategories ? Object.values(JSON.parse(rawCategories)) : [];
+        const expensesArray = rawExpenses ? Object.values(JSON.parse(rawExpenses)) : [];
 
         // If there are no settings, no categories, and no expenses, AND there is no last backup, don't run
-        if (!settings && categories.length === 0 && expenses.length === 0) {
+        if (!settings && categoriesArray.length === 0 && expensesArray.length === 0) {
             toast.error('No data to backup.');
             return;
         }
@@ -124,18 +130,14 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const restoreFromBackup = useCallback(async (file: File) => {
         setBackupStatus('syncing');
-        setStatusMessage('Restoring data...');
+        setStatusMessage('Merging data...');
 
         try {
-            await localBackupService.restoreBackup(file);
+            const stats = await localBackupService.restoreBackup(file);
             setBackupStatus('success');
-            setStatusMessage('Restore complete');
-            toast.success('Data restored successfully! Refreshing...');
-
-            setTimeout(() => {
-                // Reload window to ensure all data is freshly loaded from localStorage
-                window.location.reload();
-            }, 1000);
+            setStatusMessage('Merge complete');
+            
+            return stats;
         } catch (error: any) {
             console.error('Restore failed:', error);
             setBackupStatus('error');
@@ -218,8 +220,10 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
         performManualBackup,
         restoreFromBackup,
         requestDirectoryAccess,
+        directoryName,
         getDirectoryName: () => localBackupService.getDirectoryName(),
-        getMostRecentBackup: () => localBackupService.getMostRecentBackup()
+        getMostRecentBackup: () => localBackupService.getMostRecentBackup(),
+        parseBackupFile: (file: File) => localBackupService.parseBackupFile(file)
     };
 
     return (

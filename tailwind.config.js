@@ -26,7 +26,10 @@ export default {
         'brand-surface-light': '#FFFFFF',
         'brand-surface-dark': '#1C1917',
         secondary: '#C5A059',
-      }
+      },
+      fontFamily: {
+        chau: ['"Chau Philomene One"', 'sans-serif'],
+      },
     },
   },
   plugins: [],

@@ -163,41 +163,87 @@ class LocalBackupService {
         return hash.toString(36);
     }
 
-    async restoreBackup(file: File): Promise<void> {
+    async restoreBackup(file: File): Promise<{ newTransactions: any[], newCategoriesCount: number }> {
+        try {
+            const payload = await this.parseBackupFile(file);
+            
+            if (payload.version !== 1 || !payload.transactions || !payload.categories || !payload.settings) {
+                throw new Error("Invalid backup file format");
+            }
+
+            // Restore settings, but PRESERVE backup configuration
+            const currentSettings = LocalRepository.getSettings();
+            const backupSettings = payload.settings;
+            
+            const keysToPreserve = ['autoBackupEnabled', 'backupTime', 'lastBackupDate', 'lastBackupHash'];
+            const mergedSettings = { ...backupSettings };
+            keysToPreserve.forEach(key => {
+                if (currentSettings[key] !== undefined) {
+                    mergedSettings[key] = currentSettings[key];
+                }
+            });
+            localStorage.setItem('costpilot_settings', JSON.stringify(mergedSettings));
+
+            // Merge transactions (stored as map/object in costpilot_local_db)
+            const currentData = JSON.parse(localStorage.getItem('costpilot_local_db') || '{}');
+            const backupTransactions = payload.transactions;
+            
+            const addedTransactions: any[] = [];
+
+            backupTransactions.forEach((t: any) => {
+                const existing = currentData[t.id];
+                if (!existing) {
+                    currentData[t.id] = t;
+                    addedTransactions.push(t);
+                } else if (existing.deleted && !t.deleted) {
+                    // Revive deleted item if it's active in the backup
+                    currentData[t.id] = { ...t, deleted: false };
+                    addedTransactions.push(currentData[t.id]);
+                }
+            });
+
+            localStorage.setItem('costpilot_local_db', JSON.stringify(currentData));
+
+            // Merge categories (stored as map/object in costpilot_local_categories)
+            const currentCatData = JSON.parse(localStorage.getItem('costpilot_local_categories') || '{}');
+            const backupCategories = payload.categories;
+            const categoryNames = new Set(Object.values(currentCatData).map((c: any) => (c as any).name.toUpperCase()));
+            let mergedCatCount = 0;
+
+            backupCategories.forEach((c: any) => {
+                const existing = currentCatData[c.id];
+                if (!existing && !categoryNames.has(c.name.toUpperCase())) {
+                    currentCatData[c.id] = c;
+                    mergedCatCount++;
+                } else if (existing && existing.deleted && !c.deleted) {
+                    // Revive deleted category
+                    currentCatData[c.id] = { ...c, deleted: false };
+                    mergedCatCount++;
+                }
+            });
+
+            localStorage.setItem('costpilot_local_categories', JSON.stringify(currentCatData));
+
+            // Dispatch event for App to reload
+            window.dispatchEvent(new Event('costpilot-settings-updated'));
+
+            return {
+                newTransactions: addedTransactions,
+                newCategoriesCount: mergedCatCount
+            };
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async parseBackupFile(file: File): Promise<BackupPayload> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const content = e.target?.result as string;
                     const payload = JSON.parse(content) as BackupPayload;
-
-                    if (payload.version !== 1 || !payload.transactions || !payload.categories || !payload.settings) {
-                        throw new Error("Invalid backup file format");
-                    }
-
-                    // Restore data synchronously
-                    localStorage.setItem('costpilot_settings', JSON.stringify(payload.settings));
-
-                    const oldTransactions = JSON.parse(localStorage.getItem('costpilot_expenses') || '[]');
-                    const combinedTransactions = [...payload.transactions];
-
-                    // keep local transactions that are newer than backup
-                    const backupTimestamp = new Date(payload.timestamp).getTime();
-                    oldTransactions.forEach((t: any) => {
-                        const localTime = new Date(t.date).getTime();
-                        if (localTime > backupTimestamp && !combinedTransactions.find(ct => ct.id === t.id)) {
-                            combinedTransactions.push(t);
-                        }
-                    });
-
-                    localStorage.setItem('costpilot_expenses', JSON.stringify(combinedTransactions));
-
-                    // For categories, backup wins
-                    localStorage.setItem('costpilot_categories', JSON.stringify(payload.categories));
-
-                    // Dispatch event for App to reload
-                    window.dispatchEvent(new Event('costpilot-settings-updated'));
-                    resolve();
+                    resolve(payload);
                 } catch (err) {
                     reject(err);
                 }

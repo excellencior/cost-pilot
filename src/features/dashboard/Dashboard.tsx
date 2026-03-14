@@ -3,6 +3,7 @@ import { MonthlyData, Transaction } from '../../entities/types';
 import { formatDate } from '../../entities/financial';
 import WelcomeModal from './WelcomeModal';
 import { INSPIRATIONAL_QUOTES } from '../../quotes';
+import { Preferences } from '@capacitor/preferences';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -43,14 +44,17 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
   useEffect(() => {
-    const hasVisited = localStorage.getItem('hasVisitedDashboard');
-    if (!hasVisited) {
-      setIsWelcomeModalOpen(true);
-    }
+    const checkVisited = async () => {
+      const { value } = await Preferences.get({ key: 'hasVisitedDashboard' });
+      if (!value) {
+        setIsWelcomeModalOpen(true);
+      }
+    };
+    checkVisited();
   }, []);
 
-  const handleCloseWelcome = () => {
-    localStorage.setItem('hasVisitedDashboard', 'true');
+  const handleCloseWelcome = async () => {
+    await Preferences.set({ key: 'hasVisitedDashboard', value: 'true' });
     setIsWelcomeModalOpen(false);
   };
 
@@ -171,7 +175,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div className="flex-1 text-left min-w-0">
                     <p className="font-bold text-stone-900 dark:text-white truncate">{t.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider">{t.category.name}</span>
+                      <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
                       <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
                       <span className="text-[10px] font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">{formatDate(t.date)}</span>
                     </div>

@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Preferences } from '@capacitor/preferences';
 
-const LandingPage: React.FC = () => {
+interface LandingPageProps {
+    onAccepted?: () => void;
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ onAccepted }) => {
     const navigate = useNavigate();
+
 
     const handleContinue = async () => {
         await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
+        if (onAccepted) onAccepted();
         navigate('/dashboard');
     };
 
@@ -16,11 +22,16 @@ const LandingPage: React.FC = () => {
 
                 {/* Brand Header */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-center gap-3">
-                        <span className="material-symbols-outlined text-4xl text-primary-600 dark:text-primary-500">
-                            account_balance_wallet
-                        </span>
-                        <h1 className="text-5xl font-black tracking-tight">CostPilot</h1>
+                    <div className="flex items-center justify-center gap-2">
+                        <img
+                            src="/costpilot_logo_suite.svg"
+                            alt="CostPilot"
+                            className="w-14 h-14 object-contain"
+                        />
+                        <h1 className="text-5xl font-black tracking-tight font-brand-title">
+                            <span className="text-[#8c7851]">Cost</span>
+                            <span className="text-[#8c7851]/75">Pilot</span>
+                        </h1>
                     </div>
                     <p className="text-lg text-stone-500 dark:text-stone-400 max-w-lg mx-auto leading-relaxed">
                         A privacy-first personal finance platform for tracking expenses, managing budgets, and analyzing your financial history with clarity.

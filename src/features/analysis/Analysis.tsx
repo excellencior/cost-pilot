@@ -139,7 +139,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">Analysis</h2>
+          <h2 className="text-2xl font-bold leading-tight font-brand-title brand-gradient">Analysis</h2>
           <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Financial Insights</p>
         </div>
       </div>
@@ -305,7 +305,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
                         <span className="material-symbols-outlined text-lg">{item.icon}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight">{item.name}</p>
+                        <p className="text-sm font-bold text-stone-900 dark:text-white leading-tight font-brand-accent">{item.name}</p>
                         <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                           {Math.round((item.value / totalExpense) * 100)}% coverage
                         </p>
