@@ -25,23 +25,18 @@ import { Toaster, toast } from 'react-hot-toast';
 import { getCurrencySymbol } from '../entities/financial';
 import { Preferences } from '@capacitor/preferences';
 
-const RequireTerms: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
+const RequireTerms: React.FC<{ hasAcceptedTerms: boolean | null, children: React.ReactNode }> = ({ hasAcceptedTerms, children }) => {
     const location = useLocation();
-
-    useEffect(() => {
-        const checkTerms = async () => {
-            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
-            setHasAcceptedTerms(value === 'true');
-        };
-        checkTerms();
-
-        // Android/iOS: Set status bar theme
-        if (Capacitor.isNativePlatform()) {
-            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
-            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
-        }
-    }, []);
 
     // While checking preferences, don't redirect yet to prevent flash
     if (hasAcceptedTerms === null) return null;
@@ -77,6 +72,22 @@ const AppContent: React.FC = () => {
     const [typeFilter, setTypeFilter] = useState<'income' | 'expense' | null>(null);
     const [historyViewMode, setHistoryViewMode] = useState<'summary' | 'calendar'>('summary');
 
+    const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const checkTerms = async () => {
+            const { value } = await Preferences.get({ key: 'hasAcceptedTerms' });
+            setHasAcceptedTerms(value === 'true');
+        };
+        checkTerms();
+
+        // Android/iOS: Set status bar theme
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
+            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
+        }
+    }, []);
+
     const hideFAB = currentView === 'history' && historyViewMode === 'calendar';
 
     // Apply theme on mount and when changed
@@ -93,24 +104,37 @@ const AppContent: React.FC = () => {
         applyTheme();
     }, [applyTheme]);
 
+    // Simplified loadData: just fetch what's in repo
     const loadData = useCallback(() => {
         const freshTransactions = LocalRepository.getAllExpenses();
         setTransactions(freshTransactions);
+        
         const settings = LocalRepository.getSettings();
         if (currency !== settings.currency) {
             setCurrency(settings.currency);
         }
 
-        // Categories logic
         const localCats = LocalRepository.getAllCategories();
-        if (localCats.length > 0) {
-            setCategories(localCats);
-        } else {
-            // Persist default categories to localStorage so the backup service can find them
-            LocalRepository.bulkUpsert(CATEGORIES as any[], 'category', false);
-            setCategories(CATEGORIES);
-        }
+        setCategories(localCats);
     }, [currency]);
+
+    // One-time category initialization on mount
+    useEffect(() => {
+        const localCats = LocalRepository.getAllCategories();
+        
+        // Ensure default categories are present in storage
+        const missingDefaults = CATEGORIES.filter(
+            defaultCat => !localCats.some(lc => lc.id === defaultCat.id)
+        ).map(cat => ({ ...cat, name: cat.name.toUpperCase() }));
+
+        if (missingDefaults.length > 0) {
+            LocalRepository.bulkUpsert(missingDefaults as any[], 'category', false);
+            // Refresh categories from storage to include defaults
+            setCategories(LocalRepository.getAllCategories());
+        } else {
+            setCategories(localCats);
+        }
+    }, []);
 
     // Listen for cross-tab or cross-file local storage changes
     useEffect(() => {
@@ -195,7 +219,7 @@ const AppContent: React.FC = () => {
         const isEditing = 'id' in transaction;
         const transactionData: any = {
             ...transaction,
-            id: isEditing ? (transaction as Transaction).id : crypto.randomUUID(),
+            id: isEditing ? (transaction as Transaction).id : generateId(),
             user_id: null,
         };
         LocalRepository.upsertExpense(transactionData);
@@ -229,13 +253,18 @@ const AppContent: React.FC = () => {
     };
 
     const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
-        if ('id' in catData) {
-            const { id, ...updates } = catData as Category;
+        const formattedCat = {
+            ...catData,
+            name: catData.name.toUpperCase()
+        };
+
+        if ('id' in formattedCat) {
+            const { id, ...updates } = formattedCat as Category;
             LocalRepository.upsertCategory({ id, ...updates, user_id: null });
         } else {
             const newCat: any = {
-                ...catData,
-                id: crypto.randomUUID(),
+                ...formattedCat,
+                id: generateId(),
                 user_id: null
             };
             LocalRepository.upsertCategory(newCat);
@@ -322,8 +351,8 @@ const AppContent: React.FC = () => {
         <Routes>
             {/* Public layout-less routes */}
             <Route path="/" element={
-                <RequireTerms>
-                    <LandingPage />
+                <RequireTerms hasAcceptedTerms={hasAcceptedTerms}>
+                    <LandingPage onAccepted={() => setHasAcceptedTerms(true)} />
                 </RequireTerms>
             } />
             <Route path="/privacy" element={<PrivacyPolicy onBack={() => navigate(-1)} />} />
@@ -331,7 +360,7 @@ const AppContent: React.FC = () => {
 
             {/* App Layout Route block */}
             <Route path="/*" element={
-                <RequireTerms>
+                <RequireTerms hasAcceptedTerms={hasAcceptedTerms}>
                     <Layout
                         currentView={currentView}
                         onNavigate={handleViewChange}
@@ -432,9 +461,11 @@ const AppContent: React.FC = () => {
                                         <CategoryManagement
                                             categories={categories}
                                             onBack={() => navigate('/settings')}
-                                            onAddCategory={(type) => {
+                                            onAddCategory={(typeArg) => {
                                                 setEditingCategory(null);
-                                                setDefaultCategoryType(type);
+                                                // Handle case where typeArg might be a MouseEvent
+                                                const actualType = typeof typeArg === 'string' ? typeArg : undefined;
+                                                setDefaultCategoryType(actualType);
                                                 setIsCategoryModalOpen(true);
                                             }}
                                             onEditCategory={(cat) => {

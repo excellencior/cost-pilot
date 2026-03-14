@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Preferences } from '@capacitor/preferences';
 
-const LandingPage: React.FC = () => {
+interface LandingPageProps {
+    onAccepted?: () => void;
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ onAccepted }) => {
     const navigate = useNavigate();
 
 
     const handleContinue = async () => {
         await Preferences.set({ key: 'hasAcceptedTerms', value: 'true' });
+        if (onAccepted) onAccepted();
         navigate('/dashboard');
     };
 

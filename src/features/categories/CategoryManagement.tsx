@@ -58,7 +58,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({ categories, onB
         ))}
 
         <button
-          onClick={onAddCategory}
+          onClick={() => onAddCategory(filter)}
           className="p-5 rounded-xl border-2 border-dashed border-stone-200 dark:border-stone-800 flex flex-col items-center justify-center gap-3 text-stone-400 hover:border-primary-300 hover:text-primary-600 dark:hover:border-primary-800 dark:hover:text-primary-400 transition-all min-h-[120px] group"
         >
           <span className="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">add</span>

@@ -118,6 +118,10 @@ export const LocalRepository = {
     upsertCategory: (category: Omit<LocalCategory, 'updated_at' | 'created_at' | 'is_synced' | 'deleted'> & Partial<LocalCategory>) => {
         const data = getRawData(CATEGORY_KEY);
         const now = new Date().toISOString();
+        if (!category.id) {
+            console.error('LocalRepository: Cannot upsert category without ID');
+            return null;
+        }
         const existing = data[category.id];
 
         const record: LocalCategory = {
@@ -138,9 +142,16 @@ export const LocalRepository = {
     bulkUpsert: (items: any[], type: 'expense' | 'category', fromRemote: boolean = false) => {
         const key = type === 'expense' ? STORAGE_KEY : CATEGORY_KEY;
         const data = getRawData(key);
+        const now = new Date().toISOString();
+        
         items.forEach(item => {
+            const existing = data[item.id];
             data[item.id] = {
                 ...item,
+                user_id: item.user_id ?? (existing?.user_id || null),
+                created_at: existing?.created_at || now,
+                updated_at: now,
+                deleted: item.deleted ?? false,
                 is_synced: fromRemote ? true : false
             };
         });
