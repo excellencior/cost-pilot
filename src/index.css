@@ -139,9 +139,17 @@
     font-family: 'Almendra SC', system-ui, -apple-system, sans-serif;
   }
 
+  .brand-gradient {
+    @apply bg-gradient-to-r from-stone-950 to-[#8c7851] bg-clip-text text-transparent w-fit inline-block;
+  }
+
   .font-brand-accent {
     font-family: 'Almendra SC', system-ui, -apple-system, sans-serif;
   }
+}
+
+.dark .brand-gradient {
+  @apply from-stone-500 to-[#8c7851];
 }
 
 @keyframes slideInRight {

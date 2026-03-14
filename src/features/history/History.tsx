@@ -204,7 +204,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-stone-900 dark:text-white leading-tight">History</h2>
+                    <h2 className="text-2xl font-bold leading-tight font-brand-title brand-gradient">History</h2>
                     <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Transaction Ledger</p>
                 </div>
                 <div className="flex-1"></div>

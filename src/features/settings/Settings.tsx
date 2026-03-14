@@ -310,7 +310,7 @@ const Settings: React.FC<SettingsProps> = ({
 						<span className="material-symbols-outlined">arrow_back</span>
 					</button>
 					<div>
-						<h2 className="text-3xl font-bold text-stone-900 dark:text-white">Settings</h2>
+						<h2 className="text-2xl font-bold font-brand-title brand-gradient">Settings</h2>
 						<p className="text-stone-400 text-xs">Manage your preferences and data.</p>
 					</div>
 				</div>
@@ -469,23 +469,23 @@ const Settings: React.FC<SettingsProps> = ({
 								</div>
 							)}
 
-							<div className="flex flex-wrap gap-3 mt-4">
+							<div className="flex gap-2 mt-4">
 								<button
 									onClick={performManualBackup}
 									disabled={backupStatus === 'syncing' || !hasDirectoryAccess || transactions.length === 0}
-									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2 shadow-sm disabled:cursor-not-allowed"
+									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed flex-1"
 									title={transactions.length === 0 ? "No data to backup" : ""}
 								>
 									<span className="material-symbols-outlined text-sm">save</span>
-									Backup Now
+									Backup
 								</button>
 
 								<button
 									onClick={onRestoreClick}
-									className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
+									className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-1"
 								>
 									<span className="material-symbols-outlined text-sm">restore</span>
-									Restore Data
+									Restore
 								</button>
 							</div>
 						</div>
