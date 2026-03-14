@@ -44,7 +44,9 @@ const Settings: React.FC<SettingsProps> = ({
 
 	// Restore on toggle state
 	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+	const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
 	const [recentBackupFile, setRecentBackupFile] = useState<File | null>(null);
+	const [backupMetadata, setBackupMetadata] = useState<{ transactions?: number, categories?: number } | null>(null);
 
 	const toggleDarkMode = () => {
 		const isDark = document.documentElement.classList.toggle('dark');
@@ -270,6 +272,22 @@ const Settings: React.FC<SettingsProps> = ({
 			// Check if there is already a backup in this newly designated folder
 			const existingFile = await getMostRecentBackup();
 			if (existingFile) {
+				const today = new Date().toISOString().split('T')[0];
+				if (existingFile.name.includes(today)) {
+					// It's today's backup!
+					try {
+						const metadata = await backupService.parseBackupFile(existingFile);
+						setBackupMetadata({
+							transactions: metadata.transactions?.length,
+							categories: metadata.categories?.length
+						});
+						setShowOverwriteConfirm(true);
+						return;
+					} catch (e) {
+						console.error('Failed to parse existing backup:', e);
+					}
+				}
+
 				setRecentBackupFile(existingFile);
 				setShowRestoreConfirm(true);
 			} else {
@@ -507,6 +525,24 @@ const Settings: React.FC<SettingsProps> = ({
 					</a>
 				</div>
 			)}
+
+			<ConfirmModal
+				isOpen={showOverwriteConfirm}
+				onClose={() => {
+					setShowOverwriteConfirm(false);
+					setBackupMetadata(null);
+				}}
+				onConfirm={() => {
+					enableBackup();
+					setShowOverwriteConfirm(false);
+					setBackupMetadata(null);
+				}}
+				title="Today's Backup Will Be Overwritten"
+				message={`We found a backup from today that contains ${backupMetadata?.transactions || 0} transactions and ${backupMetadata?.categories || 0} categories. This file will be overwritten with your current data unless you move it elsewhere first.`}
+				confirmLabel="Overwrite & Enable"
+				cancelLabel="Cancel"
+				variant="danger"
+			/>
 
 			<ConfirmModal
 				isOpen={showRestoreConfirm}

@@ -20,6 +20,7 @@ interface LocalBackupContextType {
     requestDirectoryAccess: () => Promise<boolean>;
     getDirectoryName: () => string | null;
     getMostRecentBackup: () => Promise<File | null>;
+    parseBackupFile: (file: File) => Promise<any>;
 }
 
 const LocalBackupContext = createContext<LocalBackupContextType | undefined>(undefined);
@@ -219,7 +220,8 @@ export const LocalBackupProvider: React.FC<{ children: ReactNode }> = ({ childre
         restoreFromBackup,
         requestDirectoryAccess,
         getDirectoryName: () => localBackupService.getDirectoryName(),
-        getMostRecentBackup: () => localBackupService.getMostRecentBackup()
+        getMostRecentBackup: () => localBackupService.getMostRecentBackup(),
+        parseBackupFile: (file: File) => localBackupService.parseBackupFile(file)
     };
 
     return (

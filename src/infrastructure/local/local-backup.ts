@@ -164,40 +164,44 @@ class LocalBackupService {
     }
 
     async restoreBackup(file: File): Promise<void> {
+        try {
+            const payload = await this.parseBackupFile(file);
+            
+            // Restore data synchronously
+            localStorage.setItem('costpilot_settings', JSON.stringify(payload.settings));
+
+            const oldTransactions = JSON.parse(localStorage.getItem('costpilot_expenses') || '[]');
+            const combinedTransactions = [...payload.transactions];
+
+            // keep local transactions that are newer than backup
+            const backupTimestamp = new Date(payload.timestamp).getTime();
+            oldTransactions.forEach((t: any) => {
+                const localTime = new Date(t.date).getTime();
+                if (localTime > backupTimestamp && !combinedTransactions.find(ct => ct.id === t.id)) {
+                    combinedTransactions.push(t);
+                }
+            });
+
+            localStorage.setItem('costpilot_expenses', JSON.stringify(combinedTransactions));
+
+            // For categories, backup wins
+            localStorage.setItem('costpilot_categories', JSON.stringify(payload.categories));
+
+            // Dispatch event for App to reload
+            window.dispatchEvent(new Event('costpilot-settings-updated'));
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async parseBackupFile(file: File): Promise<BackupPayload> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const content = e.target?.result as string;
                     const payload = JSON.parse(content) as BackupPayload;
-
-                    if (payload.version !== 1 || !payload.transactions || !payload.categories || !payload.settings) {
-                        throw new Error("Invalid backup file format");
-                    }
-
-                    // Restore data synchronously
-                    localStorage.setItem('costpilot_settings', JSON.stringify(payload.settings));
-
-                    const oldTransactions = JSON.parse(localStorage.getItem('costpilot_expenses') || '[]');
-                    const combinedTransactions = [...payload.transactions];
-
-                    // keep local transactions that are newer than backup
-                    const backupTimestamp = new Date(payload.timestamp).getTime();
-                    oldTransactions.forEach((t: any) => {
-                        const localTime = new Date(t.date).getTime();
-                        if (localTime > backupTimestamp && !combinedTransactions.find(ct => ct.id === t.id)) {
-                            combinedTransactions.push(t);
-                        }
-                    });
-
-                    localStorage.setItem('costpilot_expenses', JSON.stringify(combinedTransactions));
-
-                    // For categories, backup wins
-                    localStorage.setItem('costpilot_categories', JSON.stringify(payload.categories));
-
-                    // Dispatch event for App to reload
-                    window.dispatchEvent(new Event('costpilot-settings-updated'));
-                    resolve();
+                    resolve(payload);
                 } catch (err) {
                     reject(err);
                 }
