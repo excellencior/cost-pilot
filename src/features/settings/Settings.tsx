@@ -318,27 +318,20 @@ const Settings: React.FC<SettingsProps> = ({
 	};
 
 	const onRestoreClick = async () => {
-		// Trigger manual file selection via an invisible input element on Web
-		if (!Capacitor.isNativePlatform()) {
-			const input = document.createElement('input');
-			input.type = 'file';
-			input.accept = '.json';
-			input.onchange = async (e: any) => {
-				const file = e.target.files?.[0];
-				if (file) {
-					const stats = await restoreFromBackup(file);
-					if (stats && typeof stats === 'object') {
-						setMergedEntries(stats.newTransactions || []);
-						setShowMergedModal(true);
-					}
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = '.json';
+		input.onchange = async (e: any) => {
+			const file = e.target.files?.[0];
+			if (file) {
+				const stats = await restoreFromBackup(file);
+				if (stats && typeof stats === 'object') {
+					setMergedEntries(stats.newTransactions || []);
+					setShowMergedModal(true);
 				}
-			};
-			input.click();
-			return;
-		}
-
-		// Future addition for Android/iOS:
-		alert('File selection for restore on native apps is coming soon!');
+			}
+		};
+		input.click();
 	};
 
 	const ManualModal = () => (
