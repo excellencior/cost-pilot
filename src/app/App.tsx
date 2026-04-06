@@ -421,7 +421,6 @@ const AppContent: React.FC = () => {
                                                 setEditingTransaction(t);
                                                 setIsEntryModalOpen(true);
                                             }}
-                                            onBack={() => navigate('/dashboard')}
                                             currencySymbol={getCurrencySymbol(currency)}
                                             categories={categories}
                                             viewMode={historyViewMode}
@@ -437,7 +436,6 @@ const AppContent: React.FC = () => {
                                             transactions={transactions}
                                             categories={categories}
                                             currency={currency}
-                                            onBack={() => navigate('/dashboard')}
                                         />
                                     }
                                 />
@@ -447,7 +445,6 @@ const AppContent: React.FC = () => {
                                     element={
                                         <Settings
                                             onNavigate={(v) => navigate(`/${v}`)}
-                                            onBack={() => navigate('/dashboard')}
                                             categoryCount={categories.length}
                                             transactions={transactions}
                                             currency={currency}

@@ -16,7 +16,6 @@ import { toast } from 'react-hot-toast';
 
 interface SettingsProps {
 	onNavigate: (view: View) => void;
-	onBack: () => void;
 	categoryCount: number;
 	transactions: Transaction[];
 	currency: string;
@@ -31,7 +30,6 @@ const CURRENCIES = [
 
 const Settings: React.FC<SettingsProps> = ({
 	onNavigate,
-	onBack,
 	categoryCount,
 	transactions,
 	currency,
@@ -436,17 +434,9 @@ const Settings: React.FC<SettingsProps> = ({
 	return (
 		<div className="max-w-4xl mx-auto space-y-6 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div className="flex items-center justify-between px-1">
-				<div className="flex items-center gap-4">
-					<button
-						onClick={onBack}
-						className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
-					>
-						<span className="material-symbols-outlined">arrow_back</span>
-					</button>
-					<div>
-						<h2 className="text-2xl font-bold font-brand-title brand-gradient">Settings</h2>
-						<p className="text-stone-400 text-xs">Manage your preferences and data.</p>
-					</div>
+				<div>
+					<h2 className="text-2xl font-bold font-brand-title brand-gradient">Settings</h2>
+					<p className="text-stone-400 text-xs">Manage your preferences and data.</p>
 				</div>
 				<button
 					onClick={toggleDarkMode}

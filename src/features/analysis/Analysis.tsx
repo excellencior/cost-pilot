@@ -15,7 +15,6 @@ interface AnalysisProps {
   transactions: Transaction[];
   categories: Category[];
   currency: string;
-  onBack: () => void;
 }
 
 const getCurrencySymbol = (code: string) => {
@@ -31,7 +30,7 @@ interface CategorySummary {
   descriptions: string[];
 }
 
-const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency, onBack }) => {
+const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency }) => {
   const [activeTab, setActiveTab] = useState<'trend' | 'pie'>('pie');
   const [filterMode, setFilterMode] = useState<'month' | 'custom'>('month');
 
@@ -130,14 +129,8 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency,
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-500">
-      {/* Header with Back Button */}
+      {/* Header */}
       <div className="flex items-center gap-4 px-1">
-        <button
-          onClick={onBack}
-          className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
         <div>
           <h2 className="text-2xl font-bold leading-tight font-brand-title brand-gradient">Analysis</h2>
           <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Financial Insights</p>

@@ -7,14 +7,13 @@ import CalendarView from './CalendarView';
 interface HistoryProps {
     transactions: Transaction[];
     onTransactionClick: (t: Transaction) => void;
-    onBack: () => void;
     currencySymbol: string;
     categories: Category[];
     viewMode: 'summary' | 'calendar';
     onViewModeChange: (mode: 'summary' | 'calendar') => void;
 }
 
-const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onBack, currencySymbol, categories, viewMode, onViewModeChange }) => {
+const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, currencySymbol, categories, viewMode, onViewModeChange }) => {
     const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
@@ -195,14 +194,8 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onB
 
     return (
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header with Back Button */}
+            {/* Header */}
             <div className="flex items-center gap-4 px-1">
-                <button
-                    onClick={onBack}
-                    className="size-10 rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-950 dark:border-stone-300 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined">arrow_back</span>
-                </button>
                 <div>
                     <h2 className="text-2xl font-bold leading-tight font-brand-title brand-gradient">History</h2>
                     <p className="text-xs font-medium text-stone-500 uppercase tracking-widest">Transaction Ledger</p>
