@@ -231,9 +231,9 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         {(['dashboard', 'history'] as View[]).includes(currentView) && !hideFAB && (
                             <button
                                 onClick={onAddEntry}
-                                className={`fixed bottom-24 sm:bottom-10 right-6 md:right-10 size-14 bg-[#AF8F42] text-white rounded-full shadow-2xl shadow-[#AF8F42]/30 flex items-center justify-center hover:scale-110 hover:bg-[#917536] active:scale-95 transition-all duration-300 z-40 group ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'}`}
+                                className={`fixed bottom-24 sm:bottom-10 right-6 md:right-10 size-14 rounded-full shadow-2xl shadow-[#AF8F42]/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 z-40 group overflow-hidden ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'}`}
                             >
-                                <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
+                                <img src="/fab_plus.png" alt="Add Entry" className="size-full object-cover group-hover:rotate-90 transition-transform duration-300" />
                             </button>
                         )}
 

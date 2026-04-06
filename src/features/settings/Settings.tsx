@@ -50,9 +50,12 @@ const Settings: React.FC<SettingsProps> = ({
 	const [backupMetadata, setBackupMetadata] = useState<{ transactions?: number, categories?: number } | null>(null);
 	const [mergedEntries, setMergedEntries] = useState<any[]>([]);
 
+	const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
 	const toggleDarkMode = () => {
-		const isDark = document.documentElement.classList.toggle('dark');
-		LocalRepository.updateSettings({ theme: isDark ? 'dark' : 'light' });
+		const dark = document.documentElement.classList.toggle('dark');
+		setIsDark(dark);
+		LocalRepository.updateSettings({ theme: dark ? 'dark' : 'light' });
 	};
 
 	const formatLastBackup = (iso: string | null) => {
@@ -444,7 +447,7 @@ const Settings: React.FC<SettingsProps> = ({
 					title="Toggle Dark Mode"
 				>
 					<span className="material-symbols-outlined text-[20px]">
-						{document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode'}
+						{isDark ? 'light_mode' : 'dark_mode'}
 					</span>
 				</button>
 			</div>
