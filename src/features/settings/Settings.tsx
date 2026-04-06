@@ -440,10 +440,10 @@ const Settings: React.FC<SettingsProps> = ({
 				</div>
 				<button
 					onClick={toggleDarkMode}
-					className="size-12 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
+					className="size-10 rounded-xl bg-brand-surface-light dark:bg-brand-surface-dark border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
 					title="Toggle Dark Mode"
 				>
-					<span className="material-symbols-outlined">
+					<span className="material-symbols-outlined text-[20px]">
 						{document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode'}
 					</span>
 				</button>
@@ -546,7 +546,7 @@ const Settings: React.FC<SettingsProps> = ({
 						</button>
 					</div>
 
-					{!Capacitor.isNativePlatform() && !window.showDirectoryPicker && (
+					{!Capacitor.isNativePlatform() && !(window as any).showDirectoryPicker && (
 						<div className="mb-4 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs p-3 rounded-xl">
 							<span className="material-symbols-outlined text-sm inline-block align-text-bottom mr-1">warning</span>
 							Scheduled auto-backup is only supported in Chromium browsers (Chrome, Edge). On this browser, you must backup manually.

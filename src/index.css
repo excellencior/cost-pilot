@@ -59,7 +59,7 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
-    font-family: 'Almendra SC', sans-serif;
+    font-family: 'Faculty Glyphic', sans-serif;
   }
 
   body {
@@ -190,7 +190,7 @@
   }
 
   .font-brand-title {
-    font-family: 'Almendra SC', 'Chau Philomene One', system-ui, -apple-system, sans-serif;
+    font-family: 'Faculty Glyphic', sans-serif;
   }
 
   .brand-gradient {
@@ -198,7 +198,7 @@
   }
 
   .font-brand-accent {
-    font-family: 'Almendra SC', 'Chau Philomene One', system-ui, -apple-system, sans-serif;
+    font-family: 'Faculty Glyphic', sans-serif;
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, XAxis, YAxis } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Transaction, Category } from '../../entities/types';
 import Dropdown from '../../shared/ui/Dropdown';
 import DatePicker from '../../shared/ui/DatePicker';
@@ -169,10 +169,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
               />
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-              <DatePicker value={startDate} onChange={setStartDate} className="w-full sm:w-40" />
-              <span className="text-stone-400 text-[10px] font-bold sm:px-1">TO</span>
-              <DatePicker value={endDate} onChange={setEndDate} className="w-full sm:w-40" />
+            <div className="flex flex-row items-center gap-2 w-full sm:w-auto justify-between">
+              <DatePicker value={startDate} onChange={setStartDate} className="flex-1 min-w-[120px] sm:w-36" />
+              <span className="text-stone-400 text-sm font-bold shrink-0">-</span>
+              <DatePicker value={endDate} onChange={setEndDate} className="flex-1 min-w-[120px] sm:w-36" />
             </div>
           )}
         </div>
@@ -223,29 +223,57 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
 
           <div className="h-64 relative flex items-center justify-center">
             {hasData ? (
-              <ResponsiveContainer width="100%" height="100%">
-                {activeTab === 'pie' ? (
-                  <PieChart>
-                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={6} dataKey="value" stroke="none">
-                      {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
-                  </PieChart>
-                ) : (
-                  <AreaChart data={trendData}>
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8C7851" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#8C7851" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="name" hide />
-                    <YAxis hide />
-                    <Area type="monotone" dataKey="value" stroke="#8C7851" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
-                  </AreaChart>
-                )}
-              </ResponsiveContainer>
+              <div className="outline-none" tabIndex={-1}>
+                <ResponsiveContainer width="100%" height={256}>
+                  {activeTab === 'pie' ? (
+                    <PieChart>
+                      <Pie data={categoryData} cx="50%" cy="50%" innerRadius={70} outerRadius={95} paddingAngle={6} dataKey="value" stroke="none">
+                        {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }} />
+                    </PieChart>
+                  ) : (
+                    <AreaChart data={trendData} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
+                      <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#AF8F42" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#AF8F42" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#78716c" strokeOpacity={0.15} vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 9, fill: '#78716c', fontWeight: 700 }}
+                        tickLine={false}
+                        axisLine={{ stroke: '#44403c', strokeOpacity: 0.3 }}
+                        interval={Math.max(0, Math.ceil(trendData.length / 5) - 1)}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 9, fill: '#78716c', fontWeight: 700 }}
+                        tickLine={false}
+                        axisLine={false}
+                        width={36}
+                        tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#AF8F42"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorValue)"
+                        dot={false}
+                        activeDot={{ r: 4, fill: '#AF8F42', strokeWidth: 2, stroke: '#1c1917' }}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#1c1917', border: '1px solid #44403c', borderRadius: '10px', fontSize: 11, fontWeight: 700, color: '#f5f5f4' }}
+                        cursor={{ stroke: '#AF8F42', strokeWidth: 1, strokeDasharray: '4 2' }}
+                        formatter={(v: number) => [`${currencySymbol}${v.toLocaleString()}`, 'Expenses']}
+                      />
+                    </AreaChart>
+                  )}
+                </ResponsiveContainer>
+              </div>
             ) : (
               <div className="text-center px-10 animate-in fade-in duration-700">
                 {activeTab === 'pie' ? (
@@ -291,10 +319,10 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
           <div className="space-y-4">
             {categoryData.length > 0 ? (
               categoryData.map((item, i) => (
-                <div key={i} className="group">
+                <div key={i}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-lg bg-stone-50 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 border border-stone-100 dark:border-stone-800 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 transition-colors">
+                      <div className="size-9 rounded-lg bg-stone-50 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 border border-stone-100 dark:border-stone-800">
                         <span className="material-symbols-outlined text-lg">{item.icon}</span>
                       </div>
                       <div>

@@ -153,10 +153,30 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
 
         {/* Section header with select controls */}
         <div className="flex items-center justify-between px-1">
-          <h3 className="font-bold text-stone-900 dark:text-white">Transaction Timeline</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">{filteredTransactions.length} items</span>
+          {/* Left: contextual title */}
+          <div className="flex flex-col">
+            {isSelectMode ? (
+              <>
+                <h3 className="font-bold text-stone-900 dark:text-white leading-tight">
+                  {selectedIds.size > 0
+                    ? <><span className="text-[#AF8F42]">{selectedIds.size}</span> of {filteredTransactions.length} selected</>
+                    : <>Select entries</>
+                  }
+                </h3>
+                <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
+                  {filteredTransactions.length} total this month
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="font-bold text-stone-900 dark:text-white leading-tight">Transaction Timeline</h3>
+                <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">{filteredTransactions.length} entries this month</p>
+              </>
+            )}
+          </div>
 
+          {/* Right: action buttons */}
+          <div className="flex items-center gap-2">
             {isSelectMode ? (
               <>
                 <button
@@ -188,6 +208,7 @@ const Overview: React.FC<OverviewProps> = ({ month, transactions, onBack, onTran
             )}
           </div>
         </div>
+
 
         <div className="flex flex-col gap-5">
           {groupedDays.sortedDateKeys.length === 0 ? (

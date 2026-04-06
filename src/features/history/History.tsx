@@ -367,7 +367,7 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onD
                             label="Category"
                             options={[
                                 { id: 'all', name: 'All Categories' },
-                                ...categories.map(c => ({ id: c.id, name: c.name }))
+                                ...categories.map(c => ({ id: c.id, name: c.name.toUpperCase(), icon: c.icon }))
                             ]}
                             value={selectedCategoryId}
                             onChange={setSelectedCategoryId}

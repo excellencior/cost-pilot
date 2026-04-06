@@ -13,6 +13,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAddEntry, hideFAB = false }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isFabVisible, setIsFabVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
 
     // Backup Context for Nav Action
     const {
@@ -208,7 +211,18 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                             </div>
                         </header>
 
-                        <div className={`flex-1 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}>
+                        <div 
+                            className={`flex-1 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}
+                            onScroll={(e) => {
+                                const currentScrollY = e.currentTarget.scrollTop;
+                                if (currentScrollY > lastScrollY.current + 10) {
+                                    setIsFabVisible(false); // Scrolling down
+                                } else if (currentScrollY < lastScrollY.current - 10 || currentScrollY === 0) {
+                                    setIsFabVisible(true);  // Scrolling up or at top
+                                }
+                                lastScrollY.current = currentScrollY;
+                            }}
+                        >
                             {children}
                             {currentView === 'settings' && <Footer onNavigate={handleNavigate} />}
                         </div>
@@ -217,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         {(['dashboard', 'history'] as View[]).includes(currentView) && !hideFAB && (
                             <button
                                 onClick={onAddEntry}
-                                className="fixed bottom-24 sm:bottom-10 right-6 md:right-10 size-14 bg-[#AF8F42] text-white rounded-full shadow-2xl shadow-[#AF8F42]/30 flex items-center justify-center hover:scale-110 hover:bg-[#917536] active:scale-95 transition-all z-40 group animate-bounce-in"
+                                className={`fixed bottom-24 sm:bottom-10 right-6 md:right-10 size-14 bg-[#AF8F42] text-white rounded-full shadow-2xl shadow-[#AF8F42]/30 flex items-center justify-center hover:scale-110 hover:bg-[#917536] active:scale-95 transition-all duration-300 z-40 group ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'}`}
                             >
                                 <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-90 transition-transform duration-300">add</span>
                             </button>

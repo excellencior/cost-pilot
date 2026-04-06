@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 interface DropdownOption {
     id: string;
     name: string;
+    icon?: string;
 }
 
 interface DropdownProps {
@@ -45,7 +46,10 @@ const Dropdown: React.FC<DropdownProps> = ({
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between bg-brand-surface-light dark:bg-brand-surface-dark border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-bold text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all focus:ring-2 focus:ring-primary-500/10 outline-none shadow-sm h-[40px]"
             >
-                <span className={selectedOption ? '' : 'text-stone-400 font-normal'}>
+                <span className={`flex items-center gap-1.5 ${selectedOption ? '' : 'text-stone-400 font-normal'}`}>
+                    {selectedOption?.icon && (
+                        <span className="material-symbols-outlined text-[15px] text-stone-500 dark:text-stone-400">{selectedOption.icon}</span>
+                    )}
                     {selectedOption ? selectedOption.name : label}
                 </span>
                 <span className={`material-symbols-outlined text-stone-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
@@ -66,7 +70,12 @@ const Dropdown: React.FC<DropdownProps> = ({
                                 }}
                                 className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/50 flex items-center justify-between ${value === option.id ? 'text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/10' : 'text-stone-700 dark:text-stone-300'}`}
                             >
-                                <span>{option.name}</span>
+                                <span className="flex items-center gap-1.5">
+                                    {option.icon && (
+                                        <span className="material-symbols-outlined text-[15px] text-stone-500 dark:text-stone-400">{option.icon}</span>
+                                    )}
+                                    {option.name}
+                                </span>
                                 {value === option.id && (
                                     <span className="material-symbols-outlined text-base">check</span>
                                 )}

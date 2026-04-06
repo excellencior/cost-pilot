@@ -309,17 +309,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between bg-stone-50 dark:bg-stone-900/50 border border-stone-100 dark:border-stone-800 rounded-xl px-3 py-1 text-sm text-stone-900 dark:text-white hover:border-primary-500 dark:hover:border-primary-500 transition-all outline-none h-[40px]"
+                className="input-field flex items-center justify-between text-sm cursor-pointer hover:border-primary-500 dark:hover:border-primary-500"
             >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="material-symbols-outlined text-stone-400 text-lg flex-shrink-0">calendar_today</span>
                     <span className={`truncate whitespace-nowrap ${value ? 'text-stone-900 dark:text-white' : 'text-stone-400 font-normal'}`}>
                         {value ? formatDate(value) : label}
                     </span>
                 </div>
-                <span className={`material-symbols-outlined text-stone-400 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-                    expand_more
-                </span>
             </button>
 
             {isOpen && createPortal(modalContent, document.body)}
