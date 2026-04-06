@@ -2,10 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Material Symbols icon class definitions.
-   The @fontsource-variable packages only ship @font-face rules.
-   The Google Fonts CDN also shipped these class definitions, so we
-   replicate them here to make ligature-based icons work offline. */
+/* Self-hosted Material Symbols — fonts are in public/fonts/ and bundled into the APK.
+   Using the exact font-family names that Google Fonts uses so the CSS classes match. */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: block;
+  src: url('/fonts/material-symbols-rounded.woff2') format('woff2');
+}
+
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;
