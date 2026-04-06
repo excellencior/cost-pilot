@@ -1,24 +1,50 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { Transaction, Category } from '../../entities/types';
 import { formatDate } from '../../entities/financial';
 import Dropdown from '../../shared/ui/Dropdown';
 import CalendarView from './CalendarView';
+import ConfirmModal from '../../shared/ui/ConfirmModal';
+
 
 interface HistoryProps {
     transactions: Transaction[];
     onTransactionClick: (t: Transaction) => void;
+    onDeleteTransactions: (ids: string[]) => void;
     currencySymbol: string;
     categories: Category[];
     viewMode: 'summary' | 'calendar';
     onViewModeChange: (mode: 'summary' | 'calendar') => void;
 }
 
-const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, currencySymbol, categories, viewMode, onViewModeChange }) => {
+const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, onDeleteTransactions, currencySymbol, categories, viewMode, onViewModeChange }) => {
     const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
     const [sortBy, setSortBy] = useState<'date' | 'amount' | 'title'>('date');
     const [calendarTypeFilter, setCalendarTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    const toggleSelectMode = useCallback(() => {
+        setIsSelectMode(prev => !prev);
+        setSelectedIds(new Set());
+    }, []);
+
+    const toggleId = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    }, []);
+
+    const handleConfirmDelete = useCallback(() => {
+        onDeleteTransactions(Array.from(selectedIds));
+        setSelectedIds(new Set());
+        setIsSelectMode(false);
+    }, [selectedIds, onDeleteTransactions]);
+
 
     const isFiltering = searchQuery.length > 0 || selectedCategoryId !== 'all';
 
@@ -103,15 +129,68 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
     // Specific Month Detail View
     if (selectedMonthKey && monthlySummaries[selectedMonthKey] && !isFiltering) {
         const data = monthlySummaries[selectedMonthKey];
+
+        // Group by date
+        const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
+        data.transactions.forEach(t => {
+            const [year, month, day] = t.date.split('-').map(Number);
+            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            if (!grouped[dateKey]) {
+                const d = new Date(year, month - 1, day);
+                grouped[dateKey] = { label: `${day} ${d.toLocaleString('default', { month: 'long' })} - ${year}`, transactions: [] };
+            }
+            grouped[dateKey].transactions.push(t);
+        });
+        const sortedDateKeys = Object.keys(grouped).sort().reverse();
+
+        // All transactions in this month for lookup
+        const monthTransactionMap = new Map(data.transactions.map(t => [t.id, t]));
+        const selectedTransactions = Array.from(selectedIds).map(id => monthTransactionMap.get(id)).filter(Boolean) as Transaction[];
+
         return (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-                <button
-                    onClick={() => setSelectedMonthKey(null)}
-                    className="flex items-center gap-2 text-stone-500 hover:text-primary-600 transition-colors group mb-2"
-                >
-                    <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
-                    <span className="font-bold text-sm uppercase tracking-wider">Back to Summary</span>
-                </button>
+                {/* Back + Select actions row */}
+                <div className="flex items-center justify-between">
+                    <button
+                        onClick={() => { setSelectedMonthKey(null); setIsSelectMode(false); setSelectedIds(new Set()); }}
+                        className="flex items-center gap-2 text-stone-500 hover:text-primary-600 transition-colors group"
+                    >
+                        <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        <span className="font-bold text-sm uppercase tracking-wider">Back to Summary</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        {isSelectMode ? (
+                            <>
+                                <button
+                                    onClick={() => selectedIds.size > 0 && setIsConfirmOpen(true)}
+                                    title={selectedIds.size > 0 ? `Delete ${selectedIds.size} selected` : 'Select items first'}
+                                    className={`size-8 rounded-lg flex items-center justify-center transition-all active:scale-95 ${selectedIds.size > 0
+                                        ? 'bg-rose-500 text-white hover:bg-rose-600'
+                                        : 'bg-stone-100 dark:bg-stone-800 text-stone-300 dark:text-stone-600 cursor-not-allowed'
+                                        }`}
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                </button>
+                                <button
+                                    onClick={toggleSelectMode}
+                                    title="Cancel selection"
+                                    className="size-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">close</span>
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={toggleSelectMode}
+                                title="Select transactions"
+                                className="size-8 rounded-lg flex items-center justify-center bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all active:scale-95"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">checklist</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-1">
                     <div>
@@ -131,66 +210,114 @@ const History: React.FC<HistoryProps> = ({ transactions, onTransactionClick, cur
                 </header>
 
                 <div className="flex flex-col gap-5">
-                    {(() => {
-                        // Group transactions by date using string splitting to avoid timezone issues
-                        const grouped: { [dateKey: string]: { label: string; transactions: Transaction[] } } = {};
-                        data.transactions.forEach(t => {
-                            const [year, month, day] = t.date.split('-').map(Number);
-                            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            if (!grouped[dateKey]) {
-                                const d = new Date(year, month - 1, day);
-                                grouped[dateKey] = {
-                                    label: `${day} ${d.toLocaleString('default', { month: 'long' })} - ${year}`,
-                                    transactions: []
-                                };
-                            }
-                            grouped[dateKey].transactions.push(t);
-                        });
-                        const sortedDateKeys = Object.keys(grouped).sort().reverse();
+                    {sortedDateKeys.map(dateKey => {
+                        const dayTransactions = grouped[dateKey].transactions;
+                        const dailyExpense = dayTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+                        const dailyIncome = dayTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+                        const dailyNet = dailyExpense - dailyIncome;
 
-                        return sortedDateKeys.map(dateKey => (
+                        return (
                             <div key={dateKey} className="space-y-2.5">
+                                {/* Date header with daily total */}
                                 <div className="flex items-center gap-3 px-1 pt-1">
                                     <span className="material-symbols-outlined text-base text-primary-500 dark:text-primary-400">calendar_today</span>
                                     <h3 className="text-xs font-extrabold text-stone-600 dark:text-stone-300 uppercase tracking-widest whitespace-nowrap">
                                         {grouped[dateKey].label}
                                     </h3>
-                                    <div className="flex-1 h-px bg-stone-200 dark:bg-stone-700"></div>
+                                    <div className="flex-1 h-px bg-stone-200 dark:bg-stone-700" />
+                                    <span className={`text-xs font-black tabular-nums whitespace-nowrap ${dailyNet > 0 ? 'text-rose-500 dark:text-rose-400' : dailyNet < 0 ? 'text-green-600 dark:text-green-400' : 'text-stone-400'}`}>
+                                        {dailyNet > 0 ? `-${currencySymbol}${dailyNet.toLocaleString()}` : dailyNet < 0 ? `+${currencySymbol}${Math.abs(dailyNet).toLocaleString()}` : `${currencySymbol}0`}
+                                    </span>
                                 </div>
+
                                 <div className="flex flex-col gap-2.5">
-                                    {grouped[dateKey].transactions.map((t) => (
-                                        <button
-                                            key={t.id}
-                                            onClick={() => onTransactionClick(t)}
-                                            className="flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-[#AF8F42]/10 group text-left active:scale-[0.99]"
-                                        >
-                                            <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income'
-                                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                                : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
-                                                }`}>
-                                                <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                                    {dayTransactions.map((t) => {
+                                        const isSelected = selectedIds.has(t.id);
+                                        return (
+                                            /* Relative wrapper for overlay checkbox */
+                                            <div key={t.id} className="relative">
+                                                <button
+                                                    onClick={() => isSelectMode ? toggleId(t.id) : onTransactionClick(t)}
+                                                    className={`w-full flex items-center gap-4 p-3 bg-brand-surface-light dark:bg-brand-surface-dark rounded-xl border transition-all duration-200 ease-out text-left active:scale-[0.99]
+                                                        ${isSelected
+                                                            ? 'border-primary-500 dark:border-primary-500 shadow-md shadow-primary-500/10'
+                                                            : 'border-[#AF8F42]/30 dark:border-[#AF8F42]/40 hover:border-[#AF8F42]/60 hover:shadow-xl hover:shadow-[#AF8F42]/10'
+                                                        }`}
+                                                >
+                                                    <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'}`}>
+                                                        <span className="material-symbols-outlined text-2xl">{t.category.icon}</span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
+                                                            <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
+                                                            <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
+                                                        {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
+                                                    </div>
+                                                </button>
+
+                                                {/* Absolute overlay checkbox — doesn't shift any layout */}
+                                                {isSelectMode && (
+                                                    <div className="absolute top-2 left-2 pointer-events-none">
+                                                        <div className={`size-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 shadow-sm
+                                                            ${isSelected
+                                                                ? 'bg-primary-600 border-primary-600'
+                                                                : 'bg-stone-900/40 dark:bg-stone-900/60 border-stone-400 dark:border-stone-500 backdrop-blur-sm'
+                                                            }`}
+                                                        >
+                                                            {isSelected && <span className="material-symbols-outlined text-white text-[13px]">check</span>}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-wider font-brand-accent">{t.category.name}</span>
-                                                    <span className="text-[8px] text-stone-300 dark:text-stone-700 font-black">•</span>
-                                                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-medium uppercase tracking-wider">{formatDate(t.date)}</span>
-                                                </div>
-                                            </div>
-                                            <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-stone-900 dark:text-white'}`}>
-                                                {t.type === 'income' ? '+' : '-'}{currencySymbol}{t.amount.toLocaleString()}
-                                            </div>
-                                        </button>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        ));
-                    })()}
+                        );
+                    })}
                 </div>
+
+                {/* Confirmation modal */}
+                <ConfirmModal
+                    isOpen={isConfirmOpen}
+                    onClose={() => setIsConfirmOpen(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Delete transactions?"
+                    message={`You're about to permanently remove ${selectedIds.size} transaction${selectedIds.size > 1 ? 's' : ''}.`}
+                    confirmLabel="Delete"
+                    cancelLabel="Cancel"
+                    variant="danger"
+                    extraContent={
+                        <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            {selectedTransactions.map(t => (
+                                <div key={t.id} className="flex items-center gap-2.5 p-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 text-left">
+                                    <div className={`size-7 rounded-md flex items-center justify-center shrink-0 ${t.type === 'expense' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'}`}>
+                                        <span className="material-symbols-outlined text-[16px]">{t.category.icon}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-stone-900 dark:text-white truncate">{t.title}</p>
+                                        <p className="text-[10px] text-stone-400 uppercase tracking-wide">{t.category.name}</p>
+                                    </div>
+                                    <span className={`text-xs font-bold tabular-nums ${t.type === 'expense' ? 'text-stone-700 dark:text-stone-300' : 'text-green-600 dark:text-green-400'}`}>
+                                        {t.type === 'expense' ? '-' : '+'}{currencySymbol}{t.amount.toLocaleString()}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    }
+                />
             </div>
         );
     }
+
+
+
+
 
     return (
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
