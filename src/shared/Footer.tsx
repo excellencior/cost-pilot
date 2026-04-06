@@ -17,7 +17,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </p>
                 <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mt-2">
                     <span className="material-symbols-outlined text-xs">verified_user</span>
-                    <span>Encrypted & Local</span>
+                    <span>Your data stays on your device</span>
                 </div>
                 <p className="text-[10px] text-stone-400 dark:text-stone-500 mt-2 font-medium tracking-widest uppercase italic">
                     Designed for visual clarity

@@ -656,7 +656,7 @@ const Settings: React.FC<SettingsProps> = ({
 				<div className="absolute bottom-0 right-0 w-64 h-64 bg-[#AF8F42]/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-[#AF8F42]/20 transition-all"></div>
 				<div className="relative z-10">
 					<div className="flex items-start justify-between mb-4">
-						<div className="flex items-center gap-3">
+						<div className="flex items-start gap-3">
 							<span className={`material-symbols-outlined text-2xl ${statusConfig.color} ${statusConfig.spin ? 'animate-spin' : ''}`}>
 								{statusConfig.icon}
 							</span>
@@ -689,15 +689,15 @@ const Settings: React.FC<SettingsProps> = ({
 
 					{isEnabled && (
 						<div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-							<div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-								<div className="flex items-center gap-3 text-sm flex-1">
-									<span className={`${statusConfig.color} font-medium`}>{statusConfig.text}</span>
-									{lastBackupTime && backupStatus !== 'syncing' && (
-										<span className="text-stone-400 text-xs truncate">• Last: {formatLastBackup(lastBackupTime)}</span>
-									)}
-								</div>
+							<div className="flex items-center gap-3 text-sm">
+								<span className={`${statusConfig.color} font-medium`}>{statusConfig.text}</span>
+								{lastBackupTime && backupStatus !== 'syncing' && (
+									<span className="text-stone-400 text-xs truncate">• Last: {formatLastBackup(lastBackupTime)}</span>
+								)}
+							</div>
 
-								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700">
+							<div className="flex items-stretch gap-2">
+								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700 min-w-0 flex-1 basis-0">
 									<button
 										onClick={onLocationClick}
 										className="p-2 bg-stone-700 hover:bg-[#AF8F42] hover:text-white rounded-md transition-colors text-stone-300 flex items-center justify-center shrink-0 disabled:opacity-50"
@@ -712,26 +712,26 @@ const Settings: React.FC<SettingsProps> = ({
 										</span>
 									</div>
 								</div>
+
+								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700 flex-1 basis-0">
+									<div className="p-2 bg-stone-700 rounded-md text-stone-300 flex items-center justify-center shrink-0">
+										<span className="material-symbols-outlined text-lg">schedule</span>
+									</div>
+									<div className="flex flex-col min-w-0">
+										<span className="text-[10px] uppercase text-stone-500 font-bold tracking-widest leading-none">Time</span>
+										<TimePicker
+											value={backupTime}
+											onChange={setBackupTime}
+										/>
+									</div>
+								</div>
 							</div>
 
-							{isEnabled && (
-								<div className="flex items-center justify-between gap-3 text-sm bg-stone-800/50 p-3 rounded-xl border border-stone-700/50">
-									<div className="flex items-center gap-3">
-										<span className="material-symbols-outlined text-stone-400">schedule</span>
-										<span className="text-stone-300 font-medium">Daily Backup Time</span>
-									</div>
-									<TimePicker
-										value={backupTime}
-										onChange={setBackupTime}
-									/>
-								</div>
-							)}
-
-							<div className="flex gap-2 mt-4">
+							<div className="flex gap-2">
 								<button
 									onClick={performManualBackup}
 									disabled={backupStatus === 'syncing' || !hasDirectoryAccess || transactions.length === 0}
-									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed flex-1"
+									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed flex-1 basis-0"
 									title={transactions.length === 0 ? "No data to backup" : ""}
 								>
 									<span className="material-symbols-outlined text-sm">save</span>
@@ -740,7 +740,7 @@ const Settings: React.FC<SettingsProps> = ({
 
 								<button
 									onClick={onRestoreClick}
-									className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-1"
+									className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-1 basis-0"
 								>
 									<span className="material-symbols-outlined text-sm">restore</span>
 									Restore

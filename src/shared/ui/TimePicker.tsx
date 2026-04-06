@@ -196,10 +196,9 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-stone-900 border border-stone-700 hover:border-[#AF8F42]/50 rounded-md px-3 py-1.5 text-white transition-colors group"
+                className="flex items-center text-white transition-colors group whitespace-nowrap"
             >
-                <span className="material-symbols-outlined text-sm text-[#AF8F42]">schedule</span>
-                <span className="font-mono text-sm tracking-wider">
+                <span className="font-mono text-xs tracking-wider whitespace-nowrap text-stone-300">
                     {dispHour12.toString().padStart(2, '0')}:{dispM} {dispPeriod}
                 </span>
             </button>
