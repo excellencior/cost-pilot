@@ -116,12 +116,12 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
             <div className="absolute inset-0" onClick={onClose} />
 
             <div
-                className="relative bg-stone-950 border-t border-stone-800 rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom-4 duration-200"
+                className="relative bg-stone-100 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom-4 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Drag handle */}
                 <div className="flex justify-center pt-2.5 pb-3">
-                    <div className="w-9 h-1 bg-stone-700 rounded-full" />
+                    <div className="w-9 h-1 bg-stone-300 dark:bg-stone-700 rounded-full" />
                 </div>
 
                 {/* Key grid */}
@@ -138,10 +138,10 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
                                         onClick={() => handleKey(key)}
                                         className={`h-12 rounded-xl text-lg font-bold transition-all active:scale-[0.93] flex items-center justify-center select-none
                                             ${isBackspace
-                                                ? 'bg-stone-800 text-rose-400 active:bg-rose-900/30'
+                                                ? 'bg-stone-200 dark:bg-stone-800 text-rose-500 dark:text-rose-400 active:bg-rose-100 dark:active:bg-rose-900/30'
                                                 : isOperator
-                                                    ? 'bg-stone-800 text-[#AF8F42] active:bg-stone-700'
-                                                    : 'bg-stone-800 text-white active:bg-stone-700'
+                                                    ? 'bg-stone-200 dark:bg-stone-800 text-[#AF8F42] active:bg-stone-300 dark:active:bg-stone-700'
+                                                    : 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-white active:bg-stone-300 dark:active:bg-stone-700'
                                             }`}
                                     >
                                         {isBackspace
@@ -159,7 +159,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
                         <button
                             type="button"
                             onClick={() => handleKey('apply')}
-                            className="h-12 rounded-xl bg-[#AF8F42] hover:bg-[#c9a84c] text-stone-900 text-xl font-black transition-all active:scale-[0.98] flex items-center justify-center select-none"
+                            className="h-12 rounded-xl bg-[#AF8F42] hover:bg-[#c9a84c] text-white dark:text-stone-900 text-xl font-black transition-all active:scale-[0.98] flex items-center justify-center select-none"
                         >
                             <span className="material-symbols-outlined text-[22px]">check</span>
                         </button>
@@ -168,7 +168,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
                         <button
                             type="button"
                             onClick={() => handleKey('=')}
-                            className="h-12 rounded-xl bg-stone-800 hover:bg-stone-700 text-[#AF8F42] text-xl font-black transition-all active:scale-[0.93] flex items-center justify-center select-none"
+                            className="h-12 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-[#AF8F42] text-xl font-black transition-all active:scale-[0.93] flex items-center justify-center select-none"
                         >
                             =
                         </button>

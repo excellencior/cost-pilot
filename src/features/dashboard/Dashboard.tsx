@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MonthlyData, Transaction } from '../../entities/types';
 import { formatDate } from '../../entities/financial';
 import WelcomeModal from './WelcomeModal';
+import BudgetModal from './BudgetModal';
 import { INSPIRATIONAL_QUOTES } from '../../quotes';
 import { Preferences } from '@capacitor/preferences';
+import { LocalRepository } from '../../infrastructure/local/local-repository';
+import { getCurrencySymbol } from '../../entities/financial';
 
 interface DashboardProps {
   monthlyData: MonthlyData[];
@@ -42,6 +45,16 @@ const Dashboard: React.FC<DashboardProps> = ({
   const quote = INSPIRATIONAL_QUOTES[quoteIndex];
 
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null);
+
+  const loadBudget = useCallback(() => {
+    setMonthlyBudget(LocalRepository.getMonthlyBudget(currentMonth.year, currentMonth.month));
+  }, [currentMonth.year, currentMonth.month]);
+
+  useEffect(() => {
+    loadBudget();
+  }, [loadBudget]);
 
   useEffect(() => {
     const checkVisited = async () => {
@@ -57,6 +70,15 @@ const Dashboard: React.FC<DashboardProps> = ({
     await Preferences.set({ key: 'hasVisitedDashboard', value: 'true' });
     setIsWelcomeModalOpen(false);
   };
+
+  const budgetQuoteIndex = useMemo(() => Math.floor(Math.random() * 5), [monthlyBudget]);
+  const budgetQuotes = [
+    "A budget is telling your money where to go.",
+    "Don't save what's left — spend what's left after saving.",
+    "The secret to freedom starts with a plan.",
+    "Every budget is a step closer to your dreams.",
+    "Small budgets lead to big futures.",
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -213,10 +235,50 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-stone-400">Monthly Budget</span>
-                <span className="font-bold text-white">Flexible</span>
-              </div>
+              <button
+                onClick={() => setIsBudgetModalOpen(true)}
+                className="w-full flex justify-between items-center text-sm group hover:bg-white/5 -mx-1 px-1 py-1.5 rounded-lg transition-all active:scale-[0.98]"
+              >
+                <span className="text-stone-400 group-hover:text-stone-300 transition-colors">Monthly Budget</span>
+                {monthlyBudget !== null ? (
+                  <span className="font-bold text-[#AF8F42] flex items-center gap-1.5">
+                    {currencySymbol}{monthlyBudget.toLocaleString()}
+                    <span className="material-symbols-outlined text-[14px] text-stone-500 group-hover:text-[#AF8F42] transition-colors">edit</span>
+                  </span>
+                ) : (
+                  <span className="font-bold text-stone-500 italic text-xs flex items-center gap-1.5">
+                    Tap to set
+                    <span className="material-symbols-outlined text-[14px] text-[#AF8F42] group-hover:translate-x-0.5 transition-transform">add_circle</span>
+                  </span>
+                )}
+              </button>
+              {monthlyBudget === null && (
+                <p className="text-[10px] italic text-stone-500 leading-relaxed px-0.5">
+                  "{budgetQuotes[budgetQuoteIndex]}"
+                </p>
+              )}
+              {monthlyBudget !== null && (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                    <span>Budget Used</span>
+                    <span>{Math.min(100, monthlyBudget > 0 ? Math.round((currentMonth.expense / monthlyBudget) * 100) : 0)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-stone-800 dark:bg-stone-900 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ${
+                        currentMonth.expense > monthlyBudget ? 'bg-rose-500' : currentMonth.expense > monthlyBudget * 0.8 ? 'bg-amber-500' : 'bg-[#AF8F42]'
+                      }`}
+                      style={{ width: `${Math.min(100, monthlyBudget > 0 ? (currentMonth.expense / monthlyBudget) * 100 : 0)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-[10px] text-stone-500">
+                    {currentMonth.expense > monthlyBudget
+                      ? <span className="text-rose-400 font-bold">Over budget by {currencySymbol}{(currentMonth.expense - monthlyBudget).toLocaleString()}</span>
+                      : <span>{currencySymbol}{(monthlyBudget - currentMonth.expense).toLocaleString()} remaining</span>
+                    }
+                  </p>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-stone-400">Total Transactions</span>
                 <span className="font-bold text-white">{transactions.length}</span>
@@ -225,6 +287,15 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </section>
       </div>
+
+      <BudgetModal
+        isOpen={isBudgetModalOpen}
+        onClose={() => setIsBudgetModalOpen(false)}
+        currentMonth={currentMonth.month}
+        currentYear={currentMonth.year}
+        currencySymbol={currencySymbol}
+        onBudgetChange={loadBudget}
+      />
     </div>
   );
 };

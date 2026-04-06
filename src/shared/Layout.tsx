@@ -175,7 +175,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
 
                     {/* Main Content Area */}
                     <main className="flex-1 flex flex-col min-w-0 relative h-full">
-                        <header className="flex lg:hidden items-center justify-between py-2 px-4 bg-brand-surface-light/80 dark:bg-brand-surface-dark/80 backdrop-blur-md border-b border-[#AF8F42]/30 dark:border-[#AF8F42]/40 sticky top-0 z-30 transition-colors" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
+                        <header className="flex lg:hidden items-center justify-between py-2 px-4 mx-3 mt-2 bg-brand-surface-light/70 dark:bg-brand-surface-dark/70 backdrop-blur-xl border border-[#AF8F42]/30 dark:border-[#AF8F42]/40 rounded-2xl fixed top-0 left-0 right-0 sm:right-auto z-30 transition-colors shadow-lg shadow-black/5 dark:shadow-black/20" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))', marginTop: 'calc(0.5rem + env(safe-area-inset-top))' }}>
                             <div className="flex items-center gap-3">
                                 {/* Brand show only on mobile (when sidebar is hidden) */}
                                 <div className="flex sm:hidden items-center gap-2">
@@ -212,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         </header>
 
                         <div 
-                            className={`flex-1 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}
+                            className={`flex-1 pt-20 sm:pt-20 lg:pt-0 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}
                             onScroll={(e) => {
                                 const currentScrollY = e.currentTarget.scrollTop;
                                 if (currentScrollY > lastScrollY.current + 10) {
@@ -238,7 +238,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         )}
 
                         {/* Bottom Nav (Mobile Only) */}
-                        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-brand-surface-light dark:bg-brand-surface-dark border-t border-stone-200/60 dark:border-stone-800/60 z-30 flex items-center justify-around px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] transition-colors" style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+                        <nav className="sm:hidden fixed bottom-2 left-3 right-3 bg-brand-surface-light/90 dark:bg-brand-surface-dark/90 backdrop-blur-md border border-stone-200/60 dark:border-stone-800/60 z-30 flex items-center justify-around px-4 rounded-2xl shadow-lg shadow-black/10 dark:shadow-black/30 transition-colors" style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
                             {navItems.map((item) => (
                                 <button
                                     key={item.view}
