@@ -40,6 +40,13 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
     const [activeBudget, setActiveBudget] = useState<number | null>(null);
     const [isKeypadOpen, setIsKeypadOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<BudgetPlan | null>(null);
+    const [cursorVisible, setCursorVisible] = useState(true);
+
+    useEffect(() => {
+        if (!isKeypadOpen) { setCursorVisible(true); return; }
+        const id = setInterval(() => setCursorVisible(v => !v), 530);
+        return () => clearInterval(id);
+    }, [isKeypadOpen]);
 
     const quote = useMemo(() => BUDGET_QUOTES[Math.floor(Math.random() * BUDGET_QUOTES.length)], [isOpen]);
 
@@ -286,23 +293,25 @@ const BudgetModal: React.FC<BudgetModalProps> = ({
                                     value={newName}
                                     onChange={(e) => setNewName(e.target.value)}
                                     placeholder="e.g. Tight Month, Standard..."
-                                    className="input-field text-sm"
+                                    className="input-field text-sm text-right"
                                     autoFocus
                                 />
                             </div>
 
                             <div>
-                                <label className="label-text">Budget Amount ({currencySymbol})</label>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsKeypadOpen(true)}
-                                    className="input-field flex items-center justify-between text-sm cursor-pointer hover:border-primary-500 dark:hover:border-primary-500"
+                                <label className="label-text">Amount</label>
+                                <div
+                                    role="button"
+                                    tabIndex={-1}
+                                    onClick={() => { setAmountDisplay(newAmount); setIsKeypadOpen(true); }}
+                                    className={`input-field font-mono text-lg cursor-pointer select-none min-h-[40px] flex items-center overflow-hidden text-right justify-end ${!isKeypadOpen && !newAmount ? 'text-stone-400 font-normal' : ''}`}
                                 >
-                                    <span className={`${newAmount ? 'text-stone-900 dark:text-white font-bold' : 'text-stone-400 font-normal'}`}>
-                                        {amountDisplay || newAmount || 'Tap to enter amount'}
-                                    </span>
-                                    <span className="material-symbols-outlined text-[18px] text-stone-400">calculate</span>
-                                </button>
+                                    {isKeypadOpen
+                                        ? <span className="whitespace-nowrap">{amountDisplay}<span className={cursorVisible ? 'opacity-100' : 'opacity-0'}>|</span></span>
+                                        : (newAmount || <span className="text-stone-400 font-normal">0.00</span>)
+                                    }
+                                </div>
+                                <input type="hidden" value={newAmount} />
                             </div>
 
                             <div className="flex gap-2 pt-2">

@@ -34,18 +34,25 @@ const ROWS = [
 
 const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, onExprChange, onClose }) => {
     const [expr, setExpr] = useState('');
+    const [displayExpr, setDisplayExpr] = useState('');
 
     useEffect(() => {
         if (isOpen) {
             const init = value || '';
             setExpr(init);
+            setDisplayExpr(init);
             onExprChange?.(init);
         }
     }, [isOpen, value]);
 
-    const updateExpr = (next: string) => {
-        setExpr(next);
-        onExprChange?.(next);
+    const toDisplay = (evalExpr: string) =>
+        evalExpr.replace(/\//g, '÷').replace(/\*/g, '×').replace(/-/g, '−');
+
+    const updateExpr = (nextEval: string) => {
+        setExpr(nextEval);
+        const disp = toDisplay(nextEval);
+        setDisplayExpr(disp);
+        onExprChange?.(disp);
     };
 
     const preview = useMemo(() => {
@@ -57,11 +64,11 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
     const handleKey = (key: string) => {
         switch (key) {
             case '⌫':
+                // Remove last char from eval expr (operators are single char)
                 updateExpr(expr.slice(0, -1));
                 break;
 
             case '=': {
-                // Evaluate and show result, but stay open for further editing
                 if (hasOperator(expr)) {
                     const result = safeEval(expr);
                     if (result !== null) updateExpr(result.toString());
@@ -70,7 +77,6 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
             }
 
             case 'apply': {
-                // Evaluate and close
                 if (hasOperator(expr)) {
                     const result = safeEval(expr);
                     if (result !== null) {
@@ -84,7 +90,6 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({ isOpen, value, onChange, 
                 onClose();
                 break;
             }
-
 
             case '÷':
             case '×':
