@@ -1,14 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
+
+export interface TimePickerHandle {
+    open: () => void;
+}
 
 interface TimePickerProps {
     value: string; // HH:mm format (24h)
     onChange: (time: string) => void;
 }
 
-const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
+const TimePicker = forwardRef<TimePickerHandle, TimePickerProps>(({ value, onChange }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [mode, setMode] = useState<'hours' | 'minutes'>('hours');
+
+    useImperativeHandle(ref, () => ({
+        open: () => setIsOpen(true),
+    }));
 
     // Parse Initial Time
     const [hour, setHour] = useState(12);
@@ -205,6 +213,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
             {createPortal(modalContent, document.body)}
         </>
     );
-};
+});
 
 export default TimePicker;

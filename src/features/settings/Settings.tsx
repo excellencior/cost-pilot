@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Transaction, View } from '../../entities/types';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -9,7 +9,7 @@ import { LocalRepository } from '../../infrastructure/local/local-repository';
 import { formatDate } from '../../entities/financial';
 import Dropdown from '../../shared/ui/Dropdown';
 import DatePicker from '../../shared/ui/DatePicker';
-import TimePicker from '../../shared/ui/TimePicker';
+import TimePicker, { TimePickerHandle } from '../../shared/ui/TimePicker';
 import ConfirmModal from '../../shared/ui/ConfirmModal';
 import { useLocalBackup } from '../../application/contexts/LocalBackupContext';
 import { toast } from 'react-hot-toast';
@@ -40,6 +40,7 @@ const Settings: React.FC<SettingsProps> = ({
 	const { isEnabled, backupTime, enableBackup, disableBackup, setBackupTime, performManualBackup, restoreFromBackup, hasDirectoryAccess, requestDirectoryAccess, directoryName, backupStatus, statusMessage, lastBackupTime, getMostRecentBackup, parseBackupFile } = backupService;
 
 	const [startDate, setStartDate] = useState('');
+	const timePickerRef = useRef<TimePickerHandle>(null);
 	const [endDate, setEndDate] = useState('');
 
 	// Restore on toggle state
@@ -81,7 +82,7 @@ const Settings: React.FC<SettingsProps> = ({
 			case 'error':
 				return { text: statusMessage || 'Backup failed', color: 'text-rose-500', icon: 'error', spin: false };
 			default:
-				return { text: isEnabled ? 'Auto backup is on' : 'Auto backup is off', color: 'text-stone-400', icon: isEnabled ? 'folder_special' : 'folder_off', spin: false };
+				return { text: isEnabled ? 'Auto backup is on' : 'Auto backup is off', color: isEnabled ? 'text-green-500' : 'text-rose-400', icon: isEnabled ? 'folder_special' : 'folder_off', spin: false };
 		}
 	};
 
@@ -655,29 +656,14 @@ const Settings: React.FC<SettingsProps> = ({
 			<div className="card-section p-6 bg-stone-900 text-white dark:bg-brand-surface-dark relative overflow-hidden group">
 				<div className="absolute bottom-0 right-0 w-64 h-64 bg-[#AF8F42]/10 rounded-full -mb-32 -mr-32 blur-3xl group-hover:bg-[#AF8F42]/20 transition-all"></div>
 				<div className="relative z-10">
-					<div className="flex items-start justify-between mb-4">
-						<div className="flex items-start gap-3">
-							<span className={`material-symbols-outlined text-2xl ${statusConfig.color} ${statusConfig.spin ? 'animate-spin' : ''}`}>
-								{statusConfig.icon}
-							</span>
-							<div>
-								<h3 className="text-xl font-bold">Rolling Local Backup</h3>
-								<p className="text-stone-400 text-xs mt-1">Daily backups, 30 days retention.</p>
-							</div>
+					<div className="flex items-start gap-3 mb-4">
+						<span className={`material-symbols-outlined text-2xl ${statusConfig.color} ${statusConfig.spin ? 'animate-spin' : ''}`}>
+							{statusConfig.icon}
+						</span>
+						<div>
+							<h3 className="text-base sm:text-xl font-bold">Rolling Local Backup</h3>
+							<p className="text-stone-400 text-xs mt-1">Daily backups, 30 days retention.</p>
 						</div>
-
-						{/* Toggle Switch */}
-						<button
-							onClick={handleToggleBackup}
-							className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none ${isEnabled ? 'bg-[#AF8F42]' : 'bg-stone-600'
-								}`}
-							title={isEnabled ? 'Disable auto backup' : 'Enable auto backup'}
-						>
-							<span
-								className={`inline-block size-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${isEnabled ? 'translate-x-6' : 'translate-x-1'
-									}`}
-							/>
-						</button>
 					</div>
 
 					{!Capacitor.isNativePlatform() && !(window as any).showDirectoryPicker && (
@@ -687,51 +673,72 @@ const Settings: React.FC<SettingsProps> = ({
 						</div>
 					)}
 
-					{isEnabled && (
-						<div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-							<div className="flex items-center gap-3 text-sm">
-								<span className={`${statusConfig.color} font-medium`}>{statusConfig.text}</span>
-								{lastBackupTime && backupStatus !== 'syncing' && (
-									<span className="text-stone-400 text-xs truncate">• Last: {formatLastBackup(lastBackupTime)}</span>
-								)}
-							</div>
+					<div className="flex items-center justify-between">
+						<span className={`${statusConfig.color} font-bold text-sm`}>{statusConfig.text}</span>
+						<div className="flex items-center gap-3">
+							{isEnabled && lastBackupTime && backupStatus !== 'syncing' && (
+								<span className="text-stone-400 text-xs truncate">Last: {formatLastBackup(lastBackupTime)}</span>
+							)}
+							<button
+								onClick={handleToggleBackup}
+								className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none ${isEnabled ? 'bg-[#AF8F42]' : 'bg-stone-600'
+									}`}
+								title={isEnabled ? 'Disable auto backup' : 'Enable auto backup'}
+							>
+								<span
+									className={`inline-block size-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${isEnabled ? 'translate-x-6' : 'translate-x-1'
+										}`}
+								/>
+							</button>
+						</div>
+					</div>
 
-							<div className="flex items-stretch gap-2">
-								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700 min-w-0 flex-1 basis-0">
-									<button
-										onClick={onLocationClick}
-										className="p-2 bg-stone-700 hover:bg-[#AF8F42] hover:text-white rounded-md transition-colors text-stone-300 flex items-center justify-center shrink-0 disabled:opacity-50"
-										title="Change Backup Location"
-									>
+					{isEnabled && (
+						<div className="space-y-4 mt-4 animate-in fade-in slide-in-from-top-4 duration-300">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+								<button
+									onClick={onLocationClick}
+									className="flex items-center gap-2.5 bg-stone-800/80 rounded-lg p-2.5 border border-stone-700 min-w-0 text-left"
+									title="Change Backup Location"
+								>
+									<div className="p-1.5 bg-stone-700 rounded-md text-stone-300 flex items-center justify-center shrink-0">
 										<span className="material-symbols-outlined text-lg">folder_open</span>
-									</button>
+									</div>
 									<div className="flex flex-col min-w-0 flex-1">
 										<span className="text-[10px] uppercase text-stone-500 font-bold tracking-widest leading-none">Location</span>
-										<span className="text-xs text-stone-300 truncate font-mono">
-											{directoryName || 'Not selected'}
+										<span className="text-xs text-stone-300 truncate font-mono mt-0.5">
+											{directoryName || 'Not set'}
 										</span>
 									</div>
-								</div>
+								</button>
 
-								<div className="flex items-center gap-2 bg-stone-800/80 rounded-lg p-1 pr-3 border border-stone-700 flex-1 basis-0">
-									<div className="p-2 bg-stone-700 rounded-md text-stone-300 flex items-center justify-center shrink-0">
+								<div
+									onClick={() => timePickerRef.current?.open()}
+									className="flex items-center gap-2.5 bg-stone-800/80 rounded-lg p-2.5 border border-stone-700 min-w-0 text-left cursor-pointer"
+									role="button"
+									title="Change Backup Time"
+								>
+									<div className="p-1.5 bg-stone-700 rounded-md text-stone-300 flex items-center justify-center shrink-0">
 										<span className="material-symbols-outlined text-lg">schedule</span>
 									</div>
-									<div className="flex flex-col min-w-0">
+									<div className="flex flex-col min-w-0 flex-1">
 										<span className="text-[10px] uppercase text-stone-500 font-bold tracking-widest leading-none">Time</span>
-										<TimePicker
-											value={backupTime}
-											onChange={setBackupTime}
-										/>
+										<div className="mt-0.5">
+											<TimePicker
+												ref={timePickerRef}
+												value={backupTime}
+												onChange={setBackupTime}
+											/>
+										</div>
 									</div>
 								</div>
 							</div>
 
-							<div className="flex gap-2">
+							<div className="grid grid-cols-2 gap-2">
 								<button
 									onClick={performManualBackup}
 									disabled={backupStatus === 'syncing' || !hasDirectoryAccess || transactions.length === 0}
-									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed flex-1 basis-0"
+									className="bg-[#AF8F42] hover:bg-[#917536] disabled:bg-[#AF8F42]/50 text-white py-2.5 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed"
 									title={transactions.length === 0 ? "No data to backup" : ""}
 								>
 									<span className="material-symbols-outlined text-sm">save</span>
@@ -740,7 +747,7 @@ const Settings: React.FC<SettingsProps> = ({
 
 								<button
 									onClick={onRestoreClick}
-									className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-1 basis-0"
+									className="bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5"
 								>
 									<span className="material-symbols-outlined text-sm">restore</span>
 									Restore
