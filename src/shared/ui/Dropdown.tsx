@@ -12,6 +12,7 @@ interface DropdownProps {
     onChange: (id: string) => void;
     label?: string;
     placeholder?: string;
+    buttonText?: string;
     className?: string;
 }
 
@@ -21,6 +22,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     onChange,
     label,
     placeholder = 'Select an option',
+    buttonText,
     className = ''
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +52,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     {selectedOption?.icon && (
                         <span className="material-symbols-outlined text-[15px] text-stone-500 dark:text-stone-400">{selectedOption.icon}</span>
                     )}
-                    {selectedOption ? selectedOption.name : label}
+                    {selectedOption ? (buttonText || selectedOption.name) : placeholder}
                 </span>
                 <span className={`material-symbols-outlined text-stone-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
                     expand_more

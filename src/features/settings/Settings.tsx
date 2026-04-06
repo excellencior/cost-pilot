@@ -23,9 +23,10 @@ interface SettingsProps {
 }
 
 const CURRENCIES = [
-	{ code: 'USD', name: 'US Dollar', symbol: '$' },
-	{ code: 'BDT', name: 'Bangladeshi Taka', symbol: '৳' },
-	{ code: 'EUR', name: 'Euro', symbol: '€' },
+	{ code: 'USD', name: 'US Dollar', symbol: '$', icon: 'attach_money' },
+	{ code: 'BDT', name: 'Bangladeshi Taka', symbol: '৳', icon: 'payments' },
+	{ code: 'INR', name: 'Indian Rupee', symbol: '₹', icon: 'currency_rupee' },
+	{ code: 'EUR', name: 'Euro', symbol: '€', icon: 'euro' },
 ];
 
 const Settings: React.FC<SettingsProps> = ({
@@ -86,16 +87,73 @@ const Settings: React.FC<SettingsProps> = ({
 
 	const statusConfig = getStatusConfig();
 
+	const loadLogoAsDataUrl = (): Promise<string> => {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.onload = () => {
+				const canvas = document.createElement('canvas');
+				canvas.width = img.naturalWidth;
+				canvas.height = img.naturalHeight;
+				const ctx = canvas.getContext('2d');
+				if (!ctx) { reject('No canvas context'); return; }
+				ctx.drawImage(img, 0, 0);
+				resolve(canvas.toDataURL('image/png'));
+			};
+			img.onerror = () => reject('Logo load failed');
+			img.src = '/costpilot_logo.svg';
+		});
+	};
+
 	const handleExportPDF = async () => {
 		try {
 			const doc = new jsPDF();
 			const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '$';
 			const currencyCode = currency;
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
 
-			doc.setFontSize(22);
-			doc.setTextColor(28, 25, 23); // stone-900
-			doc.text('CostPilot Financial Report', 14, 22);
+			// Brand colors
+			const gold: [number, number, number] = [175, 143, 66];   // #AF8F42
+			const darkGold: [number, number, number] = [145, 117, 54]; // #917536
+			const stone900: [number, number, number] = [28, 25, 23];
+			const stone500: [number, number, number] = [120, 113, 108];
+			const expenseRed: [number, number, number] = [225, 29, 72];
+			const incomeGreen: [number, number, number] = [5, 150, 105];
 
+			// --- Header with logo ---
+			let headerY = 14;
+			try {
+				const logoDataUrl = await loadLogoAsDataUrl();
+				doc.addImage(logoDataUrl, 'PNG', 14, 10, 12, 14);
+				headerY = 12;
+			} catch { /* skip logo if it fails */ }
+
+			// Title
+			doc.setFontSize(20);
+			doc.setTextColor(...stone900);
+			doc.setFont('helvetica', 'bold');
+			doc.text('CostPilot', 30, headerY + 5);
+
+			doc.setFontSize(10);
+			doc.setTextColor(...stone500);
+			doc.setFont('helvetica', 'normal');
+			doc.text('Financial Report', 30, headerY + 11);
+
+			// Generated date
+			doc.setFontSize(8);
+			doc.setTextColor(...stone500);
+			const genDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+			doc.text(`Generated: ${genDate}`, pageWidth - 14, headerY + 5, { align: 'right' });
+
+			// Gold accent line
+			doc.setDrawColor(...gold);
+			doc.setLineWidth(0.8);
+			doc.line(14, 28, pageWidth - 14, 28);
+
+			let currentY = 34;
+
+			// --- Date range ---
 			let filteredTransactions = transactions;
 			if (startDate || endDate) {
 				filteredTransactions = transactions.filter(t => {
@@ -104,9 +162,10 @@ const Settings: React.FC<SettingsProps> = ({
 					const beforeEnd = !endDate || tDate <= endDate;
 					return afterStart && beforeEnd;
 				});
-				doc.setFontSize(10);
-				doc.setTextColor(100, 116, 139);
-				doc.text(`Range: ${startDate || 'All Time'} to ${endDate || 'Present'}`, 14, 30);
+				doc.setFontSize(9);
+				doc.setTextColor(...stone500);
+				doc.text(`Period: ${startDate || 'All Time'} to ${endDate || 'Present'}`, 14, currentY);
+				currentY += 8;
 			}
 
 			if (filteredTransactions.length === 0) {
@@ -118,53 +177,121 @@ const Settings: React.FC<SettingsProps> = ({
 			const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
 			const balance = income - expense;
 
+			// --- Summary table ---
 			autoTable(doc, {
-				startY: 40,
-				head: [['Summary', 'Amount']],
+				startY: currentY,
+				head: [['Summary', `Amount (${currencyCode})`]],
 				body: [
 					['Total Income', `${currencyCode} ${income.toLocaleString()}`],
 					['Total Expense', `${currencyCode} ${expense.toLocaleString()}`],
 					['Net Balance', `${currencyCode} ${balance.toLocaleString()}`]
 				],
-				theme: 'striped',
-				headStyles: { fillColor: [79, 70, 229] },
+				theme: 'plain',
+				headStyles: {
+					fillColor: gold,
+					textColor: [255, 255, 255],
+					fontStyle: 'bold',
+					fontSize: 10,
+				},
+				bodyStyles: {
+					fontSize: 10,
+					textColor: stone900,
+				},
+				alternateRowStyles: {
+					fillColor: [250, 248, 243], // warm cream
+				},
 				columnStyles: {
 					1: { halign: 'right', fontStyle: 'bold' }
+				},
+				styles: {
+					cellPadding: 4,
+					lineColor: [230, 225, 215],
+					lineWidth: 0.3,
+				},
+				didParseCell: function (data) {
+					if (data.section === 'body' && data.column.index === 1) {
+						const row = data.row.index;
+						if (row === 0) data.cell.styles.textColor = incomeGreen;
+						if (row === 1) data.cell.styles.textColor = expenseRed;
+						if (row === 2) data.cell.styles.textColor = balance >= 0 ? incomeGreen : expenseRed;
+					}
 				}
 			});
 
+			// --- Transactions table ---
 			const tableData = filteredTransactions.map(t => {
 				const categoryName = t.category && typeof t.category === 'object' ? t.category.name : (t.category || '-');
 				return [
 					formatDate(t.date),
 					t.title || 'Untitled',
 					categoryName,
-					t.type === 'expense' ? `-${t.amount.toLocaleString()}` : `+${t.amount.toLocaleString()}`
+					t.type === 'expense' ? `-${currencyCode} ${t.amount.toLocaleString()}` : `+${currencyCode} ${t.amount.toLocaleString()}`
 				];
 			});
 
+			// Section heading
+			const txStartY = (doc as any).lastAutoTable.finalY + 12;
+			doc.setFontSize(11);
+			doc.setTextColor(...stone900);
+			doc.setFont('helvetica', 'bold');
+			doc.text('Transaction Details', 14, txStartY);
+			doc.setDrawColor(...gold);
+			doc.setLineWidth(0.4);
+			doc.line(14, txStartY + 2, 60, txStartY + 2);
+
 			autoTable(doc, {
-				startY: (doc as any).lastAutoTable.finalY + 15,
-				head: [['Date', 'Description', 'Category', `Amount (${currencyCode})`]],
+				startY: txStartY + 6,
+				head: [['Date', 'Description', 'Category', `Amount`]],
 				body: tableData,
 				theme: 'grid',
-				headStyles: { fillColor: [41, 37, 36] }, // stone-800
-				styles: { fontSize: 9 },
+				headStyles: {
+					fillColor: darkGold,
+					textColor: [255, 255, 255],
+					fontStyle: 'bold',
+					fontSize: 10,
+				},
+				bodyStyles: {
+					fontSize: 10,
+					textColor: stone900,
+				},
+				alternateRowStyles: {
+					fillColor: [252, 250, 246],
+				},
+				styles: {
+					cellPadding: 4,
+					lineColor: [230, 225, 215],
+					lineWidth: 0.2,
+				},
 				columnStyles: {
-					0: { cellWidth: 30 },
-					3: { halign: 'right', cellWidth: 35 }
+					0: { cellWidth: 36 },
+					3: { halign: 'right', cellWidth: 38, fontStyle: 'bold' }
 				},
 				didParseCell: function (data) {
 					if (data.section === 'body' && data.column.index === 3) {
 						const val = data.cell.text[0];
 						if (val.startsWith('-')) {
-							data.cell.styles.textColor = [225, 29, 72];
+							data.cell.styles.textColor = expenseRed;
 						} else if (val.startsWith('+')) {
-							data.cell.styles.textColor = [5, 150, 105];
+							data.cell.styles.textColor = incomeGreen;
 						}
 					}
 				}
 			});
+
+			// --- Footer on every page ---
+			const totalPages = (doc as any).internal.getNumberOfPages();
+			for (let i = 1; i <= totalPages; i++) {
+				doc.setPage(i);
+				// Gold footer line
+				doc.setDrawColor(...gold);
+				doc.setLineWidth(0.4);
+				doc.line(14, pageHeight - 14, pageWidth - 14, pageHeight - 14);
+				// Footer text
+				doc.setFontSize(7);
+				doc.setTextColor(...stone500);
+				doc.text('CostPilot - Personal Finance Manager', 14, pageHeight - 10);
+				doc.text(`Page ${i} of ${totalPages}`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+			}
 
 			if (Capacitor.isNativePlatform()) {
 				const pdfBase64 = doc.output('datauristring').split(',')[1];
@@ -471,23 +598,27 @@ const Settings: React.FC<SettingsProps> = ({
 				</button>
 
 				{/* Preferences - Currency */}
-				<div className="card-section p-4 flex flex-col justify-between relative group">
-					<div>
-						<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Primary Currency</p>
-						<div className="flex items-baseline gap-2">
-							<p className="text-2xl font-bold text-stone-900 dark:text-white">{currency}</p>
-							<p className="text-xs font-bold text-stone-400">{CURRENCIES.find(c => c.code === currency)?.name}</p>
+				<div className="card-section p-4 relative group">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Primary Currency</p>
+							<div className="flex items-baseline gap-2">
+								<p className="text-2xl font-bold text-stone-900 dark:text-white">{currency}</p>
+								<p className="text-xs font-bold text-stone-400">{CURRENCIES.find(c => c.code === currency)?.name}</p>
+							</div>
 						</div>
-						<p className="text-xs text-stone-500 mt-2">All financial metrics will use this symbol.</p>
-					</div>
 
-					<Dropdown
-						label="Select Currency"
-						options={CURRENCIES.map(c => ({ id: c.code, name: `${c.code} - ${c.name}` }))}
-						value={currency}
-						onChange={setCurrency}
-						className="mt-4"
-					/>
+						<Dropdown
+							label=""
+							placeholder="Select"
+							buttonText="Change"
+							options={CURRENCIES.map(c => ({ id: c.code, name: `${c.symbol} ${c.code}` }))}
+							value={currency}
+							onChange={setCurrency}
+							className="w-auto min-w-[80px]"
+						/>
+					</div>
+					<p className="text-xs text-stone-500 mt-2">All financial metrics will use this symbol.</p>
 				</div>
 
 				{/* Data Exports */}
@@ -510,11 +641,11 @@ const Settings: React.FC<SettingsProps> = ({
 					<div className="flex gap-2">
 						<button onClick={handleExportPDF} className="btn-secondary flex-1 text-xs py-2 flex items-center justify-center gap-2">
 							<span className="material-symbols-outlined text-sm">picture_as_pdf</span>
-							Export PDF
+							PDF
 						</button>
 						<button onClick={handleExportCSV} className="btn-secondary flex-1 text-xs py-2 flex items-center justify-center gap-2">
 							<span className="material-symbols-outlined text-sm">description</span>
-							Export CSV
+							CSV
 						</button>
 					</div>
 				</div>
