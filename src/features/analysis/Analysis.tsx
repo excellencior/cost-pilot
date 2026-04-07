@@ -223,7 +223,7 @@ const Analysis: React.FC<AnalysisProps> = ({ transactions, categories, currency 
 
           <div className="h-64 relative flex items-center justify-center">
             {hasData ? (
-              <div className="outline-none" tabIndex={-1}>
+              <div className="outline-none w-full h-full" tabIndex={-1}>
                 <ResponsiveContainer width="100%" height={256}>
                   {activeTab === 'pie' ? (
                     <PieChart>

@@ -95,7 +95,7 @@ const TimePicker = forwardRef<TimePickerHandle, TimePickerProps>(({ value, onCha
     const handAngle = mode === 'hours' ? hour * 30 : minute * 6;
 
     const modalContent = isOpen ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
             <div
                 className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
                 onClick={() => setIsOpen(false)}
