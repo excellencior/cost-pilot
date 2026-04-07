@@ -42,28 +42,28 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 onClick={onClose}
             />
 
-            <div className="relative w-full max-w-xs bg-brand-surface-light dark:bg-brand-surface-dark rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200">
-                <div className="space-y-4 text-center">
-                    <div className="mx-auto size-14 rounded-full bg-stone-50 dark:bg-stone-800 flex items-center justify-center">
-                        <span className={`material-symbols-outlined text-3xl ${variant === 'danger' ? 'text-rose-500' : 'text-primary-600'}`}>
+            <div className="relative w-full max-w-xs bg-brand-surface-light dark:bg-brand-surface-dark rounded-2xl shadow-2xl p-4 animate-in zoom-in-95 duration-200">
+                <div className="space-y-2.5 text-center">
+                    <div className="mx-auto size-10 rounded-full bg-stone-50 dark:bg-stone-800 flex items-center justify-center">
+                        <span className={`material-symbols-outlined text-xl ${variant === 'danger' ? 'text-rose-500' : 'text-primary-600'}`}>
                             {variant === 'danger' ? 'warning' : 'info'}
                         </span>
                     </div>
 
-                    <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-stone-900 dark:text-white">{title}</h3>
-                        <p className="text-sm text-stone-500 dark:text-stone-400">{message}</p>
+                    <div className="space-y-0.5">
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-white">{title}</h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400">{message}</p>
                         {extraContent && (
-                            <div className="pt-2">
+                            <div className="pt-1.5">
                                 {extraContent}
                             </div>
                         )}
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex gap-2 pt-1">
                         <button
                             onClick={onClose}
-                            className="flex-1 py-2.5 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all active:scale-95"
+                            className="flex-1 py-2 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all active:scale-95"
                         >
                             {cancelLabel}
                         </button>
@@ -72,7 +72,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                                 onConfirm();
                                 onClose();
                             }}
-                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold text-white transition-all active:scale-95 shadow-lg ${variant === 'danger'
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95 shadow-lg ${variant === 'danger'
                                 ? 'bg-rose-500 shadow-rose-500/20 hover:bg-rose-600'
                                 : 'bg-primary-600 shadow-primary-500/20 hover:bg-primary-700'
                                 }`}

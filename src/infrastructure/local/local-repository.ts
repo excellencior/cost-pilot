@@ -4,6 +4,8 @@ const STORAGE_KEY = 'costpilot_local_db';
 const CATEGORY_KEY = 'costpilot_local_categories';
 const SYNC_META_KEY = 'costpilot_sync_meta';
 const SETTINGS_KEY = 'costpilot_settings';
+const BUDGET_PLANS_KEY = 'costpilot_budget_plans';
+const MONTHLY_BUDGETS_KEY = 'costpilot_monthly_budgets';
 
 export interface LocalExpense extends Transaction {
     user_id: string | null;
@@ -222,5 +224,42 @@ export const LocalRepository = {
         const current = LocalRepository.getSettings();
         const next = { ...current, ...updates };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+    },
+
+    // --- BUDGETS ---
+    getBudgetPlans: (): { id: string; name: string; amount: number }[] => {
+        const data = getRawData(BUDGET_PLANS_KEY);
+        return Object.values(data);
+    },
+
+    upsertBudgetPlan: (plan: { id: string; name: string; amount: number }) => {
+        const data = getRawData(BUDGET_PLANS_KEY);
+        data[plan.id] = plan;
+        saveRawData(BUDGET_PLANS_KEY, data);
+        return plan;
+    },
+
+    getMonthlyBudget: (year: number, month: string): number | null => {
+        // month comes from `toLocaleString('default', { month: 'long' })` e.g. "January" or we can just use "YYYY-Month"
+        const key = `${year}-${month}`;
+        const data = getRawData(MONTHLY_BUDGETS_KEY);
+        return data[key] || null;
+    },
+
+    setMonthlyBudget: (year: number, month: string, amount: number | null) => {
+        const key = `${year}-${month}`;
+        const data = getRawData(MONTHLY_BUDGETS_KEY);
+        if (amount === null) {
+            delete data[key];
+        } else {
+            data[key] = amount;
+        }
+        saveRawData(MONTHLY_BUDGETS_KEY, data);
+    },
+
+    deleteBudgetPlan: (id: string) => {
+        const data = getRawData(BUDGET_PLANS_KEY);
+        delete data[id];
+        saveRawData(BUDGET_PLANS_KEY, data);
     }
 };

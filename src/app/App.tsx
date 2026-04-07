@@ -253,6 +253,21 @@ const AppContent: React.FC = () => {
         });
     };
 
+    const handleDeleteTransactions = (ids: string[]) => {
+        ids.forEach(id => LocalRepository.deleteExpense(id));
+        loadData();
+        toast.success(`${ids.length} transaction${ids.length > 1 ? 's' : ''} removed`, {
+            style: {
+                borderRadius: '12px',
+                background: '#1c1917',
+                color: '#fff',
+                fontWeight: 'bold',
+                border: '1px solid #AF8F42'
+            }
+        });
+    };
+
+
     const handleSaveCategory = async (catData: Omit<Category, 'id'> | Category) => {
         const formattedCat = {
             ...catData,
@@ -405,6 +420,7 @@ const AppContent: React.FC = () => {
                                                 setEditingTransaction(t);
                                                 setIsEntryModalOpen(true);
                                             }}
+                                            onDeleteTransactions={handleDeleteTransactions}
                                             currency={currency}
                                             typeFilter={typeFilter}
                                             onClearFilter={() => setTypeFilter(null)}
@@ -421,7 +437,7 @@ const AppContent: React.FC = () => {
                                                 setEditingTransaction(t);
                                                 setIsEntryModalOpen(true);
                                             }}
-                                            onBack={() => navigate('/dashboard')}
+                                            onDeleteTransactions={handleDeleteTransactions}
                                             currencySymbol={getCurrencySymbol(currency)}
                                             categories={categories}
                                             viewMode={historyViewMode}
@@ -437,7 +453,6 @@ const AppContent: React.FC = () => {
                                             transactions={transactions}
                                             categories={categories}
                                             currency={currency}
-                                            onBack={() => navigate('/dashboard')}
                                         />
                                     }
                                 />
@@ -447,7 +462,6 @@ const AppContent: React.FC = () => {
                                     element={
                                         <Settings
                                             onNavigate={(v) => navigate(`/${v}`)}
-                                            onBack={() => navigate('/dashboard')}
                                             categoryCount={categories.length}
                                             transactions={transactions}
                                             currency={currency}

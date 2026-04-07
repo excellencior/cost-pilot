@@ -1,14 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
+
+export interface TimePickerHandle {
+    open: () => void;
+}
 
 interface TimePickerProps {
     value: string; // HH:mm format (24h)
     onChange: (time: string) => void;
 }
 
-const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
+const TimePicker = forwardRef<TimePickerHandle, TimePickerProps>(({ value, onChange }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [mode, setMode] = useState<'hours' | 'minutes'>('hours');
+
+    useImperativeHandle(ref, () => ({
+        open: () => setIsOpen(true),
+    }));
 
     // Parse Initial Time
     const [hour, setHour] = useState(12);
@@ -87,7 +95,7 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
     const handAngle = mode === 'hours' ? hour * 30 : minute * 6;
 
     const modalContent = isOpen ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
             <div
                 className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
                 onClick={() => setIsOpen(false)}
@@ -196,16 +204,15 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange }) => {
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-stone-900 border border-stone-700 hover:border-[#AF8F42]/50 rounded-md px-3 py-1.5 text-white transition-colors group"
+                className="flex items-center text-white transition-colors group whitespace-nowrap"
             >
-                <span className="material-symbols-outlined text-sm text-[#AF8F42]">schedule</span>
-                <span className="font-mono text-sm tracking-wider">
+                <span className="font-mono text-xs tracking-wider whitespace-nowrap text-stone-300">
                     {dispHour12.toString().padStart(2, '0')}:{dispM} {dispPeriod}
                 </span>
             </button>
             {createPortal(modalContent, document.body)}
         </>
     );
-};
+});
 
 export default TimePicker;

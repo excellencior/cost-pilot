@@ -3,6 +3,7 @@ import { Category, Transaction } from '../../entities/types';
 import CategoryPickerModal from '../categories/CategoryPickerModal';
 import DatePicker from '../../shared/ui/DatePicker';
 import ConfirmModal from '../../shared/ui/ConfirmModal';
+import NumericKeypad from '../../shared/ui/NumericKeypad';
 
 interface NewEntryModalProps {
   isOpen: boolean;
@@ -28,6 +29,16 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isKeypadOpen, setIsKeypadOpen] = useState(false);
+  const [liveExpr, setLiveExpr] = useState('');
+  const [cursorVisible, setCursorVisible] = useState(true);
+  const descRef = React.useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!isKeypadOpen) { setCursorVisible(true); return; }
+    const id = setInterval(() => setCursorVisible(v => !v), 530);
+    return () => clearInterval(id);
+  }, [isKeypadOpen]);
 
   useEffect(() => {
     if (editingTransaction) {
@@ -55,15 +66,33 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
     }
   }, [type, categories, editingTransaction]);
 
+  // Recalculate textarea height when title or open state changes
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+    el.style.overflowY = el.scrollHeight > 96 ? 'auto' : 'hidden';
+  }, [title, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || parseFloat(amount) <= 0) return;
+    // Support expressions that may still be in the field (e.g. keypad left open without applying)
+    let parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) && /[+\-*/]/.test(amount)) {
+      try {
+        // eslint-disable-next-line no-new-func
+        const result = new Function(`return (${amount})`)();
+        if (typeof result === 'number' && isFinite(result)) parsedAmount = Math.round(result * 100) / 100;
+      } catch { /* noop */ }
+    }
+    if (!parsedAmount || parsedAmount <= 0) return;
 
     const transactionData = {
       title: title || (type === 'expense' ? 'New Expense' : 'New Income'),
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       type,
       category,
       date,
@@ -143,15 +172,18 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label-text">Amount</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  className="input-field font-mono text-lg"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
+                <div
+                  role="button"
+                  tabIndex={-1}
+                  onClick={() => { setLiveExpr(amount); setIsKeypadOpen(true); }}
+                  className={`input-field font-mono text-lg cursor-pointer select-none min-h-[40px] flex items-center overflow-hidden text-right justify-end ${!isKeypadOpen && !amount ? 'text-stone-400 font-normal' : ''}`}
+                >
+                  {isKeypadOpen
+                    ? <span className="whitespace-nowrap">{liveExpr}<span className={cursorVisible ? 'opacity-100' : 'opacity-0'}>|</span></span>
+                    : (amount || <span className="text-stone-400 font-normal">0.00</span>)
+                  }
+                </div>
+                <input type="hidden" value={amount} />
               </div>
 
               <div>
@@ -165,14 +197,23 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
 
             <div>
               <label className="label-text">Description</label>
-              <input
-                type="text"
-                className="input-field"
+              <textarea
+                ref={descRef}
+                rows={1}
+                className="input-field resize-none w-full leading-6"
+                style={{ maxHeight: '6rem', overflowY: 'hidden', scrollbarWidth: 'none' }}
                 placeholder="What was this for?"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  const el = e.target;
+                  el.style.height = 'auto';
+                  el.style.height = el.scrollHeight + 'px';
+                  el.style.overflowY = el.scrollHeight > 96 ? 'auto' : 'hidden';
+                }}
               />
             </div>
+
 
             <div className="space-y-1.5">
               <label className="label-text">Category</label>
@@ -229,8 +270,17 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({
         confirmLabel="Delete"
         variant="danger"
       />
+
+      <NumericKeypad
+        isOpen={isKeypadOpen}
+        value={amount}
+        onChange={setAmount}
+        onExprChange={setLiveExpr}
+        onClose={() => { setIsKeypadOpen(false); setLiveExpr(''); }}
+      />
     </>
   );
 };
 
 export default NewEntryModal;
+

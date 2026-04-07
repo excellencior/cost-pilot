@@ -13,6 +13,7 @@ export interface BackupPayload {
 
 const DB_KEY = 'costpilot_backup_db';
 const HANDLE_KEY = 'costpilot_backup_dir_handle';
+const NATIVE_BACKUP_DIR = 'CostPilot';
 
 class LocalBackupService {
     private dirHandle: FileSystemDirectoryHandle | null = null;
@@ -99,13 +100,31 @@ class LocalBackupService {
     }
 
     getDirectoryName(): string | null {
-        if (Capacitor.isNativePlatform()) return 'App Documents';
+        if (Capacitor.isNativePlatform()) return `Documents/${NATIVE_BACKUP_DIR}`;
         return this.dirHandle?.name || null;
+    }
+
+    private getMonthDir(): string {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    private async ensureNativeDir(): Promise<void> {
+        const monthPath = `${NATIVE_BACKUP_DIR}/${this.getMonthDir()}`;
+        try {
+            await Filesystem.readdir({ path: monthPath, directory: Directory.Documents });
+        } catch {
+            await Filesystem.mkdir({ path: monthPath, directory: Directory.Documents, recursive: true });
+        }
     }
 
     private generateFileName(): string {
         const date = new Date().toISOString().split('T')[0];
         return `costpilot_backup_${date}.json`;
+    }
+
+    private generateNativePath(): string {
+        return `${NATIVE_BACKUP_DIR}/${this.getMonthDir()}/${this.generateFileName()}`;
     }
 
     private buildPayload(): BackupPayload {
@@ -124,8 +143,9 @@ class LocalBackupService {
         const fileName = this.generateFileName();
 
         if (Capacitor.isNativePlatform()) {
+            await this.ensureNativeDir();
             await Filesystem.writeFile({
-                path: fileName,
+                path: this.generateNativePath(),
                 data: jsonString,
                 directory: Directory.Documents,
                 encoding: Encoding.UTF8
@@ -171,18 +191,8 @@ class LocalBackupService {
                 throw new Error("Invalid backup file format");
             }
 
-            // Restore settings, but PRESERVE backup configuration
-            const currentSettings = LocalRepository.getSettings();
-            const backupSettings = payload.settings;
-            
-            const keysToPreserve = ['autoBackupEnabled', 'backupTime', 'lastBackupDate', 'lastBackupHash'];
-            const mergedSettings = { ...backupSettings };
-            keysToPreserve.forEach(key => {
-                if (currentSettings[key] !== undefined) {
-                    mergedSettings[key] = currentSettings[key];
-                }
-            });
-            localStorage.setItem('costpilot_settings', JSON.stringify(mergedSettings));
+            // PRESERVE all current user settings (currency, theme, etc.)
+            // Restore should only merge data (transactions + categories), never overwrite preferences
 
             // Merge transactions (stored as map/object in costpilot_local_db)
             const currentData = JSON.parse(localStorage.getItem('costpilot_local_db') || '{}');
@@ -259,20 +269,38 @@ class LocalBackupService {
 
         try {
             if (Capacitor.isNativePlatform()) {
-                const result = await Filesystem.readdir({
-                    path: '',
+                // Scan all month subdirectories under CostPilot/
+                const topLevel = await Filesystem.readdir({
+                    path: NATIVE_BACKUP_DIR,
                     directory: Directory.Documents
                 });
 
-                for (const file of result.files) {
-                    if (file.name.startsWith('costpilot_backup_') && file.name.endsWith('.json')) {
-                        const dateStr = file.name.replace('costpilot_backup_', '').replace('.json', '');
-                        const fileDate = new Date(dateStr);
-                        if (fileDate < cutoff) {
-                            await Filesystem.deleteFile({
-                                path: file.name,
-                                directory: Directory.Documents
-                            });
+                for (const monthEntry of topLevel.files) {
+                    // Each entry should be a month directory like 2026-03
+                    if (monthEntry.type === 'directory') {
+                        const monthPath = `${NATIVE_BACKUP_DIR}/${monthEntry.name}`;
+                        const monthFiles = await Filesystem.readdir({
+                            path: monthPath,
+                            directory: Directory.Documents
+                        });
+
+                        for (const file of monthFiles.files) {
+                            if (file.name.startsWith('costpilot_backup_') && file.name.endsWith('.json')) {
+                                const dateStr = file.name.replace('costpilot_backup_', '').replace('.json', '');
+                                const fileDate = new Date(dateStr);
+                                if (fileDate < cutoff) {
+                                    await Filesystem.deleteFile({
+                                        path: `${monthPath}/${file.name}`,
+                                        directory: Directory.Documents
+                                    });
+                                }
+                            }
+                        }
+
+                        // Remove empty month directories
+                        const remaining = await Filesystem.readdir({ path: monthPath, directory: Directory.Documents });
+                        if (remaining.files.length === 0) {
+                            await Filesystem.rmdir({ path: monthPath, directory: Directory.Documents });
                         }
                     }
                 }
@@ -300,34 +328,47 @@ class LocalBackupService {
     async getMostRecentBackup(): Promise<File | null> {
         try {
             if (Capacitor.isNativePlatform()) {
-                const result = await Filesystem.readdir({
-                    path: '',
+                // Scan all month subdirectories to find the most recent backup
+                const topLevel = await Filesystem.readdir({
+                    path: NATIVE_BACKUP_DIR,
                     directory: Directory.Documents
                 });
 
-                let latestFile = null;
+                let latestFilePath: string | null = null;
+                let latestFileName: string | null = null;
                 let latestDate = 0;
 
-                for (const file of result.files) {
-                    if (file.name.startsWith('costpilot_backup_') && file.name.endsWith('.json')) {
-                        const dateStr = file.name.replace('costpilot_backup_', '').replace('.json', '');
-                        const fileDate = new Date(dateStr).getTime();
-                        if (!isNaN(fileDate) && fileDate > latestDate) {
-                            latestDate = fileDate;
-                            latestFile = file.name;
+                for (const monthEntry of topLevel.files) {
+                    if (monthEntry.type === 'directory') {
+                        const monthPath = `${NATIVE_BACKUP_DIR}/${monthEntry.name}`;
+                        const monthFiles = await Filesystem.readdir({
+                            path: monthPath,
+                            directory: Directory.Documents
+                        });
+
+                        for (const file of monthFiles.files) {
+                            if (file.name.startsWith('costpilot_backup_') && file.name.endsWith('.json')) {
+                                const dateStr = file.name.replace('costpilot_backup_', '').replace('.json', '');
+                                const fileDate = new Date(dateStr).getTime();
+                                if (!isNaN(fileDate) && fileDate > latestDate) {
+                                    latestDate = fileDate;
+                                    latestFilePath = `${monthPath}/${file.name}`;
+                                    latestFileName = file.name;
+                                }
+                            }
                         }
                     }
                 }
 
-                if (latestFile) {
+                if (latestFilePath && latestFileName) {
                     // We need a File object for the restore function. On native, we can read the string and mock a File
                     const contentRes = await Filesystem.readFile({
-                        path: latestFile,
+                        path: latestFilePath,
                         directory: Directory.Documents,
                         encoding: Encoding.UTF8
                     });
                     const blob = new Blob([contentRes.data as string], { type: 'application/json' });
-                    return new File([blob], latestFile, { type: 'application/json' });
+                    return new File([blob], latestFileName, { type: 'application/json' });
                 }
                 return null;
             } else {

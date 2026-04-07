@@ -26,3 +26,10 @@ export interface MonthlyData {
     income: number;
     expense: number;
 }
+
+export interface BudgetPlan {
+    id: string;
+    name: string;
+    amount: number;
+}
+
