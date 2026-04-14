@@ -10,29 +10,66 @@ CostPilot is a modern, premium financial companion designed to give you complete
 
 ---
 
-## 💎 Premium Features
+## Download
 
-CostPilot isn't just another expense tracker—it's a high-performance tool built for speed and visual clarity.
+**[Download the latest Android APK from GitHub Releases](https://github.com/excellencior/cost-pilot/releases)**
 
-- **🚀 High-Performance Dashboard**: Instant insights into net balance, income, and expenses with fluid, interactive charts.
-- **📅 Dual-Mode History**: Seamlessly toggle between a detailed transaction list and a beautiful **Calendar View** to visualize spending rhythms.
-- **☁️ Intelligent Cloud Sync**: Powered by Supabase. Secure your data with optional cross-device synchronization that you control.
-- **🔒 Local-First, Always**: Your financial data belongs to you. Fast local storage ensures zero-latency performance even without internet.
-- **📄 Professional Exports**: Generate crisp, clean PDF financial reports or CSV data exports directly from your phone or web browser.
-- **🌓 Adaptive Aesthetics**: A meticulously crafted design system with full **Dark Mode** support, smooth micro-animations, and a slick, professional feel.
-- **🤖 Gemini AI (Internal Preview)**: Experimental integration with Google Gemini for automated categorization and financial insights.
+> **Installation Note:** This app is built and signed locally and is not yet registered on Google Play. During installation, your device may display a security warning (e.g., "Install unknown apps" or Google Play Protect alerts). This is standard behavior for any app distributed outside the Play Store and does not indicate a security issue. Google Play registration is planned for a future release.
 
-## 🚀 Tech Stack
+---
 
-- **Frontend**: React 19, TypeScript, Vite
-- **Mobile**: Capacitor (Native Android support)
-- **Data Layer**: Supabase (PostgreSQL + Realtime Sync)
-- **Security**: Firebase Google OAuth
-- **Styling**: Tailwind CSS & Material Symbols
-- **Visuals**: Recharts, jsPDF + autoTable
-- **Intelligence**: Google Generative AI (Gemini)
+## Features
 
-## 🛠️ Getting Started
+### Dashboard and Overview
+- High-performance dashboard with instant insights into net balance, income, and expenses
+- Fluid, interactive charts for at-a-glance financial summaries
+
+### Transaction Management
+- Add, edit, and categorize income and expense entries
+- Segmented status and category controls for quick data entry
+
+### History and Calendar View
+- Detailed chronological transaction list with filtering and search
+- Calendar View to visualize daily spending rhythms and patterns
+
+### Cloud Sync
+- Optional cross-device synchronization powered by Supabase
+- Secure, user-controlled data replication over PostgreSQL with Realtime Sync
+
+### Local-First Architecture
+- All financial data stored locally for zero-latency performance
+- Full functionality without internet connectivity
+
+### Export and Reporting
+- Generate professional PDF financial reports directly from the app
+- CSV data exports for spreadsheet analysis
+
+### Theming and Design
+- Full Dark Mode support with adaptive color system
+- Smooth micro-animations and polished transitions throughout the interface
+- Material Symbols iconography for a clean, consistent look
+
+### AI-Powered Insights (Internal Preview)
+- Experimental integration with Google Gemini for automated categorization
+- AI-generated financial insights and spending summaries
+
+---
+
+## Tech Stack
+
+| Layer          | Technologies                                  |
+|----------------|-----------------------------------------------|
+| Frontend       | React 19, TypeScript, Vite                    |
+| Mobile         | Capacitor (Native Android)                    |
+| Data Layer     | Supabase (PostgreSQL + Realtime Sync)         |
+| Authentication | Firebase Google OAuth                         |
+| Styling        | Tailwind CSS, Material Symbols                |
+| Visualizations | Recharts, jsPDF + autoTable                   |
+| Intelligence   | Google Generative AI (Gemini)                 |
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
@@ -41,7 +78,7 @@ CostPilot isn't just another expense tracker—it's a high-performance tool buil
 
 ### Installation
 
-1.  **Clone & Install**:
+1.  **Clone and Install**:
     ```bash
     git clone https://github.com/excellencior/cost-pilot.git
     cd cost-pilot
@@ -61,7 +98,7 @@ CostPilot isn't just another expense tracker—it's a high-performance tool buil
     npm run dev
     ```
 
-## 📱 Mobile Workflow
+## Mobile Workflow
 
 CostPilot is fully optimized for Android.
 
@@ -76,5 +113,5 @@ npx cap open android
 ---
 
 <p align="center">
-  Built with ❤️ for personal financial excellence
+  Built for personal financial excellence.
 </p>
