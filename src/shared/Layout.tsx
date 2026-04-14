@@ -212,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onAd
                         </header>
 
                         <div 
-                            className={`flex-1 pt-20 sm:pt-20 lg:pt-0 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}
+                            className={`flex-1 pt-20 sm:pt-20 lg:pt-8 px-5 py-4 md:px-6 md:py-6 lg:px-14 ${hideFAB ? 'pb-[66px] sm:pb-6' : 'pb-24 sm:pb-24 lg:pb-6'} overflow-y-auto w-full max-w-5xl mx-auto`}
                             onScroll={(e) => {
                                 const currentScrollY = e.currentTarget.scrollTop;
                                 if (currentScrollY > lastScrollY.current + 10) {
