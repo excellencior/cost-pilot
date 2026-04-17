@@ -12,10 +12,9 @@ const config: CapacitorConfig = {
       androidScaleType: "CENTER_CROP",
       showSpinner: false,
     },
-    StatusBar: {
-      style: "DARK",
-      backgroundColor: "#0c0a09",
-      overlaysWebView: false,
+    SystemBars: {
+      insetsHandling: "css",
+      style: "DEFAULT",
     },
     BackgroundRunner: {
       label: 'com.costpilot.background.backup',

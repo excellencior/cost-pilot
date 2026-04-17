@@ -58,6 +58,7 @@ const Settings: React.FC<SettingsProps> = ({
 		const dark = document.documentElement.classList.toggle('dark');
 		setIsDark(dark);
 		LocalRepository.updateSettings({ theme: dark ? 'dark' : 'light' });
+		window.dispatchEvent(new Event('costpilot-settings-updated'));
 	};
 
 	const formatLastBackup = (iso: string | null) => {

@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import History from '../features/history/History';
 import { View, Transaction, MonthlyData, Category } from '../entities/types';
@@ -80,12 +79,6 @@ const AppContent: React.FC = () => {
             setHasAcceptedTerms(value === 'true');
         };
         checkTerms();
-
-        // Android/iOS: Set status bar theme
-        if (Capacitor.isNativePlatform()) {
-            StatusBar.setStyle({ style: Style.Dark }); // White text/icons
-            StatusBar.setBackgroundColor({ color: '#0c0a09' }); // Match app background
-        }
     }, []);
 
     const hideFAB = currentView === 'history' && historyViewMode === 'calendar';
@@ -93,10 +86,16 @@ const AppContent: React.FC = () => {
     // Apply theme on mount and when changed
     const applyTheme = useCallback(() => {
         const theme = LocalRepository.getSettings().theme;
-        if (theme === 'dark') {
+        const isDark = theme === 'dark';
+        if (isDark) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
+        }
+        // Sync system bar icon color with theme
+        // Dark = light icons on dark bg, Light = dark icons on light bg
+        if (Capacitor.isNativePlatform()) {
+            SystemBars.setStyle({ style: isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light });
         }
     }, []);
 
